@@ -6,7 +6,7 @@
 		]
 	},
 	"name": "canari-swipe",
-	"version": "1.0.1",
+	"version": "1.0.2",
 	"description": "Swiping library designed for Canari platform",
 	"main": "index.js",
 	"scripts": {
