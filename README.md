@@ -1,12 +1,8 @@
-# parcel-react-quick-setup
+# canari-swipe
 
-This code is a boilplate setup for react using parcel. 
+Component used to swipe pages and other content.
 
-I tried to set up it up similar to the structure of create-react-app. 
-
-I find it runs a bit quicker and is a little more simple in nature. 
-
-## Usage 
+## Usage
 
 git clone this repo. and run `npm install`
 
