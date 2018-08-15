@@ -12,35 +12,34 @@ class Swiper extends React.Component {
 			minimumSwipeSpeed,
 			deceleration,
 			children,
-			startIndex,
-			neighborsOnly,
+			firstSelection,
+			carousel,
 			detent,
 			swipeAmount,
-			swipeRatio,
 		} = this.props
 
 		this.minimumSwipeSpeed = minimumSwipeSpeed || 3000 // Minimum speed that swiping will go after releasing finger
 		// isControlled desc. If isControlled, swiper will not swipe/fade to desired index
-		this.deceleration = deceleration || 1 // if carousel (!neighborsOnly), then apply velocity deceleration
-		this.stopVelocity = 300 // if carousel (!neighborsOnly), then determine what velocity to stopSwiping
+		this.deceleration = deceleration || 1 // if carousel, then apply velocity deceleration
+		this.stopVelocity = 300 // if carousel, then determine what velocity to stopSwiping
 		this.selectionCount = React.Children.count(children)
-		this.currentSelection = startIndex || 0
-		this.neighborsOnly = neighborsOnly || false
+		this.currentSelection = firstSelection || 0
+		this.carousel = carousel || false
 		this.isTouching = false
 		this.isSwiping = false
 		this.swipeStart = 0
 		this.swipeTimer = 0
 		this.swipeVelocity = 0
 		this.coast = false // don't deccelerate when trun
-		this.detent = detent || false // if carousel (!neighborsOnly), if you want to stop on a whole selection
+		this.detent = detent || false // if carousel, if you want to stop on a whole selection
 
-		this.state = { swipePosition: startIndex * swipeAmount }
+		this.state = { swipePosition: firstSelection * swipeAmount }
 	}
 
 	UNSAFE_componentWillReceiveProps(nextProps) {
 		const {
-			startIndex,
-			desiredIndex,
+			firstSelection,
+			desiredSelection,
 			swipeAmount,
 			resetSwiper,
 			isControlled,
@@ -50,17 +49,18 @@ class Swiper extends React.Component {
 
 		this.selectionCount = React.Children.count(children) // update count if children change
 
-		if (resetSwiper) this.setState({ swipePosition: startIndex * swipeAmount })
+		if (resetSwiper) this.setState({ swipePosition: firstSelection * swipeAmount })
 		else if (
-			(desiredIndex !== this.currentSelection && desiredIndex !== this.props.desiredIndex) ||
+			(desiredSelection !== this.currentSelection &&
+				desiredSelection !== this.props.desiredSelection) ||
 			swipeAmount !== this.props.swipeAmount
 		) {
 			// See if the user requests a new selection without swiping (ex. clicking home button) or if they change swipeAmount
 
 			// Find fastest swipe direction
-			const selectionDelta = this.currentSelection - desiredIndex
-			this.desiredSelection = desiredIndex
-			this.desiredOffset = desiredIndex * swipeAmount
+			const selectionDelta = this.currentSelection - desiredSelection
+			this.desiredSelection = desiredSelection
+			this.desiredOffset = desiredSelection * swipeAmount
 
 			// If swiper isControlled, go straight to index w/o transition
 			if (isControlled) {
@@ -96,10 +96,12 @@ class Swiper extends React.Component {
 	}
 
 	handleMouseDown(e) {
+		const { carousel, horizontal } = this.props
+
 		// For neighbors only, only allow swiping if at rest
-		if (!this.props.neighborsOnly || !this.isSwiping) {
+		if (carousel || !this.isSwiping) {
 			this.isTouching = true
-			this.swipeStart = this.props.horizontal ? e.pageX : e.pageY
+			this.swipeStart = horizontal ? e.pageX : e.pageY
 			this.lastSwipeTouch = this.swipeStart
 			this.onSwipeSpace = true
 		}
@@ -133,7 +135,7 @@ class Swiper extends React.Component {
 				this.swipeVelocity = updatedSwipeVelocity
 
 				// If swipe offset is past 50%, swipe in that direction, else go back to current selection
-			} else if (this.neighborsOnly || this.detent) {
+			} else if (!this.carousel || this.detent) {
 				let correctedDesiredSelction = this.desiredSelection
 
 				const goNext = (this.state.swipePosition + swipeAmount) % swipeAmount > swipeAmount / 2
@@ -171,7 +173,7 @@ class Swiper extends React.Component {
 			this.desiredOffset = swipeAmount * this.desiredSelection
 			this.swipeTimer = new Date().getMilliseconds()
 		}
-		this.setState({ render: true }) // needed only for !neighborsOnly??
+		this.setState({ render: true }) // needed only for carousel??
 		this.isTouching = false
 	}
 
@@ -241,6 +243,8 @@ class Swiper extends React.Component {
 
 	componentDidUpdate(prevProps, prevState) {
 		if (!this.isTouching && this.isSwiping) {
+			const { carousel, wrapAround, swipeAmount, visibleCount } = this.props
+
 			const swipeUpdateTime = 10
 			setTimeout(() => {
 				// Calculate next swipe offset based on velocity
@@ -251,8 +255,8 @@ class Swiper extends React.Component {
 						(this.swipeVelocity * (correctedSwipeTimer - this.swipeTimer)) / 1000
 				)
 
-				// Slow velocity down if !neighborsOnly
-				if (!this.props.neighborsOnly && !this.coast) {
+				// Slow velocity down if carousel
+				if (carousel && !this.coast) {
 					const newVelocity =
 						this.swipeVelocity -
 						this.deceleration *
@@ -271,12 +275,12 @@ class Swiper extends React.Component {
 					} else this.swipeVelocity = newVelocity
 				}
 
-				// if (!this.props.wrapAround) {
-				// 	if (this.desiredSelection > this.selectionCount - this.props.visibleCount-1) {
+				// if (!wrapAround) {
+				// 	if (this.desiredSelection > this.selectionCount - visibleCount-1) {
 				// 		this.swipeVelocity = this.stopVelocity * Math.sign(this.swipeVelocity)
 				// 	}
 				// 	else if (this.desiredSelection <= 0) this.swipeVelocity = this.minimumSwipeSpeed * Math.sign(this.swipeVelocity)
-				// 	// this.currentSelection = Math.min(Math.max(this.currentSelection, 0), this.selectionCount-this.props.visibleCount)
+				// 	// this.currentSelection = Math.min(Math.max(this.currentSelection, 0), this.selectionCount-visibleCount)
 				// }
 
 				this.swipeTimer = newSwipeTimer
@@ -284,21 +288,21 @@ class Swiper extends React.Component {
 				// Correct selection and offsets for overflow condition
 				let correctedDesiredSelection = this.desiredSelection
 				let correctedOffset = this.desiredOffset
-				if (this.props.wrapAround) {
+				if (wrapAround) {
 					if (
 						this.currentSelection == 0 &&
 						this.desiredSelection == this.selectionCount - 1 &&
 						newSwipePosition < correctedOffset
 					) {
 						correctedDesiredSelection = -1
-						correctedOffset = -this.props.swipeAmount
+						correctedOffset = -swipeAmount
 					} else if (
 						this.currentSelection == this.selectionCount - 1 &&
 						this.desiredSelection == 0 &&
 						newSwipePosition > correctedOffset
 					) {
 						correctedDesiredSelection = this.selectionCount
-						correctedOffset = this.selectionCount * this.props.swipeAmount
+						correctedOffset = this.selectionCount * swipeAmount
 					}
 				}
 
@@ -313,23 +317,21 @@ class Swiper extends React.Component {
 					// Check conditions to stop swiping
 
 					// one neighbor
-					if (this.props.neighborsOnly) this.stopSwiping()
+					if (!carousel) this.stopSwiping()
 					// Beginning and end of selections
 					else if (this.currentSelection == 0 && this.swipeVelocity < 0) this.stopSwiping()
 					else if (
-						this.currentSelection >= this.selectionCount - this.props.visibleCount &&
+						this.currentSelection >= this.selectionCount - visibleCount &&
 						this.swipeVelocity > 0
 					)
 						this.stopSwiping()
 					else {
 						let finalVelocity = this.stopVelocity
-						if (!this.props.neighborsOnly && this.detent) {
+						if (carousel && this.detent) {
 							// Check if velocity is too slow to make it through next selection w/ constant acceleration formula
 							finalVelocity =
 								Math.sqrt(
-									Math.pow(this.swipeVelocity, 2) -
-										2 * this.deceleration * 1000 * this.props.swipeAmount +
-										100
+									Math.pow(this.swipeVelocity, 2) - 2 * this.deceleration * 1000 * swipeAmount + 100
 								) || 0
 						}
 
@@ -338,7 +340,7 @@ class Swiper extends React.Component {
 						} else {
 							// Continue swiping to the next selection
 							this.desiredSelection += Math.sign(this.swipeVelocity)
-							this.desiredOffset = this.desiredSelection * this.props.swipeAmount
+							this.desiredOffset = this.desiredSelection * swipeAmount
 							this.setState({ swipePosition: newSwipePosition })
 						}
 					}
@@ -352,11 +354,11 @@ class Swiper extends React.Component {
 	// Stop swiping method
 	stopSwiping() {
 		this.swipeVelocity = 0
-		// this.neighborsOnly = this.props.neighborsOnly
+		// this.carousel = this.props.carousel
 		this.isSwiping = false
 		this.coast = false
 
-		if (this.neighborsOnly || this.detent || this.desiredOffset <= 0) {
+		if (!this.carousel || this.detent || this.desiredOffset <= 0) {
 			this.setState({ swipePosition: this.desiredOffset })
 		}
 
@@ -395,17 +397,12 @@ class Swiper extends React.Component {
 
 			const totalSwipeAmount = adjustedIndex * swipeAmount - this.state.swipePosition
 
-			if (this.neighborsOnly) {
+			if (!this.carousel) {
 				// -- ONLY PUT CURRENT PAGE AND NEIGHBORS ON DOM --
-				if (adjustedIndex == this.currentSelection) {
-					return childTranslator(child, horizontal, totalSwipeAmount)
-				}
-
-				if (adjustedIndex == this.currentSelection - 1) {
-					return childTranslator(child, horizontal, totalSwipeAmount)
-				} else if (adjustedIndex == this.currentSelection + 1) {
-					return childTranslator(child, horizontal, totalSwipeAmount)
-				} else if (adjustedIndex == this.currentSelection) {
+				if (
+					adjustedIndex > this.currentSelection - 2 &&
+					adjustedIndex < this.currentSelection + 2
+				) {
 					return childTranslator(child, horizontal, totalSwipeAmount)
 				} else if (index == 0 && this.currentSelection == this.selectionCount - 1) {
 					return childTranslator(child, horizontal, totalSwipeAmount)

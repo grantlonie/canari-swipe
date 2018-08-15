@@ -3,6 +3,7 @@
 	"name": "canari-swipe",
 	"version": "1.1.0",
 	"description": "Swiping library designed for Canari platform",
+	"homepage": "https://github.com/GeeDollaHolla/canari-swipe#readme",
 	"license": "MIT",
 	"main": "index.js",
 	"files": [
@@ -11,8 +12,8 @@
 	"scripts": {
 		"start": "parcel ./src/index.html",
 		"test": "jest --watch",
-		"build": "parcel build ./src/index.js",
-		"build2": "babel ./src/Swiper.js --out-file index.js --presets=es2015,react"
+		"build": "babel ./src/Swiper.js --out-file index.js --presets=es2015,react",
+		"demo-build": "parcel build ./src/index.js"
 	},
 	"babel": {
 		"presets": [
@@ -43,7 +44,6 @@
 	"bugs": {
 		"url": "https://github.com/theAndrewCline/parcel-trial/issues"
 	},
-	"homepage": "https://github.com/GeeDollaHolla/canari-swipe#readme",
 	"peerDependencies": {
 		"react": "^16.4.1",
 		"react-dom": "^16.4.1"
