@@ -1,7 +1,7 @@
 {
 	"author": "Grant Lonie",
 	"name": "canari-swipe",
-	"version": "1.2.2",
+	"version": "1.2.3",
 	"description": "Swiping library designed for Canari platform",
 	"homepage": "https://github.com/GeeDollaHolla/canari-swipe#readme",
 	"license": "MIT",
