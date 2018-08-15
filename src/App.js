@@ -5,17 +5,12 @@ const pageWidth = 300
 const pageHeight = 200
 export default class App extends Component {
 	render() {
-		const wrapperStyle = {
-			height: pageHeight + 'px',
-			width: pageWidth + 'px',
-			overflow: 'hidden',
-			display: 'inline-block',
+		const pageStyle = {
+			maxWidth: '800px',
 			margin: 'auto',
-			left: 0,
-			right: 0,
 		}
 
-		const pageStyle = {
+		const selectionStyle = {
 			height: pageHeight + 'px',
 			width: pageWidth + 'px',
 			backgroundColor: 'gray',
@@ -26,61 +21,95 @@ export default class App extends Component {
 			verticalAlign: 'middle',
 			lineHeight: pageHeight + 'px',
 			userSelect: 'none',
+			fontFamily: 'calibri',
 		}
 
 		return (
-			<div>
-				<SingleSelection pageStyle={pageStyle} />
-				<Carousel pageStyle={pageStyle} />
+			<div style={pageStyle}>
+				<h1>canari-swipe examples</h1>
+				<p>A few basic examples for canari-swipe</p>
+				<a href="https://github.com/GeeDollaHolla/canari-swipe/blob/master/src/App.js">
+					Source Code
+				</a>
+				<SingleSelection selectionStyle={selectionStyle} />
+				<Carousel selectionStyle={selectionStyle} />
 			</div>
 		)
 	}
 }
 
-const SingleSelection = ({ pageStyle }) => (
-	<div>
-		<h3>Single Selections</h3>
+class SingleSelection extends React.Component {
+	constructor(props) {
+		super(props)
 
-		<Swiper
-			swipeAmount={pageWidth}
-			visibleCount={1}
-			horizontal={true}
-			carousel={false}
-			minimumSwipeSpeed={2000}
-			wrapAround={true}
-			desiredSelection={0}
-			firstSelection={0}>
-			{[...Array(5)].map((iter, page) => {
-				return (
-					<div key={page}>
-						<div style={pageStyle}>Page {page}</div>
-					</div>
-				)
-			})}
-		</Swiper>
-	</div>
-)
+		this.state = {
+			wrapAround: false,
+		}
+	}
 
-const Carousel = ({ pageStyle }) => (
-	<div>
-		<h3>Carousel</h3>
+	changeWrapAround() {
+		this.setState({ wrapAround: !this.state.wrapAround })
+	}
 
-		<Swiper
-			swipeAmount={pageWidth}
-			visibleCount={1}
-			horizontal={true}
-			carousel={true}
-			minimumSwipeSpeed={2000}
-			wrapAround={false}
-			desiredSelection={0}
-			firstSelection={0}>
-			{[...Array(5)].map((iter, page) => {
-				return (
-					<div key={page}>
-						<div style={pageStyle}>Page {page}</div>
-					</div>
-				)
-			})}
-		</Swiper>
-	</div>
-)
+	render() {
+		return (
+			<div>
+				<h3>Single Selections</h3>
+				<input
+					type="checkbox"
+					checked={this.state.wrapAround}
+					onChange={this.changeWrapAround.bind(this)}
+				/>
+				wrapAround
+				<br />
+				<Swiper wrapAround={this.state.wrapAround}>
+					{[...Array(5)].map((iter, page) => {
+						return (
+							<div key={page} style={this.props.selectionStyle}>
+								Page {page}
+							</div>
+						)
+					})}
+				</Swiper>
+			</div>
+		)
+	}
+}
+
+class Carousel extends React.Component {
+	constructor(props) {
+		super(props)
+
+		this.state = {
+			detent: false,
+		}
+	}
+
+	changeDetent() {
+		this.setState({ detent: !this.state.detent })
+	}
+
+	render() {
+		return (
+			<div>
+				<h3>Carousel</h3>
+				<input
+					type="checkbox"
+					checked={this.state.detent}
+					onChange={this.changeDetent.bind(this)}
+				/>
+				detent
+				<br />
+				<Swiper swipeAmount={pageWidth} visibleCount={2} detent={this.state.detent} carousel={true}>
+					{[...Array(20)].map((iter, page) => {
+						return (
+							<div key={page} style={this.props.selectionStyle}>
+								Page {page}
+							</div>
+						)
+					})}
+				</Swiper>
+			</div>
+		)
+	}
+}

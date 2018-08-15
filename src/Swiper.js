@@ -18,49 +18,83 @@ class Swiper extends React.Component {
 			swipeAmount,
 		} = this.props
 
-		this.minimumSwipeSpeed = minimumSwipeSpeed || 3000 // Minimum speed that swiping will go after releasing finger
+		this.minimumSwipeSpeed = minimumSwipeSpeed || 500 // Minimum speed that swiping will go after releasing finger
 		// isControlled desc. If isControlled, swiper will not swipe/fade to desired index
-		this.deceleration = deceleration || 1 // if carousel, then apply velocity deceleration
+		this.deceleration = deceleration || 3 // if carousel, then apply velocity deceleration
 		this.stopVelocity = 300 // if carousel, then determine what velocity to stopSwiping
 		this.selectionCount = React.Children.count(children)
 		this.currentSelection = firstSelection || 0
-		this.carousel = carousel || false
 		this.isTouching = false
 		this.isSwiping = false
 		this.swipeStart = 0
 		this.swipeTimer = 0
 		this.swipeVelocity = 0
 		this.coast = false // don't deccelerate when trun
-		this.detent = detent || false // if carousel, if you want to stop on a whole selection
 
-		this.state = { swipePosition: firstSelection * swipeAmount }
+		this.setWrapperStyle()
+
+		this.state = { swipePosition: this.currentSelection * this.swipeAmount }
+	}
+
+	setWrapperStyle() {
+		const { children, swipeAmount, vertical, visibleCount, carousel } = this.props
+
+		const maxChildDimensions = React.Children.map(children, child => {
+			const childStyle = child.props.style
+
+			if (!childStyle) return { width: 0, height: 0 }
+
+			const border = parseInt(childStyle.border) || 0
+			return {
+				width: parseInt(childStyle.width) + 2 * border,
+				height: parseInt(childStyle.height) + 2 * border,
+			}
+		}).reduce((acc, cur) => ({
+			width: Math.max(acc.width, cur.width),
+			height: Math.max(acc.height, cur.height),
+		}))
+
+		this.swipeAmount =
+			swipeAmount || (vertical ? maxChildDimensions.height : maxChildDimensions.width)
+
+		this.wrapperStyle = {
+			overflow: 'hidden',
+			position: 'relative',
+			border: '1px solid black',
+			display: 'inline-block',
+			width: vertical ? maxChildDimensions.width : (carousel ? visibleCount : 1) * this.swipeAmount,
+			height: vertical
+				? (carousel ? visibleCount : 1) * this.swipeAmount
+				: maxChildDimensions.height,
+		}
 	}
 
 	UNSAFE_componentWillReceiveProps(nextProps) {
 		const {
 			firstSelection,
 			desiredSelection,
-			swipeAmount,
 			resetSwiper,
 			isControlled,
 			children,
-			swipeRatio,
+			swipeAmount,
 		} = nextProps
 
 		this.selectionCount = React.Children.count(children) // update count if children change
 
-		if (resetSwiper) this.setState({ swipePosition: firstSelection * swipeAmount })
+		if (resetSwiper) this.setState({ swipePosition: (firstSelection || 0) * this.swipeAmount })
 		else if (
 			(desiredSelection !== this.currentSelection &&
 				desiredSelection !== this.props.desiredSelection) ||
-			swipeAmount !== this.props.swipeAmount
+			(swipeAmount && swipeAmount !== this.props.swipeAmount)
 		) {
 			// See if the user requests a new selection without swiping (ex. clicking home button) or if they change swipeAmount
+
+			this.setWrapperStyle()
 
 			// Find fastest swipe direction
 			const selectionDelta = this.currentSelection - desiredSelection
 			this.desiredSelection = desiredSelection
-			this.desiredOffset = desiredSelection * swipeAmount
+			this.desiredOffset = desiredSelection * this.swipeAmount
 
 			// If swiper isControlled, go straight to index w/o transition
 			if (isControlled) {
@@ -82,8 +116,7 @@ class Swiper extends React.Component {
 					else if (this.currentSelection == this.selectionCount - 1 && this.desiredSelection == 0)
 						speedSwap = -1
 				}
-				this.swipeVelocity =
-					(-this.props.swipeAmount / 0.75) * Math.sign(selectionDelta) * speedSwap
+				this.swipeVelocity = (-this.swipeAmount / 0.75) * Math.sign(selectionDelta) * speedSwap
 
 				this.swipeTimer = new Date().getMilliseconds()
 				this.isSwiping = true
@@ -96,12 +129,12 @@ class Swiper extends React.Component {
 	}
 
 	handleMouseDown(e) {
-		const { carousel, horizontal } = this.props
+		const { carousel, vertical } = this.props
 
 		// For neighbors only, only allow swiping if at rest
 		if (carousel || !this.isSwiping) {
 			this.isTouching = true
-			this.swipeStart = horizontal ? e.pageX : e.pageY
+			this.swipeStart = vertical ? e.pageY : e.pageX
 			this.lastSwipeTouch = this.swipeStart
 			this.onSwipeSpace = true
 		}
@@ -117,7 +150,7 @@ class Swiper extends React.Component {
 	}
 
 	doneSwiping() {
-		const { swipeAmount, wrapAround } = this.props
+		const { wrapAround, detent, carousel } = this.props
 
 		const updatedSwipeVelocity =
 			Math.abs(this.swipeVelocity) < this.minimumSwipeSpeed
@@ -129,18 +162,17 @@ class Swiper extends React.Component {
 			// If swipe is faster than minimum speed, swipe in that direction
 			else if (Math.abs(this.swipeVelocity) > this.minimumSwipeSpeed) {
 				this.desiredSelection =
-					Math.floor(this.state.swipePosition / swipeAmount) + (this.swipeVelocity > 0 ? 1 : 0)
+					Math.floor(this.state.swipePosition / this.swipeAmount) + (this.swipeVelocity > 0 ? 1 : 0)
 				this.clampDesiredSelection()
 				this.currentSelection = this.desiredSelection - Math.sign(this.swipeVelocity)
 				this.swipeVelocity = updatedSwipeVelocity
 
 				// If swipe offset is past 50%, swipe in that direction, else go back to current selection
-			} else if (!this.carousel || this.detent) {
-				let correctedDesiredSelction = this.desiredSelection
-
-				const goNext = (this.state.swipePosition + swipeAmount) % swipeAmount > swipeAmount / 2
+			} else if (!carousel || detent) {
+				const goNext =
+					(this.state.swipePosition + this.swipeAmount) % this.swipeAmount > this.swipeAmount / 2
 				this.desiredSelection =
-					Math.floor(this.state.swipePosition / swipeAmount) + (goNext ? 1 : 0)
+					Math.floor(this.state.swipePosition / this.swipeAmount) + (goNext ? 1 : 0)
 				this.clampDesiredSelection()
 				this.currentSelection = this.desiredSelection + (goNext ? -1 : 1)
 
@@ -148,19 +180,19 @@ class Swiper extends React.Component {
 				this.coast = true
 			}
 
-			if (wrapAround) {
+			if (wrapAround && !carousel) {
 				if (this.currentSelection > this.selectionCount - 1) {
 					this.currentSelection = 0
 					this.setState(prevState => {
 						return {
-							swipePosition: prevState.swipePosition - swipeAmount * this.selectionCount,
+							swipePosition: prevState.swipePosition - this.swipeAmount * this.selectionCount,
 						}
 					})
 				} else if (this.currentSelection < 0) {
 					this.currentSelection = this.selectionCount - 1
 					this.setState(prevState => {
 						return {
-							swipePosition: prevState.swipePosition + swipeAmount * this.selectionCount,
+							swipePosition: prevState.swipePosition + this.swipeAmount * this.selectionCount,
 						}
 					})
 				}
@@ -170,7 +202,7 @@ class Swiper extends React.Component {
 			}
 
 			this.currentOffset = this.desiredOffset
-			this.desiredOffset = swipeAmount * this.desiredSelection
+			this.desiredOffset = this.swipeAmount * this.desiredSelection
 			this.swipeTimer = new Date().getMilliseconds()
 		}
 		this.setState({ render: true }) // needed only for carousel??
@@ -178,10 +210,12 @@ class Swiper extends React.Component {
 	}
 
 	clampDesiredSelection() {
-		if (!this.props.wrapAround)
+		const { wrapAround, visibleCount, carousel } = this.props
+
+		if (!wrapAround)
 			this.desiredSelection = Math.min(
 				Math.max(this.desiredSelection, 0),
-				Math.max(this.selectionCount - this.props.visibleCount, 0)
+				Math.max(this.selectionCount - (visibleCount || 1), 0)
 			)
 	}
 
@@ -190,19 +224,12 @@ class Swiper extends React.Component {
 	}
 
 	handleMouseMove(e) {
-		const {
-			horizontal,
-			swipeRatio,
-			startSwiping,
-			swipeAmount,
-			wrapAround,
-			visibleCount,
-		} = this.props
+		const { vertical, swipeRatio, startSwiping, wrapAround, visibleCount, carousel } = this.props
 
 		if (!this.props.disabled && true) {
 			if (this.isTouching && this.selectionCount > 1) {
 				// only consider movements when touching and more than one selection
-				const touchLocation = horizontal ? e.pageX : e.pageY
+				const touchLocation = vertical ? e.pageY : e.pageX
 
 				// Determine when swiping begins
 				if (!this.isSwiping) {
@@ -218,13 +245,14 @@ class Swiper extends React.Component {
 					let newSwipePosition = this.state.swipePosition + swipeMovement
 
 					// Prevent wrap around swiping if not wanted
-					if (!wrapAround) {
+					if (!wrapAround || carousel) {
 						if (this.state.swipePosition <= 0 && swipeMovement < 0) newSwipePosition = 0 //this.state.swipePosition
 						if (
-							this.state.swipePosition >= swipeAmount * (this.selectionCount - visibleCount) &&
+							this.state.swipePosition >=
+								this.swipeAmount * (this.selectionCount - (visibleCount || 1)) &&
 							swipeMovement > 0
 						)
-							newSwipePosition = swipeAmount * (this.selectionCount - visibleCount) //this.state.swipePosition
+							newSwipePosition = this.swipeAmount * (this.selectionCount - (visibleCount || 1)) //this.state.swipePosition
 					}
 
 					// Calculate swipe velocity and update position
@@ -243,7 +271,7 @@ class Swiper extends React.Component {
 
 	componentDidUpdate(prevProps, prevState) {
 		if (!this.isTouching && this.isSwiping) {
-			const { carousel, wrapAround, swipeAmount, visibleCount } = this.props
+			const { carousel, wrapAround, visibleCount, detent } = this.props
 
 			const swipeUpdateTime = 10
 			setTimeout(() => {
@@ -265,7 +293,7 @@ class Swiper extends React.Component {
 
 					// prevent sign change
 					if (this.swipeVelocity / newVelocity < 0) {
-						if (this.detent) {
+						if (detent) {
 							this.coast = true
 							this.swipeVelocity = this.stopVelocity * Math.sign(this.swipeVelocity)
 						} else {
@@ -276,11 +304,11 @@ class Swiper extends React.Component {
 				}
 
 				// if (!wrapAround) {
-				// 	if (this.desiredSelection > this.selectionCount - visibleCount-1) {
+				// 	if (this.desiredSelection > this.selectionCount - (visibleCount || 1)-1) {
 				// 		this.swipeVelocity = this.stopVelocity * Math.sign(this.swipeVelocity)
 				// 	}
 				// 	else if (this.desiredSelection <= 0) this.swipeVelocity = this.minimumSwipeSpeed * Math.sign(this.swipeVelocity)
-				// 	// this.currentSelection = Math.min(Math.max(this.currentSelection, 0), this.selectionCount-visibleCount)
+				// 	// this.currentSelection = Math.min(Math.max(this.currentSelection, 0), this.selectionCount-(visibleCount || 1))
 				// }
 
 				this.swipeTimer = newSwipeTimer
@@ -295,14 +323,14 @@ class Swiper extends React.Component {
 						newSwipePosition < correctedOffset
 					) {
 						correctedDesiredSelection = -1
-						correctedOffset = -swipeAmount
+						correctedOffset = -this.swipeAmount
 					} else if (
 						this.currentSelection == this.selectionCount - 1 &&
 						this.desiredSelection == 0 &&
 						newSwipePosition > correctedOffset
 					) {
 						correctedDesiredSelection = this.selectionCount
-						correctedOffset = this.selectionCount * swipeAmount
+						correctedOffset = this.selectionCount * this.swipeAmount
 					}
 				}
 
@@ -321,17 +349,19 @@ class Swiper extends React.Component {
 					// Beginning and end of selections
 					else if (this.currentSelection == 0 && this.swipeVelocity < 0) this.stopSwiping()
 					else if (
-						this.currentSelection >= this.selectionCount - visibleCount &&
+						this.currentSelection >= this.selectionCount - (visibleCount || 1) &&
 						this.swipeVelocity > 0
 					)
 						this.stopSwiping()
 					else {
 						let finalVelocity = this.stopVelocity
-						if (carousel && this.detent) {
+						if (carousel && detent) {
 							// Check if velocity is too slow to make it through next selection w/ constant acceleration formula
 							finalVelocity =
 								Math.sqrt(
-									Math.pow(this.swipeVelocity, 2) - 2 * this.deceleration * 1000 * swipeAmount + 100
+									Math.pow(this.swipeVelocity, 2) -
+										2 * this.deceleration * 1000 * this.swipeAmount +
+										100
 								) || 0
 						}
 
@@ -340,7 +370,7 @@ class Swiper extends React.Component {
 						} else {
 							// Continue swiping to the next selection
 							this.desiredSelection += Math.sign(this.swipeVelocity)
-							this.desiredOffset = this.desiredSelection * swipeAmount
+							this.desiredOffset = this.desiredSelection * this.swipeAmount
 							this.setState({ swipePosition: newSwipePosition })
 						}
 					}
@@ -353,36 +383,35 @@ class Swiper extends React.Component {
 
 	// Stop swiping method
 	stopSwiping() {
+		const { detent, updateCurrentSelection, carousel } = this.props
+
 		this.swipeVelocity = 0
-		// this.carousel = this.props.carousel
+		// carousel = this.props.carousel
 		this.isSwiping = false
 		this.coast = false
 
-		if (!this.carousel || this.detent || this.desiredOffset <= 0) {
+		if (!carousel || detent || this.desiredOffset <= 0) {
 			this.setState({ swipePosition: this.desiredOffset })
 		}
 
-		if (this.props.updateCurrentSelection)
-			setTimeout(
-				() => this.props.updateCurrentSelection(this.currentSelection, this.onSwipeSpace),
-				100
-			)
+		if (updateCurrentSelection)
+			setTimeout(() => updateCurrentSelection(this.currentSelection, this.onSwipeSpace), 100)
 	}
 
 	render() {
-		const { wrapAround, children, swipeAmount, horizontal } = this.props
+		const { wrapAround, children, vertical, carousel } = this.props
 
 		const pageWithStyle = React.Children.map(children, (child, index) => {
 			// Adjust the index to allow for wrap around if wanted
 			let adjustedIndex = index
 
-			if (wrapAround) {
+			if (wrapAround && !carousel) {
 				// only two selections
 				if (this.selectionCount === 2) {
 					if (this.currentSelection == 0) {
 						if (this.state.swipePosition < 0 && index == 1) adjustedIndex = -1
 					} else if (this.currentSelection == 1) {
-						if (this.state.swipePosition > swipeAmount && index == 0) adjustedIndex = 2
+						if (this.state.swipePosition > this.swipeAmount && index == 0) adjustedIndex = 2
 					}
 
 					// more than two selections
@@ -395,31 +424,31 @@ class Swiper extends React.Component {
 				}
 			}
 
-			const totalSwipeAmount = adjustedIndex * swipeAmount - this.state.swipePosition
+			const totalSwipeAmount = adjustedIndex * this.swipeAmount - this.state.swipePosition
 
-			if (!this.carousel) {
+			if (!carousel) {
 				// -- ONLY PUT CURRENT PAGE AND NEIGHBORS ON DOM --
 				if (
 					adjustedIndex > this.currentSelection - 2 &&
 					adjustedIndex < this.currentSelection + 2
 				) {
-					return childTranslator(child, horizontal, totalSwipeAmount)
+					return childTranslator(child, vertical, totalSwipeAmount)
 				} else if (index == 0 && this.currentSelection == this.selectionCount - 1) {
-					return childTranslator(child, horizontal, totalSwipeAmount)
+					return childTranslator(child, vertical, totalSwipeAmount)
 				} else if (index == this.selectionCount - 1 && this.currentSelection == 0) {
-					return childTranslator(child, horizontal, totalSwipeAmount)
+					return childTranslator(child, vertical, totalSwipeAmount)
 				} else {
 					// Don't move other selections
-					return null //childTranslator(child, horizontal, totalSwipeAmount)
+					return null //childTranslator(child, vertical, totalSwipeAmount)
 				}
 			} else {
-				return childTranslator(child, horizontal, totalSwipeAmount)
+				return childTranslator(child, vertical, totalSwipeAmount)
 			}
 		})
 
 		return (
 			<div
-				style={this.selectStyle}
+				style={this.wrapperStyle}
 				onMouseDown={this.handleMouseDown.bind(this)}
 				onTouchStart={this.handleTouchDown.bind(this)}
 				onMouseMove={this.handleMouseMove.bind(this)}
@@ -434,13 +463,13 @@ class Swiper extends React.Component {
 	}
 }
 
-function childTranslator(child, horizontal, offsetAmount) {
+function childTranslator(child, vertical, offsetAmount) {
 	let xOffset = 0
 	let yOffset = 0
-	if (horizontal) {
-		xOffset = offsetAmount
-	} else {
+	if (vertical) {
 		yOffset = offsetAmount
+	} else {
+		xOffset = offsetAmount
 	}
 
 	const style = Object.assign({}, child.props.style, {
