@@ -48,7 +48,6 @@ class Swiper extends React.Component {
 		this.wrapperStyle = {
 			overflow: 'hidden',
 			position: 'relative',
-			border: '1px solid black',
 			display: 'inline-block',
 			width: vertical ? width : (carousel ? visibleCount || 1 : 1) * this.swipeAmount,
 			height: vertical ? (carousel ? visibleCount || 1 : 1) * this.swipeAmount : height,
@@ -76,6 +75,7 @@ class Swiper extends React.Component {
 			// See if the user requests a new selection without swiping (ex. clicking home button) or if they change swipeAmount
 
 			this.setWrapperStyle()
+			console.log(this.wrapperStyle.width)
 
 			// Find fastest swipe direction
 			const selectionDelta = this.currentSelection - desiredSelection
