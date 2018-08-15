@@ -49,8 +49,8 @@ var Swiper = function (_React$Component) {
 		_this.deceleration = deceleration || 1; // if carousel (!neighborsOnly), then apply velocity deceleration
 		_this.stopVelocity = 300; // if carousel (!neighborsOnly), then determine what velocity to stopSwiping
 		_this.selectionCount = _react2.default.Children.count(children);
-		_this.currentSelection = startIndex;
-		_this.neighborsOnly = neighborsOnly;
+		_this.currentSelection = startIndex || 0;
+		_this.neighborsOnly = neighborsOnly || false;
 		_this.isTouching = false;
 		_this.isSwiping = false;
 		_this.swipeStart = 0;
@@ -364,7 +364,6 @@ var Swiper = function (_React$Component) {
 			    wrapAround = _props3.wrapAround,
 			    children = _props3.children,
 			    swipeAmount = _props3.swipeAmount,
-			    desiredIndex = _props3.desiredIndex,
 			    horizontal = _props3.horizontal;
 
 
@@ -394,15 +393,14 @@ var Swiper = function (_React$Component) {
 				var totalSwipeAmount = adjustedIndex * swipeAmount - _this5.state.swipePosition;
 
 				if (_this5.neighborsOnly) {
-					console.log(adjustedIndex, desiredIndex);
 					// -- ONLY PUT CURRENT PAGE AND NEIGHBORS ON DOM --
-					if (adjustedIndex == desiredIndex) {
+					if (adjustedIndex == _this5.currentSelection) {
 						return childTranslator(child, horizontal, totalSwipeAmount);
 					}
 
-					if (adjustedIndex == desiredIndex - 1) {
+					if (adjustedIndex == _this5.currentSelection - 1) {
 						return childTranslator(child, horizontal, totalSwipeAmount);
-					} else if (adjustedIndex == desiredIndex + 1) {
+					} else if (adjustedIndex == _this5.currentSelection + 1) {
 						return childTranslator(child, horizontal, totalSwipeAmount);
 					} else if (adjustedIndex == _this5.currentSelection) {
 						return childTranslator(child, horizontal, totalSwipeAmount);

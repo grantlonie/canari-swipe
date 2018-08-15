@@ -24,8 +24,8 @@ class Swiper extends React.Component {
 		this.deceleration = deceleration || 1 // if carousel (!neighborsOnly), then apply velocity deceleration
 		this.stopVelocity = 300 // if carousel (!neighborsOnly), then determine what velocity to stopSwiping
 		this.selectionCount = React.Children.count(children)
-		this.currentSelection = startIndex
-		this.neighborsOnly = neighborsOnly
+		this.currentSelection = startIndex || 0
+		this.neighborsOnly = neighborsOnly || false
 		this.isTouching = false
 		this.isSwiping = false
 		this.swipeStart = 0
@@ -368,7 +368,7 @@ class Swiper extends React.Component {
 	}
 
 	render() {
-		const { wrapAround, children, swipeAmount, desiredIndex, horizontal } = this.props
+		const { wrapAround, children, swipeAmount, horizontal } = this.props
 
 		const pageWithStyle = React.Children.map(children, (child, index) => {
 			// Adjust the index to allow for wrap around if wanted
@@ -396,15 +396,14 @@ class Swiper extends React.Component {
 			const totalSwipeAmount = adjustedIndex * swipeAmount - this.state.swipePosition
 
 			if (this.neighborsOnly) {
-				console.log(adjustedIndex, desiredIndex)
 				// -- ONLY PUT CURRENT PAGE AND NEIGHBORS ON DOM --
-				if (adjustedIndex == desiredIndex) {
+				if (adjustedIndex == this.currentSelection) {
 					return childTranslator(child, horizontal, totalSwipeAmount)
 				}
 
-				if (adjustedIndex == desiredIndex - 1) {
+				if (adjustedIndex == this.currentSelection - 1) {
 					return childTranslator(child, horizontal, totalSwipeAmount)
-				} else if (adjustedIndex == desiredIndex + 1) {
+				} else if (adjustedIndex == this.currentSelection + 1) {
 					return childTranslator(child, horizontal, totalSwipeAmount)
 				} else if (adjustedIndex == this.currentSelection) {
 					return childTranslator(child, horizontal, totalSwipeAmount)
