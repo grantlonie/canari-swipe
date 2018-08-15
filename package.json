@@ -13,7 +13,7 @@
 		"start": "parcel ./src/index.html",
 		"test": "jest --watch",
 		"build": "babel ./src/Swiper.js --out-file index.js --presets=es2015,react",
-		"demo-build": "parcel build ./src/index.js"
+		"demo-build": "parcel build ./src/index.js --out-dir docs"
 	},
 	"babel": {
 		"presets": [
