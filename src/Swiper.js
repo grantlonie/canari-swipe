@@ -36,8 +36,8 @@ class Swiper extends React.Component {
 		this.state = { swipePosition: this.currentSelection * this.swipeAmount }
 	}
 
-	setWrapperStyle() {
-		const { swipeAmount, vertical, visibleCount, carousel } = this.props
+	setWrapperStyle(swipeAmount) {
+		const { vertical, visibleCount, carousel } = this.props
 
 		const {
 			current: { clientWidth: width, clientHeight: height },
@@ -74,8 +74,7 @@ class Swiper extends React.Component {
 		) {
 			// See if the user requests a new selection without swiping (ex. clicking home button) or if they change swipeAmount
 
-			this.setWrapperStyle()
-			console.log(this.wrapperStyle.width)
+			this.setWrapperStyle(swipeAmount)
 
 			// Find fastest swipe direction
 			const selectionDelta = this.currentSelection - desiredSelection
@@ -407,7 +406,7 @@ class Swiper extends React.Component {
 	}
 
 	componentDidMount() {
-		this.setWrapperStyle()
+		this.setWrapperStyle(this.props.swipeAmount)
 		this.setState({ swipePosition: this.currentSelection * this.swipeAmount })
 	}
 
