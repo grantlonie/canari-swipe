@@ -31,43 +31,27 @@ class Swiper extends React.Component {
 		this.swipeVelocity = 0
 		this.coast = false // don't deccelerate when trun
 
-		this.setWrapperStyle()
+		this.firstSelectionRef = React.createRef()
 
 		this.state = { swipePosition: this.currentSelection * this.swipeAmount }
 	}
 
 	setWrapperStyle() {
-		const { children, swipeAmount, vertical, visibleCount, carousel } = this.props
+		const { swipeAmount, vertical, visibleCount, carousel } = this.props
 
-		const maxChildDimensions = React.Children.map(children, child => {
-			const childStyle = child.props.style
+		const {
+			current: { clientWidth: width, clientHeight: height },
+		} = this.firstSelectionRef
 
-			if (!childStyle) return { width: 0, height: 0 }
-
-			const border = parseInt(childStyle.border) || 0
-			return {
-				width: parseInt(childStyle.width) + 2 * border,
-				height: parseInt(childStyle.height) + 2 * border,
-			}
-		}).reduce((acc, cur) => ({
-			width: Math.max(acc.width, cur.width),
-			height: Math.max(acc.height, cur.height),
-		}))
-
-		this.swipeAmount =
-			swipeAmount || (vertical ? maxChildDimensions.height : maxChildDimensions.width)
+		this.swipeAmount = swipeAmount || (vertical ? height : width)
 
 		this.wrapperStyle = {
 			overflow: 'hidden',
 			position: 'relative',
 			border: '1px solid black',
 			display: 'inline-block',
-			width: vertical
-				? maxChildDimensions.width
-				: (carousel ? visibleCount || 1 : 1) * this.swipeAmount,
-			height: vertical
-				? (carousel ? visibleCount || 1 : 1) * this.swipeAmount
-				: maxChildDimensions.height,
+			width: vertical ? width : (carousel ? visibleCount || 1 : 1) * this.swipeAmount,
+			height: vertical ? (carousel ? visibleCount || 1 : 1) * this.swipeAmount : height,
 		}
 	}
 
@@ -400,8 +384,35 @@ class Swiper extends React.Component {
 			setTimeout(() => updateCurrentSelection(this.currentSelection, this.onSwipeSpace), 100)
 	}
 
+	childTranslator(child, offsetAmount, selection) {
+		const { vertical, firstSelection } = this.props
+
+		let xOffset = 0
+		let yOffset = 0
+		if (vertical) {
+			yOffset = offsetAmount
+		} else {
+			xOffset = offsetAmount
+		}
+
+		const style = Object.assign({}, child.props.style, {
+			transform: `translate3d(${xOffset}px, ${yOffset}px, 0)`,
+			position: 'absolute',
+		})
+
+		let ref = null
+		if (selection === (firstSelection || 0)) ref = this.firstSelectionRef
+
+		return React.cloneElement(child, { style, ref })
+	}
+
+	componentDidMount() {
+		this.setWrapperStyle()
+		this.setState({ swipePosition: this.currentSelection * this.swipeAmount })
+	}
+
 	render() {
-		const { wrapAround, children, vertical, carousel } = this.props
+		const { wrapAround, children, vertical, carousel, firstSelection } = this.props
 
 		const pageWithStyle = React.Children.map(children, (child, index) => {
 			// Adjust the index to allow for wrap around if wanted
@@ -434,17 +445,17 @@ class Swiper extends React.Component {
 					adjustedIndex > this.currentSelection - 2 &&
 					adjustedIndex < this.currentSelection + 2
 				) {
-					return childTranslator(child, vertical, totalSwipeAmount)
+					return this.childTranslator(child, totalSwipeAmount, adjustedIndex)
 				} else if (index == 0 && this.currentSelection == this.selectionCount - 1) {
-					return childTranslator(child, vertical, totalSwipeAmount)
+					return this.childTranslator(child, totalSwipeAmount, adjustedIndex)
 				} else if (index == this.selectionCount - 1 && this.currentSelection == 0) {
-					return childTranslator(child, vertical, totalSwipeAmount)
+					return this.childTranslator(child, totalSwipeAmount, adjustedIndex)
 				} else {
 					// Don't move other selections
-					return null //childTranslator(child, vertical, totalSwipeAmount)
+					return null //this.childTranslator(child,  totalSwipeAmount,adjustedIndex)
 				}
 			} else {
-				return childTranslator(child, vertical, totalSwipeAmount)
+				return this.childTranslator(child, totalSwipeAmount, adjustedIndex)
 			}
 		})
 
@@ -463,23 +474,6 @@ class Swiper extends React.Component {
 			</div>
 		)
 	}
-}
-
-function childTranslator(child, vertical, offsetAmount) {
-	let xOffset = 0
-	let yOffset = 0
-	if (vertical) {
-		yOffset = offsetAmount
-	} else {
-		xOffset = offsetAmount
-	}
-
-	const style = Object.assign({}, child.props.style, {
-		transform: `translate3d(${xOffset}px, ${yOffset}px, 0)`,
-		position: 'absolute',
-	})
-
-	return React.cloneElement(child, { style })
 }
 
 export default Swiper

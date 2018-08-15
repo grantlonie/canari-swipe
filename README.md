@@ -48,8 +48,6 @@ const SimpleSwiper = () => {
 
 ```
 
-Notes:
-Have to have width and height style on child
 
 ## Properties
 
