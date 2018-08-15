@@ -62,9 +62,11 @@ class Swiper extends React.Component {
 			position: 'relative',
 			border: '1px solid black',
 			display: 'inline-block',
-			width: vertical ? maxChildDimensions.width : (carousel ? visibleCount : 1) * this.swipeAmount,
+			width: vertical
+				? maxChildDimensions.width
+				: (carousel ? visibleCount || 1 : 1) * this.swipeAmount,
 			height: vertical
-				? (carousel ? visibleCount : 1) * this.swipeAmount
+				? (carousel ? visibleCount || 1 : 1) * this.swipeAmount
 				: maxChildDimensions.height,
 		}
 	}

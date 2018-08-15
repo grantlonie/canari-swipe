@@ -2,12 +2,13 @@ import React, { Component } from 'react'
 import Swiper from './Swiper'
 
 const pageWidth = 300
-const pageHeight = 200
+const pageHeight = 100
 export default class App extends Component {
 	render() {
 		const pageStyle = {
 			maxWidth: '800px',
 			margin: 'auto',
+			fontFamily: 'Calibri',
 		}
 
 		const selectionStyle = {
@@ -33,6 +34,7 @@ export default class App extends Component {
 				</a>
 				<SingleSelection selectionStyle={selectionStyle} />
 				<Carousel selectionStyle={selectionStyle} />
+				<Vertical selectionStyle={selectionStyle} />
 			</div>
 		)
 	}
@@ -54,7 +56,7 @@ class SingleSelection extends React.Component {
 	render() {
 		return (
 			<div>
-				<h3>Single Selections</h3>
+				<h3>Single Selections w/ wrapAround Option</h3>
 				<input
 					type="checkbox"
 					checked={this.state.wrapAround}
@@ -92,7 +94,7 @@ class Carousel extends React.Component {
 	render() {
 		return (
 			<div>
-				<h3>Carousel</h3>
+				<h3>Carousel w/ Detent Option</h3>
 				<input
 					type="checkbox"
 					checked={this.state.detent}
@@ -101,6 +103,45 @@ class Carousel extends React.Component {
 				detent
 				<br />
 				<Swiper swipeAmount={pageWidth} visibleCount={2} detent={this.state.detent} carousel={true}>
+					{[...Array(20)].map((iter, page) => {
+						return (
+							<div key={page} style={this.props.selectionStyle}>
+								Page {page}
+							</div>
+						)
+					})}
+				</Swiper>
+			</div>
+		)
+	}
+}
+
+class Vertical extends React.Component {
+	constructor(props) {
+		super(props)
+
+		this.state = {
+			currentSelection: 0,
+		}
+	}
+
+	changeSelection(currentSelection) {
+		this.setState({ currentSelection })
+	}
+
+	render() {
+		return (
+			<div>
+				<h3>Vertical Carousel w/ external listening</h3>
+				<p>Currently on Page {this.state.currentSelection}</p>
+				<br />
+				<Swiper
+					swipeAmount={pageHeight}
+					visibleCount={3}
+					detent={true}
+					carousel={true}
+					vertical={true}
+					updateCurrentSelection={this.changeSelection.bind(this)}>
 					{[...Array(20)].map((iter, page) => {
 						return (
 							<div key={page} style={this.props.selectionStyle}>
