@@ -71,7 +71,7 @@ class Swiper extends React.Component {
 		else if (
 			(desiredSelection !== this.currentSelection &&
 				desiredSelection !== this.props.desiredSelection) ||
-			(swipeAmount && swipeAmount !== this.props.swipeAmount)
+			swipeAmount !== this.props.swipeAmount
 		) {
 			// See if the user requests a new selection without swiping (ex. clicking home button) or if they change swipeAmount
 
