@@ -53,7 +53,7 @@ const SimpleSwiper = () => {
 
 | Property               | Type     | Default | Details                                                                                                                        |
 | ---------------------- | -------- | ------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| swipeAmount            | Number   |         | The amount, in pixels, that the selection will swipe. By default it is the width or height of the child element style          |
+| swipeAmount            | Number   |         | The amount, in pixels, that the selection will swipe. By default it is the width or height of the firstSelection element       |
 | firstSelection         | Number   | 0       | First selection on mounting                                                                                                    |
 | desiredSelection       | Number   | 0       | Specify the selection for controlling the Swiper externally                                                                    |
 | vertical               | Bool     | false   | true - swipe vertically instead of horizontally                                                                                |
