@@ -37,7 +37,7 @@ class Swiper extends React.Component {
 	}
 
 	setWrapperStyle(swipeAmount) {
-		const { vertical, visibleCount, carousel } = this.props
+		const { vertical, visibleCount, carousel, overflow } = this.props
 		const {
 			current: { offsetWidth: width, offsetHeight: height },
 		} = this.currentSelectionRef
@@ -45,10 +45,10 @@ class Swiper extends React.Component {
 		this.swipeAmount = swipeAmount || (vertical ? height : width)
 
 		this.wrapperStyle = {
-			overflow: 'hidden',
+			overflow: overflow ? 'visible' : 'hidden',
 			position: 'relative',
 			display: 'inline-block',
-			border: '1px solid black',
+			// border: '1px solid black',
 			width: vertical ? width : (carousel ? visibleCount || 1 : 1) * this.swipeAmount,
 			height: vertical ? (carousel ? visibleCount || 1 : 1) * this.swipeAmount : height,
 		}

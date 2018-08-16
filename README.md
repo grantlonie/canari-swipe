@@ -66,5 +66,6 @@ const SimpleSwiper = () => {
 | swipeRatio             | Number   | 1       | An amount to scale the swiping down or up                                                                                      |
 | isControlled           | Bool     | false   | Remove transition between selection changes                                                                                    |
 | resetSwiper            | Bool     | false   | If true, reset the swiper back to firstSelection                                                                               |
+| overflow               | Bool     | false   | true - allow overflow of selections, false - prevent overflow                                                                  |
 | startSwiping           | Callback | NA      | Callback function once swiping has started                                                                                     |
 | updateCurrentSelection | Callback | NA      | Callback function after a selection has changed                                                                                |

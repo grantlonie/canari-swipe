@@ -36,6 +36,7 @@ export default class App extends Component {
 				<Carousel selectionStyle={selectionStyle} />
 				<Vertical selectionStyle={selectionStyle} />
 				<Responsive selectionStyle={selectionStyle} />
+				<div style={{ display: 'inline-block', height: '200px' }} />
 			</div>
 		)
 	}
@@ -189,9 +190,6 @@ class Responsive extends React.Component {
 				<h3>Responsive to child size changes</h3>
 				<input type="input" onChange={this.changeWidth.bind(this)} value={this.state.width} />
 				width
-				<div style={{ display: 'inline-block', width: '100px' }} />
-				<input type="input" onChange={this.changeHeight.bind(this)} value={this.state.height} />
-				height
 				<br />
 				<br />
 				<Swiper swipeAmount={swipeAmount} wrapAround={this.state.wrapAround}>
