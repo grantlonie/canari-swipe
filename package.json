@@ -12,7 +12,7 @@
 	"scripts": {
 		"start": "parcel ./src/index.html",
 		"test": "jest --watch",
-		"build": "babel ./src/Swiper.js --out-file index.js --presets=es2015,react",
+		"build": "babel ./src/Swiper.js --out-file index.js --presets=env,react",
 		"demo-build": "parcel build ./src/index.js --out-dir docs"
 	},
 	"babel": {
@@ -22,17 +22,18 @@
 			"es2015"
 		],
 		"plugins": [
-			"transform-object-rest-spread"
+			"transform-object-rest-spread",
+			"transform-class-properties"
 		]
 	},
 	"jest": {
 		"testURL": "http://localhost",
 		"setupFiles": [
-			"<rootDir>/src/tests/setupTests.js"
+			"<rootDir>/src/testHelpers/setupTests.js"
 		],
 		"moduleNameMapper": {
 			"\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$": "<rootDir>/src/tests/__mocks__/fileMock.js",
-			"\\.(css|less)$": "<rootDir>/src/tests/__mocks__/styleMock.js"
+			"\\.(css|less)$": "<rootDir>/src/testHelpers/__mocks__/styleMock.js"
 		}
 	},
 	"repository": {
@@ -54,6 +55,7 @@
 		"@babel/core": "^7.0.0-rc.1",
 		"babel-cli": "^6.26.0",
 		"babel-jest": "^23.2.0",
+		"babel-plugin-transform-class-properties": "^6.24.1",
 		"babel-plugin-transform-object-rest-spread": "^6.26.0",
 		"babel-preset-env": "^1.7.0",
 		"babel-preset-es2015": "^6.24.1",
@@ -66,5 +68,6 @@
 		"react": "^16.4.1",
 		"react-dom": "^16.4.1",
 		"react-test-renderer": "^16.4.1"
-	}
+	},
+	"dependencies": {}
 }
