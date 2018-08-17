@@ -14,11 +14,11 @@ class Responsive extends Component {
 		}
 	}
 
-	changeHeight(e) {
+	changeHeight = (e) => {
 		this.setState({ height: e.target.value })
 	}
 
-	changeWidth(e) {
+	changeWidth = (e) => {
 		this.setState({ width: e.target.value })
 	}
 
@@ -34,10 +34,9 @@ class Responsive extends Component {
 		return (
 			<div>
 				<h3>Responsive to child size changes</h3>
-				<input type="input" onChange={this.changeWidth.bind(this)} value={this.state.width} />
-				width
-				<br />
-				<br />
+				<input type="input" onChange={this.changeWidth} value={this.state.width} />
+				<p>width</p>
+				
 				<Swiper swipeAmount={swipeAmount} wrapAround={this.state.wrapAround}>
 					{[...Array(5)].map((iter, page) => {
 						return (

@@ -1,14 +1,13 @@
 import React, { Component } from 'react'
 import Swiper from '../../Swiper'
 
-
 class Carousel extends Component {
 
   state = {
     detent: false
   }
 
-	changeDetent() {
+	changeDetent = () => {
 		this.setState({ detent: !this.state.detent })
 	}
 
@@ -19,15 +18,14 @@ class Carousel extends Component {
 				<input
 					type="checkbox"
 					checked={this.state.detent}
-					onChange={this.changeDetent.bind(this)}
+					onChange={this.changeDetent}
 				/>
-				detent
-				<br />
+				<p>detent</p>
 				<Swiper visibleCount={2} detent={this.state.detent} carousel={true}>
 					{[...Array(20)].map((iter, page) => {
 						return (
 							<div key={page} style={this.props.selectionStyle}>
-								Page {page}
+								<p>Page {page}</p>
 							</div>
 						)
 					})}

@@ -2,15 +2,12 @@ import React, { Component } from 'react'
 import Swiper from '../../Swiper'
 
 class Vertical extends Component {
-	constructor(props) {
-		super(props)
+  
+  state = {
+    currentSelection: 0
+  }
 
-		this.state = {
-			currentSelection: 0,
-		}
-	}
-
-	changeSelection(currentSelection) {
+	changeSelection = (currentSelection) => {
 		this.setState({ currentSelection })
 	}
 
@@ -25,11 +22,11 @@ class Vertical extends Component {
 					detent={true}
 					carousel={true}
 					vertical={true}
-					updateCurrentSelection={this.changeSelection.bind(this)}>
+					updateCurrentSelection={this.changeSelection}>
 					{[...Array(20)].map((iter, page) => {
 						return (
 							<div key={page} style={this.props.selectionStyle}>
-								Page {page}
+								<p>Page {page}</p>
 							</div>
 						)
 					})}
