@@ -12,7 +12,7 @@
 	"scripts": {
 		"start": "parcel ./src/index.html",
 		"test": "jest --watch",
-		"build": "babel ./src/Swiper.js --out-file index.js --presets=es2015,react",
+		"build": "babel ./src/Swiper.js --out-file index.js --presets=env,react",
 		"demo-build": "parcel build ./src/index.js --out-dir docs"
 	},
 	"babel": {
@@ -22,7 +22,8 @@
 			"es2015"
 		],
 		"plugins": [
-			"transform-object-rest-spread"
+			"transform-object-rest-spread",
+			"transform-class-properties"
 		]
 	},
 	"jest": {

@@ -3,9 +3,6 @@ import SingleSelection from '../components/SingleSelection'
 import Carousel from '../components/Carousel'
 import Vertical from '../components/Vertical'
 import Responsive from '../components/Responsive'
-
-const pageWidth = 300
-const pageHeight = 100
 export default class App extends Component {
 	render() {
 		const pageStyle = {
@@ -15,15 +12,15 @@ export default class App extends Component {
 		}
 
 		const selectionStyle = {
-			height: pageHeight + 'px',
-			width: pageWidth + 'px',
+			height: this.props.pageHeight + 'px',
+			width: this.props.pageWidth + 'px',
 			backgroundColor: 'gray',
 			display: 'inline-block',
 			border: '3px solid white',
 			color: 'white',
 			textAlign: 'center',
 			verticalAlign: 'middle',
-			lineHeight: pageHeight + 'px',
+			lineHeight: this.props.pageHeight + 'px',
 			userSelect: 'none',
 			fontFamily: 'calibri',
 		}
@@ -43,6 +40,11 @@ export default class App extends Component {
 			</div>
 		)
 	}
+}
+
+App.defaultProps = {
+	pageWidth: 300,
+	pageHeight: 100
 }
 
 

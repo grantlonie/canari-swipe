@@ -1,15 +1,12 @@
 import React, { Component } from 'react'
-import Swiper from '../Swiper'
+import Swiper from '../../Swiper'
 
 
 class Carousel extends Component {
-	constructor(props) {
-		super(props)
 
-		this.state = {
-			detent: false,
-		}
-	}
+  state = {
+    detent: false
+  }
 
 	changeDetent() {
 		this.setState({ detent: !this.state.detent })
