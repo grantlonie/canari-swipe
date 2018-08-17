@@ -2,12 +2,11 @@ import React, { Component } from 'react'
 import Swiper from '../../Swiper'
 
 class Vertical extends Component {
-  
-  state = {
-    currentSelection: 0
-  }
+	state = {
+		currentSelection: 0,
+	}
 
-	changeSelection = (currentSelection) => {
+	changeSelection = currentSelection => {
 		this.setState({ currentSelection })
 	}
 
@@ -16,7 +15,7 @@ class Vertical extends Component {
 			<div>
 				<h3>Vertical Carousel w/ external listening</h3>
 				<p>Currently on Page {this.state.currentSelection}</p>
-				<br />
+
 				<Swiper
 					visibleCount={3}
 					detent={true}

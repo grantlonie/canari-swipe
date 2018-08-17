@@ -2,10 +2,9 @@ import React, { Component } from 'react'
 import Swiper from '../../Swiper'
 
 class SingleSelection extends Component {
-	
-  state = {
-    wrapAround: false
-  }
+	state = {
+		wrapAround: false,
+	}
 
 	changeWrapAround = () => {
 		this.setState({ wrapAround: !this.state.wrapAround })
@@ -15,12 +14,10 @@ class SingleSelection extends Component {
 		return (
 			<div>
 				<h3>Single Selections w/ wrapAround Option</h3>
-				<input
-					type="checkbox"
-					checked={this.state.wrapAround}
-					onChange={this.changeWrapAround}
-				/>
-				<p>wrapAround</p>
+				<p>
+					<input type="checkbox" checked={this.state.wrapAround} onChange={this.changeWrapAround} />
+					wrapAround
+				</p>
 				<Swiper wrapAround={this.state.wrapAround}>
 					{[...Array(5)].map((iter, page) => {
 						return (
