@@ -29,7 +29,7 @@ export default class App extends Component {
 			<div style={pageStyle}>
 				<h1>canari-swipe examples</h1>
 				<p>A few basic examples for canari-swipe</p>
-				<a href="https://github.com/GeeDollaHolla/canari-swipe/blob/master/src/App.js">
+				<a href="https://github.com/GeeDollaHolla/canari-swipe/tree/master/src/components">
 					Source Code
 				</a>
 				<SingleSelection selectionStyle={selectionStyle} />
@@ -44,13 +44,5 @@ export default class App extends Component {
 
 App.defaultProps = {
 	pageWidth: 300,
-	pageHeight: 100
+	pageHeight: 100,
 }
-
-
-
-
-
-
-
-
