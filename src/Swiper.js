@@ -7,15 +7,7 @@ class Swiper extends React.Component {
 	constructor(props) {
 		super(props)
 
-		const {
-			minimumSwipeSpeed,
-			deceleration,
-			children,
-			firstSelection,
-			carousel,
-			detent,
-			swipeAmount,
-		} = this.props
+		const { minimumSwipeSpeed, deceleration, children, firstSelection } = this.props
 
 		this.minimumSwipeSpeed = minimumSwipeSpeed || 500 // Minimum speed that swiping will go after releasing finger
 		// isControlled desc. If isControlled, swiper will not swipe/fade to desired index
@@ -28,7 +20,7 @@ class Swiper extends React.Component {
 		this.swipeStart = 0
 		this.swipeTimer = 0
 		this.swipeVelocity = 0
-		this.coast = false // don't deccelerate when trun
+		this.coast = false // don't deccelerate when true
 
 		this.currentSelectionRef = React.createRef()
 
@@ -405,7 +397,7 @@ class Swiper extends React.Component {
 	}
 
 	componentDidMount() {
-		this.setWrapperStyle(this.props.swipeAmount)
+		if (this.selectionCount > 0) this.setWrapperStyle(this.props.swipeAmount)
 	}
 
 	render() {
