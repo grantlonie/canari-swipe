@@ -1,8 +1,9 @@
 import React, { Component } from 'react'
-import SingleSelection from '../components/SingleSelection'
-import Carousel from '../components/Carousel'
-import Vertical from '../components/Vertical'
-import Responsive from '../components/Responsive'
+
+import SingleSelection from './SingleSelection'
+import Carousel from './Carousel'
+import Vertical from './Vertical'
+import Responsive from './Responsive'
 export default class App extends Component {
 	render() {
 		const pageStyle = {

@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import Swiper from '../../Swiper'
+import Swiper from '../Swiper'
 
 class Carousel extends Component {
 	state = {

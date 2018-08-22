@@ -1,5 +1,4 @@
 import React, { Component } from 'react'
-import clamp from 'lodash/clamp'
 
 const startSwipeAmount = 15 // Number of pixels to move before swiping starts
 // const swipeSpeedThreshold = 3000			// Swipe speed needed to continue to next page irrespective of threshold
