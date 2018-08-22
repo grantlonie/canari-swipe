@@ -1,545 +1,101 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`renders correctly 1`] = `
-ShallowWrapper {
-  Symbol(enzyme.__root__): [Circular],
-  Symbol(enzyme.__unrendered__): <App
-    pageHeight={100}
-    pageWidth={300}
-  />,
-  Symbol(enzyme.__renderer__): Object {
-    "batchedUpdates": [Function],
-    "getNode": [Function],
-    "render": [Function],
-    "simulateEvent": [Function],
-    "unmount": [Function],
-  },
-  Symbol(enzyme.__node__): Object {
-    "instance": null,
-    "key": undefined,
-    "nodeType": "host",
-    "props": Object {
-      "children": Array [
-        <h1>
-          canari-swipe examples
-        </h1>,
-        <p>
-          A few basic examples for canari-swipe
-        </p>,
-        <a
-          href="https://github.com/GeeDollaHolla/canari-swipe/tree/master/src/components"
-        >
-          Source Code
-        </a>,
-        <Swiper />,
-        <SingleSelection
-          selectionStyle={
-            Object {
-              "backgroundColor": "gray",
-              "border": "3px solid white",
-              "color": "white",
-              "display": "inline-block",
-              "fontFamily": "calibri",
-              "height": "100px",
-              "lineHeight": "100px",
-              "textAlign": "center",
-              "userSelect": "none",
-              "verticalAlign": "middle",
-              "width": "300px",
-            }
-          }
-        />,
-        <Carousel
-          selectionStyle={
-            Object {
-              "backgroundColor": "gray",
-              "border": "3px solid white",
-              "color": "white",
-              "display": "inline-block",
-              "fontFamily": "calibri",
-              "height": "100px",
-              "lineHeight": "100px",
-              "textAlign": "center",
-              "userSelect": "none",
-              "verticalAlign": "middle",
-              "width": "300px",
-            }
-          }
-        />,
-        <Vertical
-          selectionStyle={
-            Object {
-              "backgroundColor": "gray",
-              "border": "3px solid white",
-              "color": "white",
-              "display": "inline-block",
-              "fontFamily": "calibri",
-              "height": "100px",
-              "lineHeight": "100px",
-              "textAlign": "center",
-              "userSelect": "none",
-              "verticalAlign": "middle",
-              "width": "300px",
-            }
-          }
-        />,
-        <Responsive
-          selectionStyle={
-            Object {
-              "backgroundColor": "gray",
-              "border": "3px solid white",
-              "color": "white",
-              "display": "inline-block",
-              "fontFamily": "calibri",
-              "height": "100px",
-              "lineHeight": "100px",
-              "textAlign": "center",
-              "userSelect": "none",
-              "verticalAlign": "middle",
-              "width": "300px",
-            }
-          }
-        />,
-        <div
-          style={
-            Object {
-              "display": "inline-block",
-              "height": "200px",
-            }
-          }
-        />,
-      ],
-      "style": Object {
-        "fontFamily": "Calibri",
-        "margin": "auto",
-        "maxWidth": "800px",
-      },
-    },
-    "ref": null,
-    "rendered": Array [
-      Object {
-        "instance": null,
-        "key": undefined,
-        "nodeType": "host",
-        "props": Object {
-          "children": "canari-swipe examples",
-        },
-        "ref": null,
-        "rendered": "canari-swipe examples",
-        "type": "h1",
-      },
-      Object {
-        "instance": null,
-        "key": undefined,
-        "nodeType": "host",
-        "props": Object {
-          "children": "A few basic examples for canari-swipe",
-        },
-        "ref": null,
-        "rendered": "A few basic examples for canari-swipe",
-        "type": "p",
-      },
-      Object {
-        "instance": null,
-        "key": undefined,
-        "nodeType": "host",
-        "props": Object {
-          "children": "Source Code",
-          "href": "https://github.com/GeeDollaHolla/canari-swipe/tree/master/src/components",
-        },
-        "ref": null,
-        "rendered": "Source Code",
-        "type": "a",
-      },
-      Object {
-        "instance": null,
-        "key": undefined,
-        "nodeType": "class",
-        "props": Object {},
-        "ref": null,
-        "rendered": null,
-        "type": [Function],
-      },
-      Object {
-        "instance": null,
-        "key": undefined,
-        "nodeType": "class",
-        "props": Object {
-          "selectionStyle": Object {
-            "backgroundColor": "gray",
-            "border": "3px solid white",
-            "color": "white",
-            "display": "inline-block",
-            "fontFamily": "calibri",
-            "height": "100px",
-            "lineHeight": "100px",
-            "textAlign": "center",
-            "userSelect": "none",
-            "verticalAlign": "middle",
-            "width": "300px",
-          },
-        },
-        "ref": null,
-        "rendered": null,
-        "type": [Function],
-      },
-      Object {
-        "instance": null,
-        "key": undefined,
-        "nodeType": "class",
-        "props": Object {
-          "selectionStyle": Object {
-            "backgroundColor": "gray",
-            "border": "3px solid white",
-            "color": "white",
-            "display": "inline-block",
-            "fontFamily": "calibri",
-            "height": "100px",
-            "lineHeight": "100px",
-            "textAlign": "center",
-            "userSelect": "none",
-            "verticalAlign": "middle",
-            "width": "300px",
-          },
-        },
-        "ref": null,
-        "rendered": null,
-        "type": [Function],
-      },
-      Object {
-        "instance": null,
-        "key": undefined,
-        "nodeType": "class",
-        "props": Object {
-          "selectionStyle": Object {
-            "backgroundColor": "gray",
-            "border": "3px solid white",
-            "color": "white",
-            "display": "inline-block",
-            "fontFamily": "calibri",
-            "height": "100px",
-            "lineHeight": "100px",
-            "textAlign": "center",
-            "userSelect": "none",
-            "verticalAlign": "middle",
-            "width": "300px",
-          },
-        },
-        "ref": null,
-        "rendered": null,
-        "type": [Function],
-      },
-      Object {
-        "instance": null,
-        "key": undefined,
-        "nodeType": "class",
-        "props": Object {
-          "selectionStyle": Object {
-            "backgroundColor": "gray",
-            "border": "3px solid white",
-            "color": "white",
-            "display": "inline-block",
-            "fontFamily": "calibri",
-            "height": "100px",
-            "lineHeight": "100px",
-            "textAlign": "center",
-            "userSelect": "none",
-            "verticalAlign": "middle",
-            "width": "300px",
-          },
-        },
-        "ref": null,
-        "rendered": null,
-        "type": [Function],
-      },
-      Object {
-        "instance": null,
-        "key": undefined,
-        "nodeType": "host",
-        "props": Object {
-          "style": Object {
-            "display": "inline-block",
-            "height": "200px",
-          },
-        },
-        "ref": null,
-        "rendered": null,
-        "type": "div",
-      },
-    ],
-    "type": "div",
-  },
-  Symbol(enzyme.__nodes__): Array [
+<div
+  style={
     Object {
-      "instance": null,
-      "key": undefined,
-      "nodeType": "host",
-      "props": Object {
-        "children": Array [
-          <h1>
-            canari-swipe examples
-          </h1>,
-          <p>
-            A few basic examples for canari-swipe
-          </p>,
-          <a
-            href="https://github.com/GeeDollaHolla/canari-swipe/tree/master/src/components"
-          >
-            Source Code
-          </a>,
-          <Swiper />,
-          <SingleSelection
-            selectionStyle={
-              Object {
-                "backgroundColor": "gray",
-                "border": "3px solid white",
-                "color": "white",
-                "display": "inline-block",
-                "fontFamily": "calibri",
-                "height": "100px",
-                "lineHeight": "100px",
-                "textAlign": "center",
-                "userSelect": "none",
-                "verticalAlign": "middle",
-                "width": "300px",
-              }
-            }
-          />,
-          <Carousel
-            selectionStyle={
-              Object {
-                "backgroundColor": "gray",
-                "border": "3px solid white",
-                "color": "white",
-                "display": "inline-block",
-                "fontFamily": "calibri",
-                "height": "100px",
-                "lineHeight": "100px",
-                "textAlign": "center",
-                "userSelect": "none",
-                "verticalAlign": "middle",
-                "width": "300px",
-              }
-            }
-          />,
-          <Vertical
-            selectionStyle={
-              Object {
-                "backgroundColor": "gray",
-                "border": "3px solid white",
-                "color": "white",
-                "display": "inline-block",
-                "fontFamily": "calibri",
-                "height": "100px",
-                "lineHeight": "100px",
-                "textAlign": "center",
-                "userSelect": "none",
-                "verticalAlign": "middle",
-                "width": "300px",
-              }
-            }
-          />,
-          <Responsive
-            selectionStyle={
-              Object {
-                "backgroundColor": "gray",
-                "border": "3px solid white",
-                "color": "white",
-                "display": "inline-block",
-                "fontFamily": "calibri",
-                "height": "100px",
-                "lineHeight": "100px",
-                "textAlign": "center",
-                "userSelect": "none",
-                "verticalAlign": "middle",
-                "width": "300px",
-              }
-            }
-          />,
-          <div
-            style={
-              Object {
-                "display": "inline-block",
-                "height": "200px",
-              }
-            }
-          />,
-        ],
-        "style": Object {
-          "fontFamily": "Calibri",
-          "margin": "auto",
-          "maxWidth": "800px",
-        },
-      },
-      "ref": null,
-      "rendered": Array [
-        Object {
-          "instance": null,
-          "key": undefined,
-          "nodeType": "host",
-          "props": Object {
-            "children": "canari-swipe examples",
-          },
-          "ref": null,
-          "rendered": "canari-swipe examples",
-          "type": "h1",
-        },
-        Object {
-          "instance": null,
-          "key": undefined,
-          "nodeType": "host",
-          "props": Object {
-            "children": "A few basic examples for canari-swipe",
-          },
-          "ref": null,
-          "rendered": "A few basic examples for canari-swipe",
-          "type": "p",
-        },
-        Object {
-          "instance": null,
-          "key": undefined,
-          "nodeType": "host",
-          "props": Object {
-            "children": "Source Code",
-            "href": "https://github.com/GeeDollaHolla/canari-swipe/tree/master/src/components",
-          },
-          "ref": null,
-          "rendered": "Source Code",
-          "type": "a",
-        },
-        Object {
-          "instance": null,
-          "key": undefined,
-          "nodeType": "class",
-          "props": Object {},
-          "ref": null,
-          "rendered": null,
-          "type": [Function],
-        },
-        Object {
-          "instance": null,
-          "key": undefined,
-          "nodeType": "class",
-          "props": Object {
-            "selectionStyle": Object {
-              "backgroundColor": "gray",
-              "border": "3px solid white",
-              "color": "white",
-              "display": "inline-block",
-              "fontFamily": "calibri",
-              "height": "100px",
-              "lineHeight": "100px",
-              "textAlign": "center",
-              "userSelect": "none",
-              "verticalAlign": "middle",
-              "width": "300px",
-            },
-          },
-          "ref": null,
-          "rendered": null,
-          "type": [Function],
-        },
-        Object {
-          "instance": null,
-          "key": undefined,
-          "nodeType": "class",
-          "props": Object {
-            "selectionStyle": Object {
-              "backgroundColor": "gray",
-              "border": "3px solid white",
-              "color": "white",
-              "display": "inline-block",
-              "fontFamily": "calibri",
-              "height": "100px",
-              "lineHeight": "100px",
-              "textAlign": "center",
-              "userSelect": "none",
-              "verticalAlign": "middle",
-              "width": "300px",
-            },
-          },
-          "ref": null,
-          "rendered": null,
-          "type": [Function],
-        },
-        Object {
-          "instance": null,
-          "key": undefined,
-          "nodeType": "class",
-          "props": Object {
-            "selectionStyle": Object {
-              "backgroundColor": "gray",
-              "border": "3px solid white",
-              "color": "white",
-              "display": "inline-block",
-              "fontFamily": "calibri",
-              "height": "100px",
-              "lineHeight": "100px",
-              "textAlign": "center",
-              "userSelect": "none",
-              "verticalAlign": "middle",
-              "width": "300px",
-            },
-          },
-          "ref": null,
-          "rendered": null,
-          "type": [Function],
-        },
-        Object {
-          "instance": null,
-          "key": undefined,
-          "nodeType": "class",
-          "props": Object {
-            "selectionStyle": Object {
-              "backgroundColor": "gray",
-              "border": "3px solid white",
-              "color": "white",
-              "display": "inline-block",
-              "fontFamily": "calibri",
-              "height": "100px",
-              "lineHeight": "100px",
-              "textAlign": "center",
-              "userSelect": "none",
-              "verticalAlign": "middle",
-              "width": "300px",
-            },
-          },
-          "ref": null,
-          "rendered": null,
-          "type": [Function],
-        },
-        Object {
-          "instance": null,
-          "key": undefined,
-          "nodeType": "host",
-          "props": Object {
-            "style": Object {
-              "display": "inline-block",
-              "height": "200px",
-            },
-          },
-          "ref": null,
-          "rendered": null,
-          "type": "div",
-        },
-      ],
-      "type": "div",
-    },
-  ],
-  Symbol(enzyme.__options__): Object {
-    "adapter": ReactSixteenAdapter {
-      "options": Object {
-        "enableComponentDidUpdateOnSetState": true,
-        "lifecycles": Object {
-          "componentDidUpdate": Object {
-            "onSetState": true,
-          },
-          "getSnapshotBeforeUpdate": true,
-        },
-      },
-    },
-    "attachTo": undefined,
-    "hydrateIn": undefined,
-  },
-}
+      "fontFamily": "Calibri",
+      "margin": "auto",
+      "maxWidth": "800px",
+    }
+  }
+>
+  <h1>
+    canari-swipe examples
+  </h1>
+  <p>
+    A few basic examples for canari-swipe
+  </p>
+  <a
+    href="https://github.com/GeeDollaHolla/canari-swipe/tree/master/src/components"
+  >
+    Source Code
+  </a>
+  <SingleSelection
+    selectionStyle={
+      Object {
+        "backgroundColor": "gray",
+        "border": "3px solid white",
+        "color": "white",
+        "display": "inline-block",
+        "fontFamily": "calibri",
+        "height": "100px",
+        "lineHeight": "100px",
+        "textAlign": "center",
+        "userSelect": "none",
+        "verticalAlign": "middle",
+        "width": "300px",
+      }
+    }
+  />
+  <Carousel
+    selectionStyle={
+      Object {
+        "backgroundColor": "gray",
+        "border": "3px solid white",
+        "color": "white",
+        "display": "inline-block",
+        "fontFamily": "calibri",
+        "height": "100px",
+        "lineHeight": "100px",
+        "textAlign": "center",
+        "userSelect": "none",
+        "verticalAlign": "middle",
+        "width": "300px",
+      }
+    }
+  />
+  <Vertical
+    selectionStyle={
+      Object {
+        "backgroundColor": "gray",
+        "border": "3px solid white",
+        "color": "white",
+        "display": "inline-block",
+        "fontFamily": "calibri",
+        "height": "100px",
+        "lineHeight": "100px",
+        "textAlign": "center",
+        "userSelect": "none",
+        "verticalAlign": "middle",
+        "width": "300px",
+      }
+    }
+  />
+  <Responsive
+    selectionStyle={
+      Object {
+        "backgroundColor": "gray",
+        "border": "3px solid white",
+        "color": "white",
+        "display": "inline-block",
+        "fontFamily": "calibri",
+        "height": "100px",
+        "lineHeight": "100px",
+        "textAlign": "center",
+        "userSelect": "none",
+        "verticalAlign": "middle",
+        "width": "300px",
+      }
+    }
+  />
+  <div
+    style={
+      Object {
+        "display": "inline-block",
+        "height": "200px",
+      }
+    }
+  />
+</div>
 `;

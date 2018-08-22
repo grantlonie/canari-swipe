@@ -10,6 +10,10 @@ class SingleSelection extends Component {
 		this.setState({ wrapAround: !this.state.wrapAround })
 	}
 
+	handleStartSwiping() {
+		this.setState({ startSwiping: true })
+	}
+
 	render() {
 		return (
 			<div>
@@ -18,7 +22,9 @@ class SingleSelection extends Component {
 					<input type="checkbox" checked={this.state.wrapAround} onChange={this.changeWrapAround} />
 					wrapAround
 				</p>
-				<Swiper wrapAround={this.state.wrapAround}>
+				<Swiper
+					wrapAround={this.state.wrapAround}
+					startSwiping={this.handleStartSwiping.bind(this)}>
 					{[...Array(5)].map((iter, page) => {
 						return (
 							<div key={page} style={this.props.selectionStyle}>
