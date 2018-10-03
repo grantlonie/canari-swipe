@@ -379,7 +379,7 @@ class Swiper extends React.Component {
 	}
 
 	childTranslator(child, offsetAmount, selection) {
-		const { vertical } = this.props
+		const { vertical, noSelectionWrapper } = this.props
 
 		let xOffset = 0
 		let yOffset = 0
@@ -393,6 +393,11 @@ class Swiper extends React.Component {
 
 		let ref = null
 		if (selection === this.currentSelection) ref = this.currentSelectionRef
+
+		if (noSelectionWrapper) {
+			const clonedStyle = Object.assign({}, child.props.style, style)
+			return React.cloneElement(child, { clonedStyle, ref })
+		}
 
 		return (
 			<div style={style} ref={ref}>
