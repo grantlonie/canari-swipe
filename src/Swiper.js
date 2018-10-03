@@ -7,13 +7,13 @@ class Swiper extends React.Component {
 	constructor(props) {
 		super(props)
 
-		const { minimumSwipeSpeed, deceleration, children, firstSelection } = this.props
+		const { minimumSwipeSpeed, deceleration, firstSelection } = this.props
 
 		this.minimumSwipeSpeed = minimumSwipeSpeed || 500 // Minimum speed that swiping will go after releasing finger
 		// isControlled desc. If isControlled, swiper will not swipe/fade to desired index
 		this.deceleration = deceleration || 3 // if carousel, then apply velocity deceleration
 		this.stopVelocity = 300 // if carousel, then determine what velocity to stopSwiping
-		this.selectionCount = React.Children.count(children)
+		this.selectionCount = this.childCount()
 		this.currentSelection = firstSelection || 0
 		this.isTouching = false
 		this.isSwiping = false
@@ -25,6 +25,10 @@ class Swiper extends React.Component {
 		this.currentSelectionRef = React.createRef()
 
 		this.state = { swipePosition: this.currentSelection * this.swipeAmount }
+	}
+
+	childCount() {
+		return React.Children.count(this.props.children)
 	}
 
 	setWrapperStyle(swipeAmount) {
@@ -39,7 +43,7 @@ class Swiper extends React.Component {
 			overflow: overflow ? 'visible' : 'hidden',
 			position: 'relative',
 			display: 'inline-block',
-			// border: '1px solid black',
+			border: '1px solid black',
 			width: vertical ? width : (carousel ? visibleCount || 1 : 1) * this.swipeAmount,
 			height: vertical ? (carousel ? visibleCount || 1 : 1) * this.swipeAmount : height,
 		}
@@ -57,7 +61,7 @@ class Swiper extends React.Component {
 			swipeAmount,
 		} = nextProps
 
-		this.selectionCount = React.Children.count(children) // update count if children change
+		this.selectionCount = this.childCount() // update count if children change
 
 		if (resetSwiper) this.setState({ swipePosition: (firstSelection || 0) * this.swipeAmount })
 		else if (
@@ -375,25 +379,26 @@ class Swiper extends React.Component {
 	}
 
 	childTranslator(child, offsetAmount, selection) {
-		const { vertical, firstSelection } = this.props
+		const { vertical } = this.props
 
 		let xOffset = 0
 		let yOffset = 0
-		if (vertical) {
-			yOffset = offsetAmount
-		} else {
-			xOffset = offsetAmount
-		}
+		if (vertical) yOffset = offsetAmount
+		else xOffset = offsetAmount
 
-		const style = Object.assign({}, child.props.style, {
-			transform: `translate3d(${xOffset}px, ${yOffset}px, 0)`,
+		const style = {
 			position: 'absolute',
-		})
+			transform: `translate3d(${xOffset}px, ${yOffset}px, 0)`,
+		}
 
 		let ref = null
 		if (selection === this.currentSelection) ref = this.currentSelectionRef
 
-		return React.cloneElement(child, { style, ref })
+		return (
+			<div style={style} ref={ref}>
+				{child}
+			</div>
+		)
 	}
 
 	componentDidMount() {
@@ -401,9 +406,11 @@ class Swiper extends React.Component {
 	}
 
 	render() {
-		const { wrapAround, children, vertical, carousel, firstSelection } = this.props
+		const { wrapAround, children, carousel } = this.props
 
 		const pageWithStyle = React.Children.map(children, (child, index) => {
+			if (!child) return null
+
 			// Adjust the index to allow for wrap around if wanted
 			let adjustedIndex = index
 

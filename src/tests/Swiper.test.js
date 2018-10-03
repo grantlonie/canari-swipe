@@ -22,6 +22,20 @@ describe('Swiper no props', () => {
 		expect(wrapper).toBeDefined()
 	})
 
+	test('Render with null, undefined and [] child', () => {
+		const wrapper = mount(
+			<Swiper>
+				<div />
+				{null}
+				{undefined}
+				{[]}
+				<div />
+			</Swiper>
+		)
+
+		expect(wrapper).toBeDefined()
+	})
+
 	test('Render with 100 children', () => {
 		const wrapper = mount(
 			<Swiper>

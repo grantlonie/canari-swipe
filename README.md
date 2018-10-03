@@ -48,6 +48,16 @@ const SimpleSwiper = () => {
 
 ```
 
+### Null selections
+If you want to not show a selection, pass `[]` as the child. Null and undefined will not work. For example:
+
+```
+<Swiper>
+	<div id="selection1">
+	{someProp ? <div id="selection2 /> : []}
+	<div id="selection3">
+</Swiper>
+```
 
 ## Properties
 
