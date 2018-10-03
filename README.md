@@ -77,6 +77,5 @@ If you want to not show a selection, pass `[]` as the child. Null and undefined 
 | isControlled           | Bool     | false   | Remove transition between selection changes                                                                                    |
 | resetSwiper            | Bool     | false   | If true, reset the swiper back to firstSelection                                                                               |
 | overflow               | Bool     | false   | true - allow overflow of selections, false - prevent overflow                                                                  |
-| noSelectionWrapper     | Bool     | false   | true - modify selection style directly for swiping, false (recommended) - wrap selection                                       |
 | startSwiping           | Callback | NA      | Callback function once swiping has started                                                                                     |
 | updateCurrentSelection | Callback | NA      | Callback function after a selection has changed                                                                                |

@@ -394,11 +394,6 @@ class Swiper extends React.Component {
 		let ref = null
 		if (selection === this.currentSelection) ref = this.currentSelectionRef
 
-		if (noSelectionWrapper) {
-			const clonedStyle = Object.assign({}, child.props.style, style)
-			return React.cloneElement(child, { style: clonedStyle, ref })
-		}
-
 		return (
 			<div style={style} ref={ref}>
 				{child}
