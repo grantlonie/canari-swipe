@@ -23,6 +23,7 @@ class Swiper extends React.Component {
 		this.coast = false // don't deccelerate when true
 
 		this.currentSelectionRef = React.createRef()
+		this.debugText = ''
 
 		this.state = { swipePosition: this.currentSelection * this.swipeAmount }
 	}
@@ -136,10 +137,11 @@ class Swiper extends React.Component {
 				? Math.sign(this.swipeVelocity) * this.minimumSwipeSpeed
 				: this.swipeVelocity
 
+		this.debugText = this.swipeVelocity
+
 		if (this.isSwiping) {
-			if (this.swipeVelocity == 0) this.stopSwiping()
 			// If swipe is faster than minimum speed, swipe in that direction
-			else if (Math.abs(this.swipeVelocity) > this.minimumSwipeSpeed) {
+			if (Math.abs(this.swipeVelocity) > this.minimumSwipeSpeed) {
 				this.desiredSelection =
 					Math.floor(this.state.swipePosition / this.swipeAmount) + (this.swipeVelocity > 0 ? 1 : 0)
 				this.clampDesiredSelection()
@@ -467,6 +469,7 @@ class Swiper extends React.Component {
 				onMouseLeave={this.handleMouseLeave.bind(this)}
 				onTouchCancel={this.handleMouseLeave.bind(this)}>
 				{pageWithStyle}
+				<div style={{ position: 'absolute', left: '20px', top: '20px' }}>{this.debugText}</div>
 			</div>
 		)
 	}
