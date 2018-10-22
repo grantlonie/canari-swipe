@@ -313,8 +313,9 @@ class Swiper extends Component {
 					// one neighbor
 					if (!carousel) this.stopSwiping()
 					// Beginning and end of selections
-					else if (this.currentSelection == 0 && this.swipeVelocity < 0) this.stopSwiping()
-					else if (
+					else if (this.currentSelection == 0 && this.swipeVelocity < 0) {
+						this.stopSwiping()
+					} else if (
 						this.currentSelection >= this.selectionCount - (visibleCount || 1) &&
 						this.swipeVelocity > 0
 					)
@@ -353,13 +354,13 @@ class Swiper extends Component {
 	stopSwiping() {
 		const { detent, updateCurrentSelection, carousel } = this.props
 
+		if (!carousel || detent || Math.abs(this.swipeVelocity) > this.minimumSwipeSpeed) {
+			this.setState({ swipePosition: this.desiredOffset })
+		}
+
 		this.swipeVelocity = 0
 		this.isSwiping = false
 		this.coast = false
-
-		if (!carousel || detent) {
-			this.setState({ swipePosition: this.desiredOffset })
-		}
 
 		if (updateCurrentSelection)
 			setTimeout(() => updateCurrentSelection(this.currentSelection, this.onSwipeSpace), 100)
