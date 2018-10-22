@@ -3,7 +3,7 @@ import React, { Component } from 'react'
 const startSwipeAmount = 15 // Number of pixels to move before swiping starts
 // const swipeSpeedThreshold = 3000			// Swipe speed needed to continue to next page irrespective of threshold
 
-class Swiper extends React.Component {
+class Swiper extends Component {
 	constructor(props) {
 		super(props)
 
@@ -52,14 +52,7 @@ class Swiper extends React.Component {
 	}
 
 	UNSAFE_componentWillReceiveProps(nextProps) {
-		const {
-			firstSelection,
-			desiredSelection,
-			resetSwiper,
-			isControlled,
-			children,
-			swipeAmount,
-		} = nextProps
+		const { firstSelection, desiredSelection, resetSwiper, isControlled } = nextProps
 
 		this.selectionCount = this.childCount() // update count if children change
 
@@ -140,7 +133,7 @@ class Swiper extends React.Component {
 				this.currentSelection = this.desiredSelection - Math.sign(this.swipeVelocity)
 
 				// If swipe offset is past 50%, swipe in that direction, else go back to current selection
-			} else if (!carousel || detent) {
+			} else {
 				const goNext =
 					(this.state.swipePosition + this.swipeAmount) % this.swipeAmount > this.swipeAmount / 2
 				this.desiredSelection =
@@ -148,8 +141,10 @@ class Swiper extends React.Component {
 				this.clampDesiredSelection()
 				this.currentSelection = this.desiredSelection + (goNext ? -1 : 1)
 
-				this.swipeVelocity = this.minimumSwipeSpeed * (goNext ? 1 : -1)
-				this.coast = true
+				if (!carousel || detent) {
+					this.swipeVelocity = this.minimumSwipeSpeed * (goNext ? 1 : -1)
+					this.coast = true
+				}
 			}
 
 			if (wrapAround && !carousel) {
