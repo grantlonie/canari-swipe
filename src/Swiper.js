@@ -354,11 +354,10 @@ class Swiper extends Component {
 		const { detent, updateCurrentSelection, carousel } = this.props
 
 		this.swipeVelocity = 0
-		// carousel = this.props.carousel
 		this.isSwiping = false
 		this.coast = false
 
-		if (!carousel || detent || this.desiredOffset <= 0) {
+		if (!carousel || detent) {
 			this.setState({ swipePosition: this.desiredOffset })
 		}
 
