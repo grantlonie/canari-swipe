@@ -74,6 +74,7 @@ If you want to not show a selection, pass `[]` as the child. Null and undefined 
 | detent                 | Number   | false   | If carousel, true - stop swiping exactly on edge of selection, false - swiping can stop mid-selection                          |
 | deceleration           | Number   | 3       | If carousel, how quickly the carousel slows down                                                                               |
 | swipeRatio             | Number   | 1       | An amount to scale the swiping down or up                                                                                      |
+| startSwipeAmount       | Number   | 15      | Number of pixels before swiping starts                                                                                         |
 | isControlled           | Bool     | false   | Remove transition between selection changes                                                                                    |
 | resetSwiper            | Bool     | false   | If true, reset the swiper back to firstSelection                                                                               |
 | overflow               | Bool     | false   | true - allow overflow of selections, false - prevent overflow                                                                  |

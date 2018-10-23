@@ -1,8 +1,5 @@
 import React, { Component } from 'react'
 
-const startSwipeAmount = 15 // Number of pixels to move before swiping starts
-// const swipeSpeedThreshold = 3000			// Swipe speed needed to continue to next page irrespective of threshold
-
 class Swiper extends Component {
 	constructor(props) {
 		super(props)
@@ -107,7 +104,7 @@ class Swiper extends Component {
 		if (carousel || !this.isSwiping) {
 			this.isTouching = true
 			this.swipeStart = vertical ? e.pageY : e.pageX
-			this.lastSwipeTouch = this.swipeStart
+			this.lastTouchLocation = this.swipeStart
 			this.onSwipeSpace = true
 		}
 	}
@@ -191,53 +188,69 @@ class Swiper extends Component {
 	}
 
 	handleMouseMove(e) {
-		const { vertical, swipeRatio, startSwiping, wrapAround, visibleCount, carousel } = this.props
+		const {
+			vertical,
+			swipeRatio,
+			startSwiping,
+			wrapAround,
+			visibleCount,
+			carousel,
+			disabled,
+			startSwipeAmount,
+		} = this.props
 
-		if (!this.props.disabled && true) {
+		if (!disabled) {
+			// only consider movements when touching and more than one selection
 			if (this.isTouching && this.selectionCount > 1) {
-				// only consider movements when touching and more than one selection
 				const touchLocation = vertical ? e.pageY : e.pageX
 
-				// Determine when swiping begins
-				if (!this.isSwiping) {
-					if (Math.abs(touchLocation - this.swipeStart) / (swipeRatio || 1) > startSwipeAmount) {
-						this.isSwiping = true
-						if (startSwiping) startSwiping(this.isTouching)
-					}
-
-					// Swiping in progress
-				} else {
-					const swipeMovement = (this.lastSwipeTouch - touchLocation) / (swipeRatio || 1)
-					this.lastSwipeTouch = touchLocation
-					let newSwipePosition = this.state.swipePosition + swipeMovement
-
-					// Prevent wrap around swiping if not wanted
-					if (!wrapAround || carousel) {
-						if (this.state.swipePosition <= 0 && swipeMovement < 0) newSwipePosition = 0 //this.state.swipePosition
+				// Only consider movements in swiping direction (i.e. ignore vertical movements for horizontal swiping)
+				if (this.lastTouchLocation !== touchLocation) {
+					// Determine when swiping begins
+					if (!this.isSwiping) {
 						if (
-							this.state.swipePosition >=
-								this.swipeAmount * (this.selectionCount - (visibleCount || 1)) &&
-							swipeMovement > 0
+							Math.abs(touchLocation - this.swipeStart) / (swipeRatio || 1) >
+							(startSwipeAmount || 15)
+						) {
+							this.isSwiping = true
+							if (startSwiping) startSwiping(this.isTouching)
+						}
+
+						// Swiping in progress
+					} else {
+						const swipeMovement = (this.lastTouchLocation - touchLocation) / (swipeRatio || 1)
+						this.lastTouchLocation = touchLocation
+						let newSwipePosition = this.state.swipePosition + swipeMovement
+
+						// Prevent wrap around swiping if not wanted
+						if (!wrapAround || carousel) {
+							if (this.state.swipePosition <= 0 && swipeMovement < 0) newSwipePosition = 0
+							if (
+								this.state.swipePosition >=
+									this.swipeAmount * (this.selectionCount - (visibleCount || 1)) &&
+								swipeMovement > 0
+							)
+								newSwipePosition = this.swipeAmount * (this.selectionCount - (visibleCount || 1))
+						}
+
+						// Calculate swipe velocity and update position
+						const newSwipeTimer = new Date().getMilliseconds()
+						let correctedSwipeTimer = newSwipeTimer + (newSwipeTimer < this.swipeTimer ? 1000 : 0)
+						this.swipeVelocity = Math.round(
+							(swipeMovement * 1000) / (correctedSwipeTimer - this.swipeTimer)
 						)
-							newSwipePosition = this.swipeAmount * (this.selectionCount - (visibleCount || 1)) //this.state.swipePosition
+						this.swipeTimer = newSwipeTimer
+
+						this.setState({ swipePosition: newSwipePosition })
 					}
-
-					// Calculate swipe velocity and update position
-					const newSwipeTimer = new Date().getMilliseconds()
-					let correctedSwipeTimer = newSwipeTimer + (newSwipeTimer < this.swipeTimer ? 1000 : 0)
-					this.swipeVelocity = Math.round(
-						(swipeMovement * 1000) / (correctedSwipeTimer - this.swipeTimer)
-					)
-					this.swipeTimer = newSwipeTimer
-
-					this.setState({ swipePosition: newSwipePosition })
 				}
 			}
 		} else if (this.isSwiping) this.doneSwiping()
 	}
 
-	componentDidUpdate(prevProps, prevState) {
+	componentDidUpdate(prevProps) {
 		const { carousel, wrapAround, visibleCount, detent, swipeAmount } = this.props
+
 		if (!this.isTouching && this.isSwiping) {
 			const swipeUpdateTime = 10
 			setTimeout(() => {
@@ -268,14 +281,6 @@ class Swiper extends Component {
 						}
 					} else this.swipeVelocity = newVelocity
 				}
-
-				// if (!wrapAround) {
-				// 	if (this.desiredSelection > this.selectionCount - (visibleCount || 1)-1) {
-				// 		this.swipeVelocity = this.stopVelocity * Math.sign(this.swipeVelocity)
-				// 	}
-				// 	else if (this.desiredSelection <= 0) this.swipeVelocity = this.minimumSwipeSpeed * Math.sign(this.swipeVelocity)
-				// 	// this.currentSelection = Math.min(Math.max(this.currentSelection, 0), this.selectionCount-(visibleCount || 1))
-				// }
 
 				this.swipeTimer = newSwipeTimer
 
