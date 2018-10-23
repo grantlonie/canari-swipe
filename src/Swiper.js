@@ -42,43 +42,47 @@ class Swiper extends Component {
 	}
 
 	UNSAFE_componentWillReceiveProps(nextProps) {
-		const { firstSelection, desiredSelection, resetSwiper, isControlled } = nextProps
+		const {
+			firstSelection,
+			desiredSelection,
+			resetSwiper,
+			wrapAround,
+			desiredSelectionTime,
+		} = nextProps
 
 		this.selectionCount = this.childCount() // update count if children change
 
 		if (resetSwiper) this.setState({ swipePosition: (firstSelection || 0) * this.swipeAmount })
+		// See if the user requests a new selection without swiping (ex. clicking home button)
 		else if (
 			desiredSelection !== this.currentSelection &&
 			desiredSelection !== this.props.desiredSelection
 		) {
-			// See if the user requests a new selection without swiping (ex. clicking home button)
-
-			// Find fastest swipe direction
-			const selectionDelta = this.currentSelection - desiredSelection
 			this.desiredSelection = desiredSelection
 			this.desiredOffset = desiredSelection * this.swipeAmount
 
-			// If swiper isControlled, go straight to index w/o transition
-			if (isControlled) {
+			// If swiper desiredSelectionTime is zero (or not specified), go straight to index w/o transition
+			if (!desiredSelectionTime) {
 				this.currentSelection = this.desiredSelection
 				this.stopSwiping()
-			} else if (
-				Math.abs(selectionDelta) > 1 &&
-				Math.abs(selectionDelta) < this.selectionCount - 1
-			) {
-				// If desired selection is more than one away, go straight to next
-				this.currentSelection = this.desiredSelection
-				this.stopSwiping()
+
+				// Transition swipe to desiredSelection
 			} else {
-				// Set swipe speed looking for wrap around conditions
-				let speedSwap = 1
-				if (this.selectionCount > 2) {
-					if (this.currentSelection == 0 && this.desiredSelection == this.selectionCount - 1)
-						speedSwap = -1
-					else if (this.currentSelection == this.selectionCount - 1 && this.desiredSelection == 0)
-						speedSwap = -1
+				const selectionDelta = this.currentSelection - this.desiredSelection
+				// Allow for swiping to neighbor on other side of wrap around
+				if (
+					wrapAround &&
+					this.selectionCount > 2 &&
+					((this.currentSelection == 0 && this.desiredSelection == this.selectionCount - 1) ||
+						(this.currentSelection == this.selectionCount - 1 && this.desiredSelection == 0))
+				) {
+					this.swipeVelocity =
+						((this.swipeAmount * (this.selectionCount - Math.abs(selectionDelta))) /
+							desiredSelectionTime) *
+						Math.sign(selectionDelta)
+				} else {
+					this.swipeVelocity = (-this.swipeAmount * selectionDelta) / desiredSelectionTime
 				}
-				this.swipeVelocity = (-this.swipeAmount / 0.75) * Math.sign(selectionDelta) * speedSwap
 
 				this.swipeTimer = new Date().getMilliseconds()
 				this.isSwiping = true
@@ -107,8 +111,10 @@ class Swiper extends Component {
 	}
 
 	handleMouseLeave() {
-		this.onSwipeSpace = false // signify letting go outside swipe space
-		this.doneSwiping()
+		if (this.isTouching) {
+			this.onSwipeSpace = false // signify letting go outside swipe space
+			this.doneSwiping()
+		}
 	}
 
 	doneSwiping() {
@@ -389,7 +395,7 @@ class Swiper extends Component {
 	}
 
 	render() {
-		const { wrapAround, children, carousel } = this.props
+		const { wrapAround, children, carousel, neighborsOnly } = this.props
 
 		const pageWithStyle = React.Children.map(children, (child, index) => {
 			if (!child) return null
@@ -418,7 +424,7 @@ class Swiper extends Component {
 
 			const totalSwipeAmount = adjustedIndex * this.swipeAmount - this.state.swipePosition
 
-			if (!carousel) {
+			if (neighborsOnly) {
 				// -- ONLY PUT CURRENT PAGE AND NEIGHBORS ON DOM --
 				if (
 					adjustedIndex > this.currentSelection - 2 &&

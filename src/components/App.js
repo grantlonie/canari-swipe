@@ -4,6 +4,8 @@ import SingleSelection from './SingleSelection'
 import Carousel from './Carousel'
 import Vertical from './Vertical'
 import Responsive from './Responsive'
+import Controlled from './Controlled'
+
 export default class App extends Component {
 	render() {
 		const pageStyle = {
@@ -37,6 +39,7 @@ export default class App extends Component {
 				<Carousel selectionStyle={selectionStyle} />
 				<Vertical selectionStyle={selectionStyle} />
 				<Responsive selectionStyle={selectionStyle} />
+				<Controlled selectionStyle={selectionStyle} />
 				<div style={{ display: 'inline-block', height: '200px' }} />
 			</div>
 		)
