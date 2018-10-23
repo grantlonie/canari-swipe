@@ -4,21 +4,14 @@ class Swiper extends Component {
 	constructor(props) {
 		super(props)
 
-		const { minimumSwipeSpeed, deceleration, firstSelection } = this.props
-
-		this.minimumSwipeSpeed = minimumSwipeSpeed || 500 // Minimum speed that swiping will go after releasing finger
-		// isControlled desc. If isControlled, swiper will not swipe/fade to desired index
-		this.deceleration = deceleration || 3 // if carousel, then apply velocity deceleration
 		this.stopVelocity = 300 // if carousel, then determine what velocity to stopSwiping
 		this.selectionCount = this.childCount()
-		this.currentSelection = firstSelection || 0
+		this.currentSelection = this.props.firstSelection || 0
 		this.isTouching = false
 		this.isSwiping = false
 		this.swipeStart = 0
 		this.swipeTimer = 0
 		this.swipeVelocity = 0
-		this.coast = false // don't deccelerate when true
-
 		this.currentSelectionRef = React.createRef()
 
 		this.state = { swipePosition: this.currentSelection * this.swipeAmount }
@@ -119,11 +112,11 @@ class Swiper extends Component {
 	}
 
 	doneSwiping() {
-		const { wrapAround, detent, carousel } = this.props
+		const { wrapAround, detent, carousel, minimumSwipeSpeed } = this.props
 
 		if (this.isSwiping) {
 			// If swipe is faster than minimum speed, swipe in that direction
-			if (Math.abs(this.swipeVelocity) > this.minimumSwipeSpeed) {
+			if (Math.abs(this.swipeVelocity) > (minimumSwipeSpeed || 500)) {
 				this.desiredSelection =
 					Math.floor(this.state.swipePosition / this.swipeAmount) + (this.swipeVelocity > 0 ? 1 : 0)
 				this.clampDesiredSelection()
@@ -139,8 +132,7 @@ class Swiper extends Component {
 				this.currentSelection = this.desiredSelection + (goNext ? -1 : 1)
 
 				if (!carousel || detent) {
-					this.swipeVelocity = this.minimumSwipeSpeed * (goNext ? 1 : -1)
-					this.coast = true
+					this.swipeVelocity = (minimumSwipeSpeed || 500) * (goNext ? 1 : -1)
 				}
 			}
 
@@ -249,7 +241,7 @@ class Swiper extends Component {
 	}
 
 	componentDidUpdate(prevProps) {
-		const { carousel, wrapAround, visibleCount, detent, swipeAmount } = this.props
+		const { carousel, wrapAround, visibleCount, detent, swipeAmount, deceleration } = this.props
 
 		if (!this.isTouching && this.isSwiping) {
 			const swipeUpdateTime = 10
@@ -263,17 +255,16 @@ class Swiper extends Component {
 				)
 
 				// Slow velocity down if carousel
-				if (carousel && !this.coast) {
+				if (carousel) {
 					const newVelocity =
 						this.swipeVelocity -
-						this.deceleration *
+						(deceleration || 3) *
 							(correctedSwipeTimer - this.swipeTimer) *
 							Math.sign(this.swipeVelocity)
 
 					// prevent sign change
 					if (this.swipeVelocity / newVelocity < 0) {
 						if (detent) {
-							this.coast = true
 							this.swipeVelocity = this.stopVelocity * Math.sign(this.swipeVelocity)
 						} else {
 							this.stopSwiping()
@@ -332,7 +323,7 @@ class Swiper extends Component {
 							finalVelocity =
 								Math.sqrt(
 									Math.pow(this.swipeVelocity, 2) -
-										2 * this.deceleration * 1000 * this.swipeAmount +
+										2 * (deceleration || 3) * 1000 * this.swipeAmount +
 										100
 								) || 0
 						}
@@ -357,15 +348,14 @@ class Swiper extends Component {
 
 	// Stop swiping method
 	stopSwiping() {
-		const { detent, updateCurrentSelection, carousel } = this.props
+		const { detent, updateCurrentSelection, carousel, minimumSwipeSpeed } = this.props
 
-		if (!carousel || detent || Math.abs(this.swipeVelocity) > this.minimumSwipeSpeed) {
+		if (!carousel || detent || Math.abs(this.swipeVelocity) > (minimumSwipeSpeed || 500)) {
 			this.setState({ swipePosition: this.desiredOffset })
 		}
 
 		this.swipeVelocity = 0
 		this.isSwiping = false
-		this.coast = false
 
 		if (updateCurrentSelection)
 			setTimeout(() => updateCurrentSelection(this.currentSelection, this.onSwipeSpace), 100)

@@ -67,7 +67,7 @@ If you want to not show a selection, pass `[]` as the child. Null and undefined 
 | firstSelection         | Number   | 0       | First selection on mounting                                                                                                    |
 | desiredSelection       | Number   | 0       | Specify the selection for controlling the Swiper externally                                                                    |
 | vertical               | Bool     | false   | true - swipe vertically instead of horizontally                                                                                |
-| minimumSwipeSpeed      | Number   | 500     | Minimum speed that swiping will go after releasing touch/mouse                                                                 |
+| minimumSwipeSpeed      | Number   | 500     | Minimum speed required to flick to next selection and that swiping will go after releasing touch/mouse                         |
 | carousel               | Bool     | false   | true - load all selections and swipe through multiple selections, false - load only current selection and immediate neighbors, |
 | wrapAround             | Bool     | false   | If !carousel, true - wrap selection around to front, false - stop swiping at the beginning and end of selection list           |
 | visibleCount           | Number   | 1       | If carousel, amount of visible selections in the swiper                                                                        |
