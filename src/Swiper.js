@@ -211,7 +211,8 @@ class Swiper extends Component {
 			desiredSelectionTime,
 		} = this.props
 
-		if (resetSwiper) this.setState({ swipePosition: (firstSelection || 0) * this.swipeAmount })
+		if (resetSwiper && resetSwiper !== prevProps.resetSwiper)
+			this.setState({ swipePosition: (firstSelection || 0) * this.swipeAmount })
 		else {
 			// See if the user requests a new selection without swiping (ex. clicking home button)
 			if (
