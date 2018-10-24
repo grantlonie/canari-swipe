@@ -1,6 +1,9 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 
+/**
+ * @extends {Component<{swipeAmount:number, firstSelection:number, desiredSelection:number, desiredSelectionTime:number, vertical:bool, minimumSwipeSpeed:number, carousel:bool, wrapAround:bool, neighborsOnly:bool, visibleCount:number, detent:number, deceleration:number, swipeRatio:number, startSwipeAmount:number, noSelectionWrapper:bool, resetSwiper:bool, overflow:bool, startSwiping:()=>any, updateCurrentSelection:()=>any }>}
+ */
 class Swiper extends Component {
 	constructor(props) {
 		super(props)
