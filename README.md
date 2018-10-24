@@ -77,7 +77,7 @@ If you want to not show a selection, pass `[]` as the child. Null and undefined 
 | deceleration           | Number   | 3       | If carousel, how quickly the carousel slows down                                                                               |
 | swipeRatio             | Number   | 1       | An amount to scale the swiping down or up                                                                                      |
 | startSwipeAmount       | Number   | 15      | Number of pixels before swiping starts                                                                                         |
-| isControlled           | Bool     | false   | Remove transition between selection changes                                                                                    |
+| noSelectionWrapper     | Bool     | false   | Remove wrapper around selections. Warning, will modify selections position and transform style props                           |
 | resetSwiper            | Bool     | false   | If true, reset the swiper back to firstSelection                                                                               |
 | overflow               | Bool     | false   | true - allow overflow of selections, false - prevent overflow                                                                  |
 | startSwiping           | Callback | NA      | Callback function once swiping has started                                                                                     |
