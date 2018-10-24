@@ -3,7 +3,7 @@ import Swiper from '../Swiper'
 
 class Controlled extends Component {
 	state = {
-		desiredSelectionTime: 0,
+		desiredSelectionTime: 1,
 		desiredSelection: 0,
 	}
 
@@ -26,7 +26,7 @@ class Controlled extends Component {
 	render() {
 		return (
 			<div>
-				<h3>Swiper with controlling option</h3>
+				<h3>Choosing desired selection</h3>
 				<p>
 					<select
 						style={{ width: '50px', marginRight: '5px' }}
