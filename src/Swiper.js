@@ -1,4 +1,5 @@
 import React, { Component } from 'react'
+import PropTypes from 'prop-types'
 
 class Swiper extends Component {
 	constructor(props) {
@@ -6,7 +7,7 @@ class Swiper extends Component {
 
 		this.stopVelocity = 300 // if carousel, then determine what velocity to stopSwiping
 		this.selectionCount = this.childCount()
-		this.currentSelection = this.props.firstSelection || 0
+		this.currentSelection = this.props.firstSelection
 		this.isTouching = false
 		this.isSwiping = false
 		this.swipeStart = 0
@@ -34,8 +35,8 @@ class Swiper extends Component {
 			position: 'relative',
 			display: 'inline-block',
 			// border: '1px solid black',
-			width: vertical ? width : (carousel ? visibleCount || 1 : 1) * this.swipeAmount,
-			height: vertical ? (carousel ? visibleCount || 1 : 1) * this.swipeAmount : height,
+			width: vertical ? width : (carousel ? visibleCount : 1) * this.swipeAmount,
+			height: vertical ? (carousel ? visibleCount : 1) * this.swipeAmount : height,
 		}
 
 		this.setState({ swipePosition: this.currentSelection * this.swipeAmount })
@@ -73,7 +74,7 @@ class Swiper extends Component {
 
 		if (this.isSwiping) {
 			// If swipe is faster than minimum speed, swipe in that direction
-			if (Math.abs(this.swipeVelocity) > (minimumSwipeSpeed || 500)) {
+			if (Math.abs(this.swipeVelocity) > minimumSwipeSpeed) {
 				this.desiredSelection =
 					Math.floor(this.state.swipePosition / this.swipeAmount) + (this.swipeVelocity > 0 ? 1 : 0)
 				this.clampDesiredSelection()
@@ -89,7 +90,7 @@ class Swiper extends Component {
 				this.currentSelection = this.desiredSelection + (goNext ? -1 : 1)
 
 				if (!carousel || detent) {
-					this.swipeVelocity = (minimumSwipeSpeed || 500) * (goNext ? 1 : -1)
+					this.swipeVelocity = minimumSwipeSpeed * (goNext ? 1 : -1)
 				}
 			}
 
@@ -128,7 +129,7 @@ class Swiper extends Component {
 		if (!wrapAround)
 			this.desiredSelection = Math.min(
 				Math.max(this.desiredSelection, 0),
-				Math.max(this.selectionCount - (visibleCount || 1), 0)
+				Math.max(this.selectionCount - visibleCount, 0)
 			)
 	}
 
@@ -157,17 +158,14 @@ class Swiper extends Component {
 				if (this.lastTouchLocation !== touchLocation) {
 					// Determine when swiping begins
 					if (!this.isSwiping) {
-						if (
-							Math.abs(touchLocation - this.swipeStart) / (swipeRatio || 1) >
-							(startSwipeAmount || 15)
-						) {
+						if (Math.abs(touchLocation - this.swipeStart) / swipeRatio > startSwipeAmount) {
 							this.isSwiping = true
 							if (startSwiping) startSwiping(this.isTouching)
 						}
 
 						// Swiping in progress
 					} else {
-						const swipeMovement = (this.lastTouchLocation - touchLocation) / (swipeRatio || 1)
+						const swipeMovement = (this.lastTouchLocation - touchLocation) / swipeRatio
 						this.lastTouchLocation = touchLocation
 						let newSwipePosition = this.state.swipePosition + swipeMovement
 
@@ -176,10 +174,10 @@ class Swiper extends Component {
 							if (this.state.swipePosition <= 0 && swipeMovement < 0) newSwipePosition = 0
 							if (
 								this.state.swipePosition >=
-									this.swipeAmount * (this.selectionCount - (visibleCount || 1)) &&
+									this.swipeAmount * (this.selectionCount - visibleCount) &&
 								swipeMovement > 0
 							)
-								newSwipePosition = this.swipeAmount * (this.selectionCount - (visibleCount || 1))
+								newSwipePosition = this.swipeAmount * (this.selectionCount - visibleCount)
 						}
 
 						// Calculate swipe velocity and update position
@@ -212,7 +210,7 @@ class Swiper extends Component {
 		} = this.props
 
 		if (resetSwiper && resetSwiper !== prevProps.resetSwiper)
-			this.setState({ swipePosition: (firstSelection || 0) * this.swipeAmount })
+			this.setState({ swipePosition: firstSelection * this.swipeAmount })
 		else {
 			// See if the user requests a new selection without swiping (ex. clicking home button)
 			if (
@@ -266,9 +264,7 @@ class Swiper extends Component {
 					if (carousel) {
 						const newVelocity =
 							this.swipeVelocity -
-							(deceleration || 3) *
-								(correctedSwipeTimer - this.swipeTimer) *
-								Math.sign(this.swipeVelocity)
+							deceleration * (correctedSwipeTimer - this.swipeTimer) * Math.sign(this.swipeVelocity)
 
 						// prevent sign change
 						if (this.swipeVelocity / newVelocity < 0) {
@@ -321,7 +317,7 @@ class Swiper extends Component {
 						else if (this.currentSelection == 0 && this.swipeVelocity < 0) {
 							this.stopSwiping()
 						} else if (
-							this.currentSelection >= this.selectionCount - (visibleCount || 1) &&
+							this.currentSelection >= this.selectionCount - visibleCount &&
 							this.swipeVelocity > 0
 						)
 							this.stopSwiping()
@@ -332,7 +328,7 @@ class Swiper extends Component {
 								finalVelocity =
 									Math.sqrt(
 										Math.pow(this.swipeVelocity, 2) -
-											2 * (deceleration || 3) * 1000 * this.swipeAmount +
+											2 * deceleration * 1000 * this.swipeAmount +
 											100
 									) || 0
 							}
@@ -360,7 +356,7 @@ class Swiper extends Component {
 	stopSwiping() {
 		const { detent, updateCurrentSelection, carousel, minimumSwipeSpeed } = this.props
 
-		if (!carousel || detent || Math.abs(this.swipeVelocity) > (minimumSwipeSpeed || 500)) {
+		if (!carousel || detent || Math.abs(this.swipeVelocity) > minimumSwipeSpeed) {
 			this.setState({ swipePosition: this.desiredOffset })
 		}
 
@@ -470,6 +466,37 @@ class Swiper extends Component {
 			</div>
 		)
 	}
+}
+
+Swiper.propTypes = {
+	swipeAmount: PropTypes.number,
+	firstSelection: PropTypes.number,
+	desiredSelection: PropTypes.number,
+	desiredSelectionTime: PropTypes.number,
+	vertical: PropTypes.bool,
+	minimumSwipeSpeed: PropTypes.number,
+	carousel: PropTypes.bool,
+	wrapAround: PropTypes.bool,
+	neighborsOnly: PropTypes.bool,
+	visibleCount: PropTypes.number,
+	detent: PropTypes.number,
+	deceleration: PropTypes.number,
+	swipeRatio: PropTypes.number,
+	startSwipeAmount: PropTypes.number,
+	noSelectionWrapper: PropTypes.bool,
+	resetSwiper: PropTypes.bool,
+	overflow: PropTypes.bool,
+	startSwiping: PropTypes.func,
+	updateCurrentSelection: PropTypes.func,
+}
+
+Swiper.defaultProps = {
+	firstSelection: 0,
+	minimumSwipeSpeed: 500,
+	visibleCount: 1,
+	deceleration: 3,
+	swipeRatio: 1,
+	startSwipeAmount: 15,
 }
 
 export default Swiper

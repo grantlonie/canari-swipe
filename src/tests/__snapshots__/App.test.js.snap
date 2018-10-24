@@ -89,6 +89,23 @@ exports[`renders correctly 1`] = `
       }
     }
   />
+  <Controlled
+    selectionStyle={
+      Object {
+        "backgroundColor": "gray",
+        "border": "3px solid white",
+        "color": "white",
+        "display": "inline-block",
+        "fontFamily": "calibri",
+        "height": "100px",
+        "lineHeight": "100px",
+        "textAlign": "center",
+        "userSelect": "none",
+        "verticalAlign": "middle",
+        "width": "300px",
+      }
+    }
+  />
   <div
     style={
       Object {
