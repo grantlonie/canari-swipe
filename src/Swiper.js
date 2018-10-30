@@ -435,19 +435,17 @@ class Swiper extends Component {
 			const totalSwipeAmount = adjustedIndex * this.swipeAmount - this.state.swipePosition
 
 			if (neighborsOnly) {
-				// -- ONLY PUT CURRENT PAGE AND NEIGHBORS ON DOM --
+				// Only put current selection and neighbors on swiper
 				if (
-					adjustedIndex > this.currentSelection - 2 &&
-					adjustedIndex < this.currentSelection + 2
+					(adjustedIndex > this.currentSelection - 2 &&
+						adjustedIndex < this.currentSelection + 2) ||
+					(index == 0 && this.currentSelection == this.selectionCount - 1) ||
+					(index == this.selectionCount - 1 && this.currentSelection == 0)
 				) {
 					return this.childTranslator(child, totalSwipeAmount, adjustedIndex)
-				} else if (index == 0 && this.currentSelection == this.selectionCount - 1) {
-					return this.childTranslator(child, totalSwipeAmount, adjustedIndex)
-				} else if (index == this.selectionCount - 1 && this.currentSelection == 0) {
-					return this.childTranslator(child, totalSwipeAmount, adjustedIndex)
 				} else {
-					// Don't move other selections
-					return null //this.childTranslator(child,  totalSwipeAmount,adjustedIndex)
+					// Don't render other selections
+					return null
 				}
 			} else {
 				return this.childTranslator(child, totalSwipeAmount, adjustedIndex)
@@ -482,7 +480,7 @@ Swiper.propTypes = {
 	wrapAround: PropTypes.bool,
 	neighborsOnly: PropTypes.bool,
 	visibleCount: PropTypes.number,
-	detent: PropTypes.number,
+	detent: PropTypes.bool,
 	deceleration: PropTypes.number,
 	swipeRatio: PropTypes.number,
 	startSwipeAmount: PropTypes.number,
