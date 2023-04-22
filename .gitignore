@@ -36,7 +36,7 @@ build/Release
 # Dependency directories
 node_modules/
 jspm_packages/
-.cache/
+.parcel-cache/
 .vscode/
 dist/
 coverage/
