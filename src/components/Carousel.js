@@ -15,10 +15,14 @@ class Carousel extends Component {
 			<div>
 				<h3>Carousel w/ Detent Option</h3>
 				<p>
-					<input type="checkbox" checked={this.state.detent} onChange={this.changeDetent} />
+					<input
+						type="checkbox"
+						checked={this.state.detent}
+						onChange={this.changeDetent}
+					/>
 					detent
 				</p>
-				<Swiper visibleCount={2} detent={this.state.detent} carousel={true}>
+				<Swiper visibleCount={2} detent={this.state.detent}>
 					{[...Array(20)].map((iter, page) => {
 						return (
 							<div key={page} style={this.props.selectionStyle}>

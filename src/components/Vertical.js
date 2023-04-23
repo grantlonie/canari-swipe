@@ -19,9 +19,9 @@ class Vertical extends Component {
 				<Swiper
 					visibleCount={3}
 					detent={true}
-					carousel={true}
 					vertical={true}
-					updateCurrentSelection={this.changeSelection}>
+					updateCurrentSelection={this.changeSelection}
+				>
 					{[...Array(20)].map((iter, page) => {
 						return (
 							<div key={page} style={this.props.selectionStyle}>
