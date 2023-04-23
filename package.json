@@ -12,7 +12,7 @@
 	"scripts": {
 		"start": "parcel ./src/index.html",
 		"test": "jest --watch",
-		"build": "parcel build ./src/index.html --no-source-maps",
+		"build": "parcel build ./src/index.html --no-source-maps --public-url=.",
 		"build:swiper": "babel ./src/Swiper.tsx --out-file index.js --presets=@babel/preset-env,@babel/preset-typescript,@babel/preset-react,minify && tsc"
 	},
 	"browserslist": "> 0.5%, last 2 versions, not dead",
