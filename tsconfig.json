@@ -1,0 +1,10 @@
+{
+	"compilerOptions": {
+		"declaration": true,
+		"emitDeclarationOnly": true,
+		"jsx": "react",
+		"esModuleInterop": true,
+		"outFile": "index.js"
+	},
+	"files": ["src/Swiper.tsx"]
+}
