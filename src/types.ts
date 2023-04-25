@@ -1,6 +1,6 @@
 export interface SwiperProps {
 	children: JSX.Element[]
-	swipeAmount: number
+	swipeAmount?: number
 	/** (default 0) */
 	firstSelection?: number
 	desiredSelection?: number
@@ -36,3 +36,5 @@ interface Methods {
 	/** reset swiper to original selection */
 	reset: () => void
 }
+
+export type ControlProps = Omit<SwiperProps, 'onLoad' | 'children'>

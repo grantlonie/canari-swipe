@@ -54,7 +54,7 @@ export default function Swiper(props: Props) {
 	const [swipePosition, setSwipePosition] = useState(
 		currentSelection.current * swipeAmount
 	)
-	const [rerender, setRerender] = useState(false)
+	const [_, setRerender] = useState(false)
 	const carousel = visibleCount > 1
 
 	const wrapperStyle = useMemo(() => {
