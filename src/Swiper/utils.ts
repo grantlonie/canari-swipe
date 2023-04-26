@@ -24,19 +24,18 @@ export const initialInstanceVariables: InstanceVariables = {
 }
 
 /** Return slides between current and next, and if looping, the other direction if faster */
-export function getDelta(
-	currentSlide: number,
-	nextSlide: number,
-	loop: boolean,
-	slideCount: number
-) {
+export function getDelta(currentSlide: number, nextSlide: number, loop: boolean, slideCount: number) {
 	const delta = nextSlide - currentSlide
 	if (!loop || !delta) return delta
 
 	const otherDelta =
-		nextSlide > currentSlide
-			? nextSlide - currentSlide - slideCount
-			: slideCount - currentSlide + nextSlide
+		nextSlide > currentSlide ? nextSlide - currentSlide - slideCount : slideCount - currentSlide + nextSlide
 
 	return Math.abs(otherDelta) < Math.abs(delta) ? otherDelta : delta
+}
+
+/** Determine when swiping starts based on minimum required movement */
+export function startedSwiping(position: number, startPosition: number, scale: number) {
+	const amount = Math.abs(position - startPosition) / scale
+	return amount > 5
 }
