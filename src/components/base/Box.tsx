@@ -2,7 +2,7 @@ import { SxProp, convertSx } from '../../theme'
 import { HTMLProps } from 'react'
 
 interface Props extends HTMLProps<HTMLDivElement> {
-	sx: SxProp
+	sx?: SxProp
 }
 
 export default function Box({ sx, ...rest }: Props) {

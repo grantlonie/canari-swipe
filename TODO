@@ -1,6 +1,5 @@
-clean up code
-work with only one child element
-make sure types work
-test reset
-rename variables
-write tests
+clean up Swiper and write tests
+work with only one child element?
+slides of different sizes? what controls swipe dimensions? first slide?
+compare with react-slick, swiper-js, keen-slider (similar implementation), nuka-carousel
+other props:autoplay, spacing

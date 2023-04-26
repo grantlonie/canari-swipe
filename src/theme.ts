@@ -1,12 +1,12 @@
 import { CSSProperties } from 'react'
 
-export const fontSizes = {
-	xsmall: '0.79rem',
-	small: '0.889rem',
-	medium: '1rem',
-	large: '1.125rem',
-	xlarge: '1.266rem',
-	xxlarge: '1.424rem',
+export enum FontSize {
+	xs = '0.79rem',
+	sm = '0.889rem',
+	md = '1rem',
+	lg = '1.125rem',
+	xl = '1.266rem',
+	xxl = '1.424rem',
 }
 
 const white = '#fff'
@@ -82,35 +82,28 @@ export interface SxProp extends CSSProperties {
 	pb?: number | string
 }
 
-export function convertSx(sxProp: SxProp): any {
-	let gap = applySpacing(sxProp.gap)
-	let margin = sxProp.margin || applySpacing(sxProp.m)
-	let marginTop =
-		sxProp.marginTop || applySpacing(sxProp.mt) || applySpacing(sxProp.my)
+export function convertSx(sx?: SxProp): any {
+	if (!sx) return
+
+	let gap = applySpacing(sx.gap)
+	let margin = sx.margin || applySpacing(sx.m)
+	let marginTop = sx.marginTop || applySpacing(sx.mt) || applySpacing(sx.my)
 	let marginBottom =
-		sxProp.marginBottom ||
-		applySpacing(sxProp.mb) ||
-		applySpacing(sxProp.my)
-	let marginLeft =
-		sxProp.marginLeft || applySpacing(sxProp.ml) || applySpacing(sxProp.mx)
+		sx.marginBottom || applySpacing(sx.mb) || applySpacing(sx.my)
+	let marginLeft = sx.marginLeft || applySpacing(sx.ml) || applySpacing(sx.mx)
 	let marginRight =
-		sxProp.marginRight || applySpacing(sxProp.mr) || applySpacing(sxProp.mx)
-	let padding = sxProp.padding || applySpacing(sxProp.p)
-	let paddingTop =
-		sxProp.paddingTop || applySpacing(sxProp.pt) || applySpacing(sxProp.py)
+		sx.marginRight || applySpacing(sx.mr) || applySpacing(sx.mx)
+	let padding = sx.padding || applySpacing(sx.p)
+	let paddingTop = sx.paddingTop || applySpacing(sx.pt) || applySpacing(sx.py)
 	let paddingBottom =
-		sxProp.paddingBottom ||
-		applySpacing(sxProp.pb) ||
-		applySpacing(sxProp.py)
+		sx.paddingBottom || applySpacing(sx.pb) || applySpacing(sx.py)
 	let paddingLeft =
-		sxProp.paddingLeft || applySpacing(sxProp.pl) || applySpacing(sxProp.px)
+		sx.paddingLeft || applySpacing(sx.pl) || applySpacing(sx.px)
 	let paddingRight =
-		sxProp.paddingRight ||
-		applySpacing(sxProp.pr) ||
-		applySpacing(sxProp.px)
+		sx.paddingRight || applySpacing(sx.pr) || applySpacing(sx.px)
 
 	return {
-		...sxProp,
+		...sx,
 		...(gap && { gap }),
 		...(margin && { margin }),
 		...(marginTop && { marginTop }),
