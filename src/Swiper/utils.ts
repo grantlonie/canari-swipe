@@ -1,4 +1,4 @@
-import { InstanceVariables, SwiperProps } from './types'
+import { InstanceVariables, Movement, SwiperProps } from './types'
 
 export function getDeceleration(braking?: SwiperProps['braking']) {
 	switch (braking) {
@@ -16,11 +16,10 @@ export const initialInstanceVariables: InstanceVariables = {
 	currentSlide: 0,
 	isTouching: false,
 	isSwiping: false,
-	touchStartPosition: 0,
-	touchEndPosition: 0,
 	velocity: 0,
 	desiredOffset: 0,
 	nextSlide: 0,
+	movements: [],
 }
 
 /** Return slides between current and next, and if looping, the other direction if faster */
@@ -38,4 +37,14 @@ export function getDelta(currentSlide: number, nextSlide: number, loop: boolean,
 export function startedSwiping(position: number, startPosition: number, scale: number) {
 	const amount = Math.abs(position - startPosition) / scale
 	return amount > 5
+}
+
+/** get current time in ms */
+export const getCurrentClock = () => new Date().getTime()
+
+export function getVelocityMovements(movements: Movement[]) {
+	const start = movements[0]
+	const end = movements[movements.length - 1]
+	const velocity = (end.position - start.position) / (end.time - start.time)
+	return velocity * 1000 * -1
 }

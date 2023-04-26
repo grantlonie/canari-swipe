@@ -4,10 +4,7 @@ import Controls from './components/Controls'
 import { Box, Text } from './components/base'
 import Swiper from './Swiper/Swiper'
 import { SLIDE_COUNT, ControlProps } from './helpers'
-const canary1 = new URL(
-	'./assets/images/canary1.jpg',
-	import.meta.url
-).toString()
+const canary1 = new URL('./assets/images/canary1.jpg', import.meta.url).toString()
 
 export default function App() {
 	const [controlProps, setControlProps] = useState(initialControlProps)
@@ -16,10 +13,7 @@ export default function App() {
 		setControlProps(s => ({ ...s, ...body }))
 	}
 
-	const slides = useMemo(
-		() => makeSlides(controlProps.visible),
-		[controlProps.visible]
-	)
+	const slides = useMemo(() => makeSlides(controlProps.visible), [controlProps.visible])
 
 	return (
 		<Box sx={{ fontFamily: 'Arial, Geneva, Helvetica' }}>
@@ -64,5 +58,5 @@ const initialControlProps: ControlProps = {
 	goTo: 0,
 	goToTime: 0.5,
 	loop: false,
-	scaleSwipe: 0.5,
+	scaleSwipe: 1,
 }

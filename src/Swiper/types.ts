@@ -48,12 +48,17 @@ export interface InstanceVariables {
 	isTouching: boolean
 	/** user is swiping - moving while touching */
 	isSwiping: boolean
-	/** px location where touch started */
-	touchStartPosition: number
-	/** px location where touch ended */
-	touchEndPosition: number
+	/** stack of final user touch movements to calculate velocity after letting go */
+	movements: Movement[]
 	/** current velocity  */
 	velocity: number
 	desiredOffset: number
 	nextSlide: number
+}
+
+export interface Movement {
+	/** touch position */
+	position: number
+	/** ms at position */
+	time: number
 }
