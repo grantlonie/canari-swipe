@@ -48,6 +48,7 @@ function makeSlides(count: number) {
 				justifyContent: 'center',
 				mt: 4,
 				color: 'white',
+				userSelect: 'none',
 			}}
 		>
 			<Text>Slide {i + 1}</Text>

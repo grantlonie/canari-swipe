@@ -6,5 +6,5 @@
 		"esModuleInterop": true,
 		"outFile": "index.js"
 	},
-	"files": ["src/Swiper.tsx"]
+	"files": ["src/Swiper/Swiper.tsx"]
 }

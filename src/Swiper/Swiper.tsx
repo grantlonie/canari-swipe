@@ -1,30 +1,32 @@
-import React, {
+import {
 	CSSProperties,
 	Children,
+	TouchEvent,
 	forwardRef,
 	useEffect,
 	useMemo,
 	useRef,
 	useState,
 } from 'react'
-import { SwiperProps } from './types'
-import { getDeceleration } from './utils'
-
-export type Props = SwiperProps
+import { SwiperProps as Props } from './types'
+import { getDeceleration, getDelta, initialInstanceVariables } from './utils'
+import { MouseEvent } from 'react'
 
 /** if carousel, then determine what velocity to stopSwiping */
 const STOP_VELOCITY = 300
 /** px to trigger when swiping starts */
 const START_SWIPE_AMOUNT = 5
 
-export default function Swiper(props: Props) {
+export type SwiperProps = Props
+
+export default function Swiper(props: SwiperProps) {
 	const {
 		children,
 		minimumSwipeSpeed = 500,
 		visible = 1,
 		braking,
 		scaleSwipe = 1,
-		loop,
+		loop = false,
 		noDetent,
 		goTo: goToParent = 0,
 		goToTime,
@@ -36,24 +38,16 @@ export default function Swiper(props: Props) {
 		onSwipeEnd,
 	} = props
 
-	const childrenCount = children.length
-	const currentSelection = useRef(goToParent)
-	const currentSelectionRef = useRef<HTMLDivElement>(null)
-	const isTouching = useRef(false)
-	const isSwiping = useRef(false)
-	const swipeStart = useRef(0)
-	const swipeTimer = useRef(0)
-	const swipeVelocity = useRef(0)
-	const desiredOffset = useRef(0)
-	const nextSelection = useRef(currentSelection.current)
-	const lastTouchLocation = useRef(swipeStart.current)
-	const onSwipeSpace = useRef(false)
+	const currentSlideRef = useRef<HTMLDivElement>(null)
+	const v = useRef(initialInstanceVariables)
 
-	const [swipeAmount, setSwipeAmount] = useState(0)
+	// px amount of room for swiping
+	const [slideSize, setSlideSize] = useState(0)
 	const [swipePosition, setSwipePosition] = useState(0)
 	const [goTo, setGoTo] = useState(goToParent)
 	const [_, setRerender] = useState(false)
 
+	const slideCount = children.length
 	const carousel = visible > 1
 	const deceleration = getDeceleration(braking)
 
@@ -63,178 +57,11 @@ export default function Swiper(props: Props) {
 			overflow: 'hidden',
 			position: 'relative',
 			display: 'inline-block',
-			width: vertical ? width : visible * swipeAmount,
-			height: vertical ? visible * swipeAmount : height,
+			width: vertical ? width : visible * slideSize,
+			height: vertical ? visible * slideSize : height,
 		}
 		return style
-	}, [swipeAmount, vertical, visible])
-
-	useEffect(() => {
-		if (goToParent !== goTo) setGoTo(goToParent)
-	}, [goToParent])
-
-	useEffect(() => {
-		const { width, height } = getCurrentHeightAndWidth()
-		const amount = vertical ? height : width
-		if (amount === swipeAmount) return
-
-		setSwipeAmount(amount)
-		setSwipePosition(currentSelection.current * amount)
-	}, [vertical, visible])
-
-	// See if the user requests a new selection without swiping (ex. clicking home button)
-	useEffect(() => {
-		if (goTo == null) return
-
-		nextSelection.current = goTo
-		desiredOffset.current = goTo * swipeAmount
-
-		// If swiper goToTime is zero (or not specified), go straight to index w/o transition
-		if (!goToTime) {
-			currentSelection.current = nextSelection.current
-			stopSwiping()
-
-			// Transition swipe to desiredSelection
-		} else {
-			const selectionDelta =
-				currentSelection.current - nextSelection.current
-			// Allow for swiping to neighbor on other side of wrap around
-			if (
-				loop &&
-				childrenCount > 2 &&
-				((currentSelection.current == 0 &&
-					nextSelection.current == childrenCount - 1) ||
-					(currentSelection.current == childrenCount - 1 &&
-						nextSelection.current == 0))
-			) {
-				swipeVelocity.current =
-					((swipeAmount *
-						(childrenCount - Math.abs(selectionDelta))) /
-						goToTime) *
-					Math.sign(selectionDelta)
-			} else {
-				swipeVelocity.current =
-					(-swipeAmount * selectionDelta) / goToTime
-			}
-
-			swipeTimer.current = new Date().getMilliseconds()
-			isSwiping.current = true
-		}
-	}, [goTo])
-
-	// Finishes swiping after user let's go
-	useEffect(() => {
-		if (isTouching.current || !isSwiping.current) return
-
-		const swipeUpdateTime = 10
-		setTimeout(() => {
-			// Calculate next swipe offset based on velocity
-			const newSwipeTimer = new Date().getMilliseconds()
-			let correctedSwipeTimer =
-				newSwipeTimer + (newSwipeTimer < swipeTimer.current ? 1000 : 0)
-			let newSwipePosition = Math.round(
-				swipePosition +
-					(swipeVelocity.current *
-						(correctedSwipeTimer - swipeTimer.current)) /
-						1000
-			)
-
-			// Slow velocity down if carousel
-			if (carousel) {
-				const newVelocity =
-					swipeVelocity.current -
-					deceleration *
-						(correctedSwipeTimer - swipeTimer.current) *
-						Math.sign(swipeVelocity.current)
-
-				// prevent sign change
-				if (swipeVelocity.current / newVelocity < 0) {
-					if (!noDetent) {
-						swipeVelocity.current =
-							STOP_VELOCITY * Math.sign(swipeVelocity.current)
-					} else {
-						stopSwiping()
-						return
-					}
-				} else swipeVelocity.current = newVelocity
-			}
-
-			swipeTimer.current = newSwipeTimer
-
-			// Correct selection and offsets for overflow condition
-			let correctedDesiredSelection = nextSelection.current
-			let correctedOffset = desiredOffset.current
-			if (loop) {
-				if (
-					currentSelection.current == 0 &&
-					nextSelection.current == childrenCount - 1 &&
-					newSwipePosition < correctedOffset
-				) {
-					correctedDesiredSelection = -1
-					correctedOffset = -swipeAmount
-				} else if (
-					currentSelection.current == childrenCount - 1 &&
-					nextSelection.current == 0 &&
-					newSwipePosition > correctedOffset
-				) {
-					correctedDesiredSelection = childrenCount
-					correctedOffset = childrenCount * swipeAmount
-				}
-			}
-
-			// If current selection got to desired selection
-			if (
-				(currentSelection.current > correctedDesiredSelection &&
-					newSwipePosition < correctedOffset) ||
-				(currentSelection.current < correctedDesiredSelection &&
-					newSwipePosition > correctedOffset)
-			) {
-				currentSelection.current = nextSelection.current
-
-				// Check conditions to stop swiping
-
-				// one neighbor
-				if (!carousel) stopSwiping()
-				// Beginning and end of selections
-				else if (
-					currentSelection.current == 0 &&
-					swipeVelocity.current < 0
-				) {
-					stopSwiping()
-				} else if (
-					currentSelection.current >= childrenCount - visible &&
-					swipeVelocity.current > 0
-				)
-					stopSwiping()
-				else {
-					let finalVelocity = STOP_VELOCITY
-					if (carousel && !noDetent) {
-						// Check if velocity is too slow to make it through next selection w/ constant acceleration formula
-						finalVelocity =
-							Math.sqrt(
-								Math.pow(swipeVelocity.current, 2) -
-									2 * deceleration * 1000 * swipeAmount +
-									100
-							) || 0
-					}
-
-					if (finalVelocity < STOP_VELOCITY) {
-						stopSwiping()
-					} else {
-						// Continue swiping to the next selection
-						nextSelection.current += Math.sign(
-							swipeVelocity.current
-						)
-						desiredOffset.current =
-							nextSelection.current * swipeAmount
-						setSwipePosition(newSwipePosition)
-					}
-				}
-			} else if (isSwiping.current) {
-				setSwipePosition(newSwipePosition)
-			}
-		}, swipeUpdateTime)
-	})
+	}, [slideSize, vertical, visible])
 
 	useEffect(() => {
 		onLoad?.({
@@ -244,126 +71,195 @@ export default function Swiper(props: Props) {
 		})
 	}, [])
 
-	function getCurrentHeightAndWidth() {
-		const { offsetWidth, offsetHeight } = currentSelectionRef.current ?? {}
-		return { width: offsetWidth || 0, height: offsetHeight || 0 }
+	useEffect(() => {
+		if (goToParent !== goTo) setGoTo(goToParent)
+	}, [goToParent])
+
+	useEffect(() => {
+		const { width, height } = getCurrentHeightAndWidth()
+		const amount = vertical ? height : width
+		if (amount === slideSize) return
+
+		setSlideSize(amount)
+		setSwipePosition(v.current.currentSlide * amount)
+	}, [vertical, visible])
+
+	useEffect(() => {
+		if (goTo != null) goToSlide(goTo)
+	}, [goTo])
+
+	// Finishes swiping after user let's go
+	useEffect(() => {
+		if (v.current.isTouching || !v.current.isSwiping) return
+
+		const swipeUpdateTime = 10
+		setTimeout(() => {
+			// Calculate next swipe offset based on velocity
+			const newClock = new Date().getMilliseconds()
+			let correctedClock =
+				newClock + (newClock < v.current.clock ? 1000 : 0)
+			let newSwipePosition = Math.round(
+				swipePosition +
+					(v.current.velocity * (correctedClock - v.current.clock)) /
+						1000
+			)
+
+			// Slow velocity down if carousel
+			if (carousel) {
+				const newVelocity =
+					v.current.velocity -
+					deceleration *
+						(correctedClock - v.current.clock) *
+						Math.sign(v.current.velocity)
+
+				// prevent sign change
+				if (v.current.velocity / newVelocity < 0) {
+					if (!noDetent) {
+						v.current.velocity =
+							STOP_VELOCITY * Math.sign(v.current.velocity)
+					} else {
+						stopSwiping()
+						return
+					}
+				} else v.current.velocity = newVelocity
+			}
+
+			v.current.clock = newClock
+
+			// Correct selection and offsets for overflow condition
+			let correctedDesiredSelection = v.current.nextSlide
+			let correctedOffset = v.current.desiredOffset
+			if (loop) {
+				if (
+					v.current.currentSlide == 0 &&
+					v.current.nextSlide == slideCount - 1 &&
+					newSwipePosition < correctedOffset
+				) {
+					correctedDesiredSelection = -1
+					correctedOffset = -slideSize
+				} else if (
+					v.current.currentSlide == slideCount - 1 &&
+					v.current.nextSlide == 0 &&
+					newSwipePosition > correctedOffset
+				) {
+					correctedDesiredSelection = slideCount
+					correctedOffset = slideCount * slideSize
+				}
+			}
+
+			// If current selection got to desired selection
+			if (
+				(v.current.currentSlide > correctedDesiredSelection &&
+					newSwipePosition < correctedOffset) ||
+				(v.current.currentSlide < correctedDesiredSelection &&
+					newSwipePosition > correctedOffset)
+			) {
+				v.current.currentSlide = v.current.nextSlide
+
+				// Check conditions to stop swiping
+
+				// one neighbor
+				if (!carousel) stopSwiping()
+				// Beginning and end of selections
+				else if (
+					v.current.currentSlide == 0 &&
+					v.current.velocity < 0
+				) {
+					stopSwiping()
+				} else if (
+					v.current.currentSlide >= slideCount - visible &&
+					v.current.velocity > 0
+				)
+					stopSwiping()
+				else {
+					let finalVelocity = STOP_VELOCITY
+					if (carousel && !noDetent) {
+						// Check if velocity is too slow to make it through next selection w/ constant acceleration formula
+						finalVelocity =
+							Math.sqrt(
+								Math.pow(v.current.velocity, 2) -
+									2 * deceleration * 1000 * slideSize +
+									100
+							) || 0
+					}
+
+					if (finalVelocity < STOP_VELOCITY) {
+						stopSwiping()
+					} else {
+						// Continue swiping to the next selection
+						v.current.nextSlide += Math.sign(v.current.velocity)
+						v.current.desiredOffset =
+							v.current.nextSlide * slideSize
+						setSwipePosition(newSwipePosition)
+					}
+				}
+			} else if (v.current.isSwiping) {
+				setSwipePosition(newSwipePosition)
+			}
+		}, swipeUpdateTime)
+	})
+
+	function handleTouchDown(e: TouchEvent<HTMLDivElement>) {
+		const { pageX, pageY } = e.targetTouches[0]
+		const position = vertical ? pageY : pageX
+		handleDown(position)
 	}
 
-	function handleTouchDown(e) {
-		handleMouseDown({
-			pageX: e.targetTouches[0].pageX,
-			pageY: e.targetTouches[0].pageY,
-		})
+	function handleMouseDown(e: MouseEvent<HTMLDivElement>) {
+		const position = vertical ? e.pageY : e.pageX
+		handleDown(position)
 	}
 
-	function handleMouseDown(e) {
+	function handleDown(position: number) {
 		// For neighbors only, only allow swiping if at rest
-		if (carousel || !isSwiping.current) {
-			isTouching.current = true
-			swipeStart.current = vertical ? e.pageY : e.pageX
-			lastTouchLocation.current = swipeStart.current
-			onSwipeSpace.current = true
-		}
+		if (!carousel && v.current.isSwiping) return
+
+		v.current.isTouching = true
+		v.current.touchStartPosition = position
+		v.current.touchEndPosition = v.current.touchStartPosition
 	}
 
-	function handleMouseUp() {
+	function handleUp() {
 		doneSwiping()
 	}
 
-	function handleMouseLeave() {
-		if (isTouching.current) {
-			onSwipeSpace.current = false // signify letting go outside swipe space
+	function handleLeave() {
+		if (v.current.isTouching) {
 			doneSwiping()
 		}
 	}
 
-	function doneSwiping() {
-		if (isSwiping.current) {
-			// If swipe is faster than minimum speed, swipe in that direction
-			if (Math.abs(swipeVelocity.current) > minimumSwipeSpeed) {
-				nextSelection.current =
-					Math.floor(swipePosition / swipeAmount) +
-					(swipeVelocity.current > 0 ? 1 : 0)
-				clampDesiredSelection()
-				currentSelection.current =
-					nextSelection.current - Math.sign(swipeVelocity.current)
-
-				// If swipe offset is past 50%, swipe in that direction, else go back to current selection
-			} else {
-				const goNext =
-					(swipePosition + swipeAmount) % swipeAmount >
-					swipeAmount / 2
-				nextSelection.current =
-					Math.floor(swipePosition / swipeAmount) + (goNext ? 1 : 0)
-				clampDesiredSelection()
-				currentSelection.current =
-					nextSelection.current + (goNext ? -1 : 1)
-
-				if (!carousel || !noDetent) {
-					swipeVelocity.current =
-						minimumSwipeSpeed * (goNext ? 1 : -1)
-				}
-			}
-
-			if (loop && !carousel) {
-				if (currentSelection.current > childrenCount - 1) {
-					currentSelection.current = 0
-					setSwipePosition(s => s - swipeAmount * childrenCount)
-				} else if (currentSelection.current < 0) {
-					currentSelection.current = childrenCount - 1
-					setSwipePosition(s => s + swipeAmount * childrenCount)
-				}
-
-				if (nextSelection.current > childrenCount - 1)
-					nextSelection.current = 0
-				else if (nextSelection.current < 0)
-					nextSelection.current = childrenCount - 1
-			}
-
-			desiredOffset.current = swipeAmount * nextSelection.current
-			swipeTimer.current = new Date().getMilliseconds()
-		}
-		setRerender(s => !s) // needed only for carousel??
-		isTouching.current = false
+	function handleTouchMove(e: TouchEvent<HTMLDivElement>) {
+		const { pageX, pageY } = e.targetTouches[0]
+		const position = vertical ? pageY : pageX
+		handleMove(position)
 	}
 
-	function clampDesiredSelection() {
-		if (loop) return
-
-		nextSelection.current = Math.min(
-			Math.max(nextSelection.current, 0),
-			Math.max(childrenCount - visible, 0)
-		)
+	function handleMouseMove(e: MouseEvent<HTMLDivElement>) {
+		const position = vertical ? e.pageY : e.pageX
+		handleMove(position)
 	}
 
-	function handleTouchMove(e) {
-		handleMouseMove({
-			pageX: e.targetTouches[0].pageX,
-			pageY: e.targetTouches[0].pageY,
-		})
-	}
+	function handleMove(position: number) {
+		if (disabled || !v.current.isTouching || slideCount === 1) return
 
-	function handleMouseMove(e) {
-		if (disabled || !isTouching.current || childrenCount === 1) return
-
-		const touchLocation = vertical ? e.pageY : e.pageX
-		if (lastTouchLocation.current === touchLocation) return
+		if (v.current.touchEndPosition === position) return
 
 		// Determine when swiping begins
-		if (!isSwiping.current) {
+		if (!v.current.isSwiping) {
 			if (
-				Math.abs(touchLocation - swipeStart.current) / scaleSwipe >
+				Math.abs(position - v.current.touchStartPosition) / scaleSwipe >
 				START_SWIPE_AMOUNT
 			) {
-				isSwiping.current = true
+				v.current.isSwiping = true
 				onSwipeStart?.()
 			}
 
 			// Swiping in progress
 		} else {
 			const swipeMovement =
-				(lastTouchLocation.current - touchLocation) / scaleSwipe
-			lastTouchLocation.current = touchLocation
+				(v.current.touchEndPosition - position) / scaleSwipe
+			v.current.touchEndPosition = position
 			let newSwipePosition = swipePosition + swipeMovement
 
 			// Prevent wrap around swiping if not wanted
@@ -371,24 +267,106 @@ export default function Swiper(props: Props) {
 				if (swipePosition <= 0 && swipeMovement < 0)
 					newSwipePosition = 0
 				if (
-					swipePosition >= swipeAmount * (childrenCount - visible) &&
+					swipePosition >= slideSize * (slideCount - visible) &&
 					swipeMovement > 0
 				)
-					newSwipePosition = swipeAmount * (childrenCount - visible)
+					newSwipePosition = slideSize * (slideCount - visible)
 			}
 
 			// Calculate swipe velocity and update position
 			const newSwipeTimer = new Date().getMilliseconds()
 			let correctedSwipeTimer =
-				newSwipeTimer + (newSwipeTimer < swipeTimer.current ? 1000 : 0)
-			swipeVelocity.current = Math.round(
-				(swipeMovement * 1000) /
-					(correctedSwipeTimer - swipeTimer.current)
+				newSwipeTimer + (newSwipeTimer < v.current.clock ? 1000 : 0)
+			v.current.velocity = Math.round(
+				(swipeMovement * 1000) / (correctedSwipeTimer - v.current.clock)
 			)
-			swipeTimer.current = newSwipeTimer
+			v.current.clock = newSwipeTimer
 
 			setSwipePosition(newSwipePosition)
 		}
+	}
+
+	/** programmatically go to slide via external control */
+	function goToSlide(goTo: number) {
+		v.current.nextSlide = goTo
+		v.current.desiredOffset = goTo * slideSize
+
+		// If swiper goToTime is zero (or not specified), go straight to index w/o transition
+		if (!goToTime) {
+			v.current.currentSlide = v.current.nextSlide
+			return stopSwiping()
+		}
+
+		const delta = getDelta(
+			v.current.currentSlide,
+			v.current.nextSlide,
+			loop,
+			slideCount
+		)
+		v.current.velocity = (slideSize * delta) / goToTime
+		v.current.clock = new Date().getMilliseconds()
+		v.current.isSwiping = true
+	}
+
+	function getCurrentHeightAndWidth() {
+		const { offsetWidth, offsetHeight } = currentSlideRef.current ?? {}
+		return { width: offsetWidth || 0, height: offsetHeight || 0 }
+	}
+
+	function doneSwiping() {
+		if (v.current.isSwiping) {
+			// If swipe is faster than minimum speed, swipe in that direction
+			if (Math.abs(v.current.velocity) > minimumSwipeSpeed) {
+				v.current.nextSlide =
+					Math.floor(swipePosition / slideSize) +
+					(v.current.velocity > 0 ? 1 : 0)
+				clampDesiredSelection()
+				v.current.currentSlide =
+					v.current.nextSlide - Math.sign(v.current.velocity)
+
+				// If swipe offset is past 50%, swipe in that direction, else go back to current selection
+			} else {
+				const goNext =
+					(swipePosition + slideSize) % slideSize > slideSize / 2
+				v.current.nextSlide =
+					Math.floor(swipePosition / slideSize) + (goNext ? 1 : 0)
+				clampDesiredSelection()
+				v.current.currentSlide = v.current.nextSlide + (goNext ? -1 : 1)
+
+				if (!carousel || !noDetent) {
+					v.current.velocity = minimumSwipeSpeed * (goNext ? 1 : -1)
+				}
+			}
+
+			if (loop && !carousel) {
+				if (v.current.currentSlide > slideCount - 1) {
+					v.current.currentSlide = 0
+					setSwipePosition(s => s - slideSize * slideCount)
+				} else if (v.current.currentSlide < 0) {
+					v.current.currentSlide = slideCount - 1
+					setSwipePosition(s => s + slideSize * slideCount)
+				}
+
+				if (v.current.nextSlide > slideCount - 1)
+					v.current.nextSlide = 0
+				else if (v.current.nextSlide < 0)
+					v.current.nextSlide = slideCount - 1
+			}
+
+			v.current.desiredOffset = slideSize * v.current.nextSlide
+			v.current.clock = new Date().getMilliseconds()
+		}
+		setRerender(s => !s) // needed only for carousel??
+		v.current.isTouching = false
+	}
+
+	function clampDesiredSelection() {
+		if (loop) return
+
+		v.current.nextSlide = Math.min(
+			Math.max(v.current.nextSlide, 0),
+			Math.max(slideCount - visible, 0)
+		)
 	}
 
 	// Stop swiping method
@@ -396,16 +374,16 @@ export default function Swiper(props: Props) {
 		if (
 			!carousel ||
 			!noDetent ||
-			Math.abs(swipeVelocity.current) > minimumSwipeSpeed
+			Math.abs(v.current.velocity) > minimumSwipeSpeed
 		) {
-			setSwipePosition(desiredOffset.current)
+			setSwipePosition(v.current.desiredOffset)
 		}
 
-		swipeVelocity.current = 0
-		isSwiping.current = false
+		v.current.velocity = 0
+		v.current.isSwiping = false
 
 		if (onSwipeEnd)
-			setTimeout(() => onSwipeEnd(currentSelection.current), 100)
+			setTimeout(() => onSwipeEnd(v.current.currentSlide), 100)
 	}
 
 	const pageWithStyle = Children.map(
@@ -417,27 +395,27 @@ export default function Swiper(props: Props) {
 			let adjustedIndex = index
 
 			if (loop && !carousel) {
-				if (childrenCount === 2) {
-					if (currentSelection.current == 0) {
+				if (slideCount === 2) {
+					if (v.current.currentSlide == 0) {
 						if (swipePosition < 0 && index == 1) adjustedIndex = -1
-					} else if (currentSelection.current == 1) {
-						if (swipePosition > swipeAmount && index == 0)
+					} else if (v.current.currentSlide == 1) {
+						if (swipePosition > slideSize && index == 0)
 							adjustedIndex = 2
 					}
-				} else if (childrenCount > 2) {
-					if (currentSelection.current == 0) {
-						if (index == childrenCount - 1) adjustedIndex = -1
-					} else if (currentSelection.current == childrenCount - 1) {
-						if (index == 0) adjustedIndex = childrenCount
+				} else if (slideCount > 2) {
+					if (v.current.currentSlide == 0) {
+						if (index == slideCount - 1) adjustedIndex = -1
+					} else if (v.current.currentSlide == slideCount - 1) {
+						if (index == 0) adjustedIndex = slideCount
 					}
 				}
 			}
 
-			const offsetAmount = adjustedIndex * swipeAmount - swipePosition
+			const offsetAmount = adjustedIndex * slideSize - swipePosition
 
 			const ref =
-				adjustedIndex === currentSelection.current
-					? currentSelectionRef
+				adjustedIndex === v.current.currentSlide
+					? currentSlideRef
 					: undefined
 
 			const slideProps = {
@@ -449,12 +427,10 @@ export default function Swiper(props: Props) {
 
 			if (neighborsOnly) {
 				if (
-					(adjustedIndex > currentSelection.current - 2 &&
-						adjustedIndex < currentSelection.current + 2) ||
-					(index == 0 &&
-						currentSelection.current == childrenCount - 1) ||
-					(index == childrenCount - 1 &&
-						currentSelection.current == 0)
+					(adjustedIndex > v.current.currentSlide - 2 &&
+						adjustedIndex < v.current.currentSlide + 2) ||
+					(index == 0 && v.current.currentSlide == slideCount - 1) ||
+					(index == slideCount - 1 && v.current.currentSlide == 0)
 				) {
 					return <Slide {...slideProps} />
 				} else {
@@ -474,10 +450,10 @@ export default function Swiper(props: Props) {
 			onTouchStart={handleTouchDown}
 			onMouseMove={handleMouseMove}
 			onTouchMove={handleTouchMove}
-			onMouseUp={handleMouseUp}
-			onTouchEnd={handleMouseUp}
-			onMouseLeave={handleMouseLeave}
-			onTouchCancel={handleMouseLeave}
+			onMouseUp={handleUp}
+			onTouchEnd={handleUp}
+			onMouseLeave={handleLeave}
+			onTouchCancel={handleLeave}
 		>
 			{pageWithStyle}
 		</div>

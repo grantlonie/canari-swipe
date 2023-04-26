@@ -38,3 +38,22 @@ interface Methods {
 	/** go to previous slide */
 	prev: () => void
 }
+
+export interface InstanceVariables {
+	/** used to calculate velocity and changes in position */
+	clock: number
+	/** active slide */
+	currentSlide: number
+	/** mouse or touch down inside container */
+	isTouching: boolean
+	/** user is swiping - moving while touching */
+	isSwiping: boolean
+	/** px location where touch started */
+	touchStartPosition: number
+	/** px location where touch ended */
+	touchEndPosition: number
+	/** current velocity  */
+	velocity: number
+	desiredOffset: number
+	nextSlide: number
+}
