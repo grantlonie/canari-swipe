@@ -1,4 +1,4 @@
-import { getDelta } from './utils'
+import { carouselIndexes, getDelta } from './utils'
 
 describe('utils', () => {
 	describe('getDelta', () => {
@@ -21,6 +21,35 @@ describe('utils', () => {
 			expect(delta).toEqual(3)
 			const delta2 = getDelta(1, 5, true, 10)
 			expect(delta2).toEqual(4)
+		})
+	})
+
+	describe('carouselIndexes', () => {
+		test('2 visible', () => {
+			let flipped = carouselIndexes(4, 2, 0)
+			expect(flipped).toEqual([0, 0, 0, -1])
+			flipped = carouselIndexes(4, 2, 2)
+			expect(flipped).toEqual([1, 0, 0, 0])
+			flipped = carouselIndexes(9, 2, 2)
+			expect(flipped).toEqual([0, 0, 0, 0, 0, 0, 0, 0, -1])
+		})
+		test('3 visible', () => {
+			let flipped = carouselIndexes(5, 3, 0)
+			expect(flipped).toEqual([0, 0, 0, 0, -1])
+			flipped = carouselIndexes(6, 3, 0)
+			expect(flipped).toEqual([0, 0, 0, 0, 0, -1])
+			flipped = carouselIndexes(6, 3, 1)
+			expect(flipped).toEqual([0, 0, 0, 0, 0, 0])
+			flipped = carouselIndexes(6, 3, 4)
+			expect(flipped).toEqual([1, 1, 1, 0, 0, 0])
+			flipped = carouselIndexes(7, 3, 3)
+			expect(flipped).toEqual([1, 0, 0, 0, 0, 0, 0])
+		})
+		test('4 visible', () => {
+			let flipped = carouselIndexes(6, 4, 5)
+			expect(flipped).toEqual([1, 1, 1, 1, 0, 0])
+			flipped = carouselIndexes(7, 4, 1)
+			expect(flipped).toEqual([0, 0, 0, 0, 0, 0, 0])
 		})
 	})
 })

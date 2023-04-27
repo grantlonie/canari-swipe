@@ -48,3 +48,38 @@ export function getVelocityMovements(movements: Movement[]) {
 	const velocity = (end.position - start.position) / (end.time - start.time)
 	return velocity * 1000 * -1
 }
+
+/** given number of slides and which slide is current, generate an array that indicates if a slide should carousel (0: no, 1: yes, small slide to the end, -1: yes, large index to the start) */
+export function carouselIndexes(count: number, visible: number, currentSlide: number) {
+	const overhang = (count - visible) / 2
+	const minIndex = -Math.floor(overhang)
+	const maxIndex = visible - 1 + Math.ceil(overhang)
+
+	let index = -currentSlide
+	let carousel = 0
+	if (index < minIndex) {
+		index += count
+		carousel = 1
+	}
+
+	return new Array(count).fill(null).map(() => {
+		if (index > maxIndex) {
+			carousel = carousel ? 0 : -1
+			index -= count
+		}
+		index++
+		return carousel
+	})
+}
+
+export function correctPosition(position: number, maxPosition: number, loop: boolean) {
+	// TODO - add spring back effect
+
+	if (position < 0) {
+		return loop ? position + maxPosition : 0
+	} else if (position > maxPosition) {
+		return loop ? position - maxPosition : maxPosition
+	}
+
+	return position
+}
