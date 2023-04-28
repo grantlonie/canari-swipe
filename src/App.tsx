@@ -57,6 +57,6 @@ const initialControlProps: ControlProps = {
 	goToTime: 500,
 	loop: false,
 	mode: 'snap',
-	scaleSwipe: 1,
+	scale: 1,
 	visible: 2,
 }

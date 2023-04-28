@@ -77,7 +77,7 @@ If you want to not show a selection, pass `[]` as the child. Null and undefined 
 | visibleCount      | Number   | 1       | If carousel, amount of visible selections in the swiper                                                                        |
 | detent            | Number   | false   | If carousel, true - stop swiping exactly on edge of selection, false - swiping can stop mid-selection                          |
 | deceleration      | Number   | 3       | If carousel, how quickly the carousel slows down                                                                               |
-| scaleSwipe        | Number   | 1       | An amount to scale the swiping down or up                                                                                      |
+| scale             | Number   | 1       | An amount to scale the swiping down or up                                                                                      |
 | resetSwiper       | Bool     | false   | If true, reset the swiper back to firstSelection                                                                               |
 | onSwipeStart      | Callback | NA      | Callback function once swiping has started                                                                                     |
 | onSwipeEnd        | Callback | NA      | Callback function after a selection has changed                                                                                |

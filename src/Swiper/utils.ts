@@ -16,7 +16,7 @@ export const initialInstanceVariables: InstanceVariables = {
 	initialized: false,
 	isTouching: false,
 	isSwiping: false,
-	movements: [{ position: 0, time: 0 }],
+	movements: [{ pagePosition: 0, time: 0 }],
 }
 
 /** Return distance between current and next positions, and if looping, the other direction if faster */
@@ -44,7 +44,7 @@ export const getCurrentClock = () => new Date().getTime()
 export function getVelocityFromMovements(movements: Movement[]) {
 	const start = movements[0]
 	const end = movements[movements.length - 1]
-	const velocity = (end.position - start.position) / (end.time - start.time)
+	const velocity = (end.pagePosition - start.pagePosition) / (end.time - start.time)
 	return velocity * 1000 * -1
 }
 
@@ -101,11 +101,11 @@ export function carouselIndexes(count: number, visible: number, currentSlide: nu
 	})
 }
 
-export function correctPosition(position: number, maxPosition: number, loop: boolean) {
+export function correctPosition(position: number, totalDistance: number, loop: boolean) {
 	if (position < 0) {
-		return loop ? position + maxPosition : 0
-	} else if (position > maxPosition) {
-		return loop ? position - maxPosition : maxPosition
+		return loop ? position + totalDistance : 0
+	} else if (position > totalDistance) {
+		return loop ? position - totalDistance : totalDistance
 	}
 
 	return position

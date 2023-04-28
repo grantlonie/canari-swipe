@@ -21,7 +21,7 @@ export interface SwiperProps {
 	/** return callable methods */
 	onLoad?: (methods: Methods) => void
 	/** (default 1) helpful when applying transform scale to swiper to match swipe movements */
-	scaleSwipe?: number
+	scale?: number
 	/** (default 1) show multiple slides at the same time */
 	visible?: number
 	/** change to vertical swiper */
@@ -54,7 +54,7 @@ export interface InstanceVariables {
 
 export interface Movement {
 	/** touch position */
-	position: number
+	pagePosition: number
 	/** ms at position */
 	time: number
 }

@@ -33,7 +33,7 @@ export default function Swiper(props: SwiperProps) {
 		children,
 		visible = 1,
 		braking,
-		scaleSwipe = 1,
+		scale = 1,
 		loop = false,
 		mode = 'snap',
 		goTo: goToParent,
@@ -50,17 +50,17 @@ export default function Swiper(props: SwiperProps) {
 	const v = useRef(initialInstanceVariables)
 
 	const [slideSize, setSlideSize] = useState(0)
-	const [swipePosition, setSwipePosition] = useState(0)
+	const [position, setPosition] = useState(0)
 	const [goTo, setGoTo] = useState(goToParent)
 
 	const slideCount = children.length
 	const carousel = visible > 1
 	const deceleration = getDeceleration(braking)
-	const currentSlide = Math.floor(slideSize ? swipePosition / slideSize : 0)
+	const currentSlide = Math.floor(slideSize ? position / slideSize : 0)
 	const isAnimating = Boolean(v.current.animationInterval)
 	const totalDistance = slideCount * slideSize
 	const distanceMinusVisible = totalDistance - visible * slideSize
-	const renderPosition = swipePosition //loop ? swipePosition : clampPosition(swipePosition, distanceMinusVisible, slideSize / 2)
+	const renderPosition = position //loop ? position : clampPosition(position, distanceMinusVisible, slideSize / 2)
 
 	const wrapperStyle = useMemo(() => {
 		const { width, height } = getCurrentHeightAndWidth()
@@ -92,7 +92,7 @@ export default function Swiper(props: SwiperProps) {
 		if (amount === slideSize) return
 
 		setSlideSize(amount)
-		setSwipePosition(currentSlide * amount)
+		setPosition(currentSlide * amount)
 	}, [vertical, visible])
 
 	useEffect(() => {
@@ -102,16 +102,16 @@ export default function Swiper(props: SwiperProps) {
 	function finishSwiping(distance: number, duration: number) {
 		v.current.isSwiping = false
 		const startClock = getCurrentClock()
-		const maxPosition = slideSize * slideCount
 		v.current.animationInterval = setInterval(() => {
 			const clock = getCurrentClock() - startClock
 			if (clock >= duration) return stopSwiping()
 
-			let newPosition = distance * easeOutSine(clock / duration) + swipePosition
-			if (newPosition < 0) newPosition += maxPosition
-			else if (newPosition >= maxPosition) newPosition -= maxPosition
+			let newPosition = position + distance * easeOutSine(clock / duration)
+			newPosition = correctPosition(newPosition, totalDistance, loop)
+			// if (newPosition < 0) newPosition += totalDistance
+			// else if (newPosition >= totalDistance) newPosition -= totalDistance
 
-			setSwipePosition(newPosition)
+			setPosition(newPosition)
 		}, 10)
 	}
 
@@ -123,7 +123,7 @@ export default function Swiper(props: SwiperProps) {
 			return stopSwiping()
 		}
 
-		let distance = getDelta(swipePosition, v.current.desiredSlide * slideSize, loop, totalDistance)
+		let distance = getDelta(position, v.current.desiredSlide * slideSize, loop, totalDistance)
 		finishSwiping(distance, goToTime)
 	}
 
@@ -134,44 +134,44 @@ export default function Swiper(props: SwiperProps) {
 
 	function handleTouchDown(e: TouchEvent<HTMLDivElement>) {
 		const { pageX, pageY } = e.targetTouches[0]
-		const position = vertical ? pageY : pageX
-		handleDown(position)
+		const pagePosition = vertical ? pageY : pageX
+		handleDown(pagePosition)
 	}
 
 	function handleMouseDown(e: MouseEvent<HTMLDivElement>) {
-		const position = vertical ? e.pageY : e.pageX
-		handleDown(position)
+		const pagePosition = vertical ? e.pageY : e.pageX
+		handleDown(pagePosition)
 	}
 
-	function handleDown(position: number) {
+	function handleDown(pagePosition: number) {
 		// For neighbors only, only allow swiping if at rest
 		if (!carousel && v.current.isSwiping) return
 
 		// clearInterval(v.current.animationInterval)
 		v.current.isTouching = true
-		const movement: Movement = { position, time: getCurrentClock() }
+		const movement: Movement = { pagePosition, time: getCurrentClock() }
 		v.current.movements = new Array(5).fill(movement)
 	}
 
 	function handleTouchMove(e: TouchEvent<HTMLDivElement>) {
 		const { pageX, pageY } = e.targetTouches[0]
-		const position = vertical ? pageY : pageX
-		handleMove(position)
+		const pagePosition = vertical ? pageY : pageX
+		handleMove(pagePosition)
 	}
 
 	function handleMouseMove(e: MouseEvent<HTMLDivElement>) {
-		const position = vertical ? e.pageY : e.pageX
-		handleMove(position)
+		const pagePosition = vertical ? e.pageY : e.pageX
+		handleMove(pagePosition)
 	}
 
-	function handleMove(position: number) {
+	function handleMove(pagePosition: number) {
 		const { isSwiping, isTouching, movements } = v.current
 		if (disabled || !isTouching || slideCount === 1) return
 
 		// Determine when swiping begins
 		if (!isSwiping) {
-			const startPosition = movements[0].position
-			const started = startedSwiping(position, startPosition, scaleSwipe)
+			const startPosition = movements[0].pagePosition
+			const started = startedSwiping(pagePosition, startPosition, scale)
 			if (!started) return
 
 			v.current.isSwiping = true
@@ -179,14 +179,12 @@ export default function Swiper(props: SwiperProps) {
 		}
 
 		const previousMovement = movements[movements.length - 1]
-		const swipeMovement = (previousMovement.position - position) / scaleSwipe
-		let newSwipePosition = swipePosition + swipeMovement
-		const maxPosition = slideCount * slideSize
-		const newPosition = correctPosition(newSwipePosition, maxPosition, loop)
+		const swipeMovement = (previousMovement.pagePosition - pagePosition) / scale
+		const newPosition = correctPosition(position + swipeMovement, distanceMinusVisible, loop)
 
-		setSwipePosition(newPosition)
+		setPosition(newPosition)
 		v.current.movements.shift()
-		const movement: Movement = { position, time: getCurrentClock() }
+		const movement: Movement = { pagePosition, time: getCurrentClock() }
 		v.current.movements.push(movement)
 	}
 
@@ -198,11 +196,11 @@ export default function Swiper(props: SwiperProps) {
 		let pixelDistance = howFar(velocity, deceleration)
 
 		if (!loop) {
-			let finalPosition = swipePosition + Math.sign(velocity) * pixelDistance
+			let finalPosition = position + Math.sign(velocity) * pixelDistance
 
 			if (finalPosition < 0 || finalPosition > distanceMinusVisible) {
 				finalPosition = clamp(finalPosition, 0, distanceMinusVisible)
-				pixelDistance = finalPosition - swipePosition
+				pixelDistance = finalPosition - position
 				const updatedDeceleration = updateDeceleration(velocity, pixelDistance)
 				const duration = howLong(velocity, updatedDeceleration)
 				return finishSwiping(pixelDistance, duration)
@@ -216,7 +214,7 @@ export default function Swiper(props: SwiperProps) {
 			let maxSlides = Math.floor(pixelDistance / slideSize)
 
 			if (!maxSlides) {
-				const pastHalfWay = (swipePosition + slideSize) % slideSize > slideSize / 2
+				const pastHalfWay = (position + slideSize) % slideSize > slideSize / 2
 				velocity = 1000 * (pastHalfWay ? 1 : -1) // TODO - magic number
 			}
 
@@ -232,7 +230,7 @@ export default function Swiper(props: SwiperProps) {
 	function stopSwiping() {
 		if (v.current.desiredSlide) {
 			const desiredOffset = v.current.desiredSlide * slideSize
-			setSwipePosition(desiredOffset)
+			setPosition(desiredOffset)
 		}
 
 		onSwipeEnd?.(v.current.desiredSlide || currentSlide)
