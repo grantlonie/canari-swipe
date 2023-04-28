@@ -1,25 +1,20 @@
-import { CSSProperties, TouchEvent, forwardRef, useEffect, useMemo, useRef, useState } from 'react'
+import { CSSProperties, TouchEvent, forwardRef, useEffect, useMemo, useRef, useState, MouseEvent } from 'react'
 import { Movement, SwiperProps as Props } from './types'
-import sleep, {
+import {
 	carouselIndexes,
 	clamp,
-	clampPosition,
 	correctPosition,
 	easeOutSine,
 	getCurrentClock,
 	getDeceleration,
 	getDelta,
-	getPositionFromVelocity,
-	getVelocityFromDeceleration,
 	getVelocityFromMovements,
 	howFar,
 	howLong,
 	initialInstanceVariables,
-	minVelocityToTravel,
 	startedSwiping,
 	updateDeceleration,
 } from './utils'
-import { MouseEvent } from 'react'
 
 /** if carousel, then determine what velocity to stopSwiping */
 const STOP_VELOCITY = 300
@@ -60,7 +55,6 @@ export default function Swiper(props: SwiperProps) {
 	const isAnimating = Boolean(v.current.animationInterval)
 	const totalDistance = slideCount * slideSize
 	const distanceMinusVisible = totalDistance - visible * slideSize
-	const renderPosition = position //loop ? position : clampPosition(position, distanceMinusVisible, slideSize / 2)
 
 	const wrapperStyle = useMemo(() => {
 		const { width, height } = getCurrentHeightAndWidth()
@@ -107,9 +101,7 @@ export default function Swiper(props: SwiperProps) {
 			if (clock >= duration) return stopSwiping()
 
 			let newPosition = position + distance * easeOutSine(clock / duration)
-			newPosition = correctPosition(newPosition, totalDistance, loop)
-			// if (newPosition < 0) newPosition += totalDistance
-			// else if (newPosition >= totalDistance) newPosition -= totalDistance
+			newPosition = correctPosition(newPosition, totalDistance)
 
 			setPosition(newPosition)
 		}, 10)
@@ -147,7 +139,7 @@ export default function Swiper(props: SwiperProps) {
 		// For neighbors only, only allow swiping if at rest
 		if (!carousel && v.current.isSwiping) return
 
-		// clearInterval(v.current.animationInterval)
+		clearInterval(v.current.animationInterval)
 		v.current.isTouching = true
 		const movement: Movement = { pagePosition, time: getCurrentClock() }
 		v.current.movements = new Array(5).fill(movement)
@@ -179,8 +171,9 @@ export default function Swiper(props: SwiperProps) {
 		}
 
 		const previousMovement = movements[movements.length - 1]
-		const swipeMovement = (previousMovement.pagePosition - pagePosition) / scale
-		const newPosition = correctPosition(position + swipeMovement, distanceMinusVisible, loop)
+		const adjScale = scale * (position > distanceMinusVisible ? 2 : 1)
+		const swipeMovement = (previousMovement.pagePosition - pagePosition) / adjScale
+		const newPosition = correctPosition(position + swipeMovement, totalDistance)
 
 		setPosition(newPosition)
 		v.current.movements.shift()
@@ -239,6 +232,14 @@ export default function Swiper(props: SwiperProps) {
 		v.current.desiredSlide = undefined
 	}
 
+	/** if !loop, determine if slide should be hidden  */
+	function isHidden(isFlipped: boolean) {
+		if (loop) return false
+		if (position < distanceMinusVisible) return false
+		if (position < distanceMinusVisible + (visible / 2) * slideSize) return isFlipped
+		else return !isFlipped
+	}
+
 	const flippedIndexes = carouselIndexes(slideCount, visible, currentSlide)
 
 	return (
@@ -254,10 +255,12 @@ export default function Swiper(props: SwiperProps) {
 			onTouchCancel={handleUp}
 		>
 			{children.map((child, i) => {
-				const index = i + (loop ? flippedIndexes[i] * slideCount : 0)
-				const offsetAmount = index * slideSize - renderPosition
+				const flipped = flippedIndexes[i]
+				const index = i + flipped * slideCount
+				const offsetAmount = index * slideSize - position
 				const ref = index === currentSlide ? currentSlideRef : undefined
-				const slideProps = { key: i, child, offsetAmount, vertical, ref }
+
+				const slideProps = { key: i, child, offsetAmount, vertical, ref, hidden: isHidden(flipped !== 0) }
 
 				if (lazy) {
 					if (
@@ -278,7 +281,7 @@ export default function Swiper(props: SwiperProps) {
 	)
 }
 
-const Slide = forwardRef<HTMLDivElement, any>(({ child, offsetAmount, vertical }, ref) => {
+const Slide = forwardRef<HTMLDivElement, any>(({ child, offsetAmount, vertical, hidden }, ref) => {
 	let xOffset = 0
 	let yOffset = 0
 	if (vertical) yOffset = offsetAmount
@@ -287,6 +290,7 @@ const Slide = forwardRef<HTMLDivElement, any>(({ child, offsetAmount, vertical }
 	const style: CSSProperties = {
 		position: 'absolute',
 		transform: `translate3d(${xOffset}px, ${yOffset}px, 0)`,
+		...(hidden && { visibility: 'hidden' }),
 	}
 
 	return (

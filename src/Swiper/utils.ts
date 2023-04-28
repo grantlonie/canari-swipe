@@ -101,13 +101,9 @@ export function carouselIndexes(count: number, visible: number, currentSlide: nu
 	})
 }
 
-export function correctPosition(position: number, totalDistance: number, loop: boolean) {
-	if (position < 0) {
-		return loop ? position + totalDistance : 0
-	} else if (position > totalDistance) {
-		return loop ? position - totalDistance : totalDistance
-	}
-
+export function correctPosition(position: number, totalDistance: number) {
+	if (position < 0) return position + totalDistance
+	else if (position > totalDistance) return position - totalDistance
 	return position
 }
 
@@ -123,24 +119,4 @@ export function easeOutSine(ratio: number) {
 
 export function clamp(num: number, min: number, max: number) {
 	return Math.min(Math.max(num, min), max)
-}
-
-export function isOutside(position: number, totalDistance: number) {
-	return position < 0 || position > totalDistance
-}
-
-/** if position is outside distance, clamp it w/ rubberband effect */
-export function clampPosition(position: number, totalDistance: number, stop: number) {
-	if (!isOutside(position, totalDistance)) return position
-
-	return clamp(position, 0, totalDistance)
-
-	// TODO - add rubber band effect
-	const adjPosition = position < 0 ? -position : position - totalDistance
-	return position + easeOutSine(adjPosition / stop)
-
-	if (position < 0) {
-		return position + easeOutSine(adjPosition / stop)
-	} else if (position > totalDistance) {
-	}
 }
