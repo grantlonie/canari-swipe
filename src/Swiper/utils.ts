@@ -13,21 +13,21 @@ export function getDeceleration(braking?: SwiperProps['braking']) {
 }
 
 export const initialInstanceVariables: InstanceVariables = {
-	clock: 0,
-	desiredSlide: undefined,
+	initialized: false,
 	isTouching: false,
 	isSwiping: false,
-	velocity: 0,
 	movements: [{ position: 0, time: 0 }],
 }
 
-/** Return slides between current and next, and if looping, the other direction if faster */
-export function getDelta(currentSlide: number, nextSlide: number, loop: boolean, slideCount: number) {
-	const delta = nextSlide - currentSlide
+/** Return distance between current and next positions, and if looping, the other direction if faster */
+export function getDelta(currentPosition: number, nextPosition: number, loop: boolean, totalDistance: number) {
+	const delta = nextPosition - currentPosition
 	if (!loop || !delta) return delta
 
 	const otherDelta =
-		nextSlide > currentSlide ? nextSlide - currentSlide - slideCount : slideCount - currentSlide + nextSlide
+		nextPosition > currentPosition
+			? nextPosition - currentPosition - totalDistance
+			: totalDistance - currentPosition + nextPosition
 
 	return Math.abs(otherDelta) < Math.abs(delta) ? otherDelta : delta
 }
@@ -63,6 +63,21 @@ export function minVelocityToTravel(distance: number, deceleration: number) {
 	return Math.round(Math.sqrt(2 * deceleration * distance))
 }
 
+/** determine how many pixels can be covered before coming to rest */
+export function howFar(velocity: number, deceleration: number) {
+	return Math.round(Math.pow(velocity, 2) / (2 * deceleration))
+}
+
+/** determine how long is should take to come to rest in ms */
+export function howLong(velocity: number, deceleration: number) {
+	return Math.round((Math.abs(velocity) / deceleration) * 1000)
+}
+
+/** get updated deceleration */
+export function updateDeceleration(velocity: number, distance: number) {
+	return Math.round(Math.pow(velocity, 2) / (2 * distance))
+}
+
 /** given number of slides and which slide is current, generate an array that indicates if a slide should carousel (0: no, 1: yes, small slide to the end, -1: yes, large index to the start) */
 export function carouselIndexes(count: number, visible: number, currentSlide: number) {
 	const overhang = (count - visible) / 2
@@ -87,8 +102,6 @@ export function carouselIndexes(count: number, visible: number, currentSlide: nu
 }
 
 export function correctPosition(position: number, maxPosition: number, loop: boolean) {
-	// TODO - add spring back effect
-
 	if (position < 0) {
 		return loop ? position + maxPosition : 0
 	} else if (position > maxPosition) {
@@ -101,4 +114,33 @@ export function correctPosition(position: number, maxPosition: number, loop: boo
 /** returns a promise that sleeps for specified time in ms. default 0 */
 export default function sleep(ms: number = 0) {
 	return new Promise(resolve => setTimeout(() => resolve(null), ms))
+}
+
+/** easing function to stop swiping */
+export function easeOutSine(ratio: number) {
+	return Math.sin(ratio * (Math.PI / 2))
+}
+
+export function clamp(num: number, min: number, max: number) {
+	return Math.min(Math.max(num, min), max)
+}
+
+export function isOutside(position: number, totalDistance: number) {
+	return position < 0 || position > totalDistance
+}
+
+/** if position is outside distance, clamp it w/ rubberband effect */
+export function clampPosition(position: number, totalDistance: number, stop: number) {
+	if (!isOutside(position, totalDistance)) return position
+
+	return clamp(position, 0, totalDistance)
+
+	// TODO - add rubber band effect
+	const adjPosition = position < 0 ? -position : position - totalDistance
+	return position + easeOutSine(adjPosition / stop)
+
+	if (position < 0) {
+		return position + easeOutSine(adjPosition / stop)
+	} else if (position > totalDistance) {
+	}
 }

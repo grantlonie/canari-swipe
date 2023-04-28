@@ -12,8 +12,8 @@ export interface SwiperProps {
 	loop?: boolean
 	/** (default snap) snap slides within visible region, freely spin slides per braking, or freely spin them snapping to final slide  */
 	mode?: 'snap' | 'free' | 'free-snap'
-	/** do not render slides that are not visible nor neighbors of visible */
-	neighborsOnly?: boolean
+	/** only render visible and neighbor slides */
+	lazy?: boolean
 	/** called when swiping starts */
 	onSwipeStart?: () => void
 	/** called when swiping ends with current slide*/
@@ -38,18 +38,18 @@ interface Methods {
 }
 
 export interface InstanceVariables {
-	/** used to calculate velocity and changes in position */
-	clock: number
+	/** timer used during animation */
+	animationInterval?: NodeJS.Timer
 	/** the desired slide to stop at */
 	desiredSlide?: number
+	/** true after swiper has been initialized */
+	initialized: boolean
 	/** user is swiping - moving while touching */
 	isSwiping: boolean
 	/** mouse or touch down inside container */
 	isTouching: boolean
 	/** stack of final user touch movements to calculate velocity after letting go */
 	movements: Movement[]
-	/** current velocity in px/sec */
-	velocity: number
 }
 
 export interface Movement {

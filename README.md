@@ -73,7 +73,7 @@ If you want to not show a selection, pass `[]` as the child. Null and undefined 
 | minimumSwipeSpeed | Number   | 500     | Minimum speed required to flick to next selection and that swiping will go after releasing touch/mouse                         |
 | carousel          | Bool     | false   | true - load all selections and swipe through multiple selections, false - load only current selection and immediate neighbors, |
 | loop              | Bool     | false   | If !carousel, true - wrap selection around to front, false - stop swiping at the beginning and end of selection list           |
-| neighborsOnly     | Bool     | false   | If !carousel, true - only render selection and immediate neighbors                                                             |
+| lazy              | Bool     | false   | If !carousel, true - only render selection and immediate neighbors                                                             |
 | visibleCount      | Number   | 1       | If carousel, amount of visible selections in the swiper                                                                        |
 | detent            | Number   | false   | If carousel, true - stop swiping exactly on edge of selection, false - swiping can stop mid-selection                          |
 | deceleration      | Number   | 3       | If carousel, how quickly the carousel slows down                                                                               |
