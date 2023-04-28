@@ -1,5 +1,5 @@
 import HelpTooltip from './HelpTooltip'
-import { Box } from './base'
+import { Box, Text } from './base'
 import Checkbox from './base/Checkbox'
 import Slider from 'rc-slider'
 import Select, { Option } from './base/Select'
@@ -12,34 +12,38 @@ interface Props {
 
 export default function Controls({ value, onUpdate }: Props) {
 	return (
-		<Box>
-			<Slider
-				min={1}
-				max={3}
-				marks={{ 1: '1', 2: '2', 3: '3' }}
-				value={value.visible}
-				onChange={val => onUpdate({ visible: val as number })}
-			/>
-			<ContainerWithHelp tooltipLabel="Smooth braking stopping between slides">
-				<Checkbox
-					checked={value.noDetent}
-					label="No detent"
-					onChange={noDetent => onUpdate({ noDetent })}
+		<Box sx={{ mt: 2 }}>
+			<Box sx={{ display: 'flex', gap: 1, mb: 2, alignItems: 'flex-start' }}>
+				<Text>Visible: </Text>
+				<Slider
+					min={1}
+					max={3}
+					marks={{ 1: '1', 2: '2', 3: '3' }}
+					value={value.visible}
+					onChange={val => onUpdate({ visible: val as number })}
 				/>
-			</ContainerWithHelp>
+			</Box>
+
+			<Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
+				<ContainerWithHelp tooltipLabel="Snap slides within visible region or free spin them applying braking with optional snap to final slide">
+					<Select value={value.mode} label="Mode" onChange={mode => onUpdate({ mode })}>
+						{modeOptions}
+					</Select>
+				</ContainerWithHelp>
+				{value.mode !== 'snap' && (
+					<ContainerWithHelp tooltipLabel="How hard to brake after letting go">
+						<Select value={value.braking} label="Braking" onChange={braking => onUpdate({ braking })}>
+							{brakingOptions}
+						</Select>
+					</ContainerWithHelp>
+				)}
+			</Box>
+
 			<ContainerWithHelp tooltipLabel="Loop slides back to the beginning">
-				<Checkbox
-					checked={value.loop}
-					label="Loop around"
-					onChange={loop => onUpdate({ loop })}
-				/>
+				<Checkbox checked={value.loop} label="Loop around" onChange={loop => onUpdate({ loop })} />
 			</ContainerWithHelp>
 			<ContainerWithHelp tooltipLabel="Control selected slide externally">
-				<Select
-					value={String(value.goTo)}
-					label="Go to"
-					onChange={val => onUpdate({ goTo: Number(val) })}
-				>
+				<Select value={String(value.goTo)} label="Go to" onChange={val => onUpdate({ goTo: Number(val) })}>
 					{goToOptions}
 				</Select>
 			</ContainerWithHelp>
@@ -51,18 +55,9 @@ export default function Controls({ value, onUpdate }: Props) {
 				>
 					{[
 						{ value: '0', label: 'Immediate' },
-						{ value: '0.5', label: '0.5' },
-						{ value: '1', label: '1' },
+						{ value: '500', label: '500' },
+						{ value: '1000', label: '1000' },
 					]}
-				</Select>
-			</ContainerWithHelp>
-			<ContainerWithHelp tooltipLabel="How hard to brake after letting go">
-				<Select
-					value={value.braking}
-					label="Braking"
-					onChange={braking => onUpdate({ braking })}
-				>
-					{brakingOptions}
 				</Select>
 			</ContainerWithHelp>
 		</Box>
@@ -80,6 +75,12 @@ const goToOptions: Option[] = [
 	{ value: '7', label: 'Eight' },
 	{ value: '8', label: 'Nine' },
 	{ value: '9', label: 'Ten' },
+]
+
+const modeOptions: Option<ControlProps['mode']>[] = [
+	{ value: 'snap', label: 'Snap' },
+	{ value: 'free', label: 'Free' },
+	{ value: 'free-snap', label: 'Free snap' },
 ]
 
 const brakingOptions: Option<ControlProps['braking']>[] = [

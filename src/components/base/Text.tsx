@@ -9,5 +9,5 @@ interface Props extends HTMLProps<HTMLParagraphElement> {
 
 export default function Text({ fontSize = 'md', sx, ...rest }: Props) {
 	const css = convertSx(sx)
-	return <p css={{ ...css, fontSize: FontSize[fontSize] }} {...rest} />
+	return <p css={{ marginBlock: 0, ...css, fontSize: FontSize[fontSize] }} {...rest} />
 }

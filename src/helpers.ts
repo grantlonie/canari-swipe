@@ -4,13 +4,7 @@ export const SLIDE_COUNT = 10
 
 export type ControlProps = WithRequired<
 	Omit<SwiperProps, 'onLoad' | 'children'>,
-	| 'braking'
-	| 'visible'
-	| 'noDetent'
-	| 'goTo'
-	| 'goToTime'
-	| 'loop'
-	| 'scaleSwipe'
+	'braking' | 'goTo' | 'goToTime' | 'loop' | 'mode' | 'scaleSwipe' | 'visible'
 >
 
 export type WithRequired<T, K extends keyof T> = T & { [P in K]-?: T[P] }

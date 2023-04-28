@@ -1,21 +1,19 @@
 export interface SwiperProps {
-	/** (default med) how hard to brake swiping animation after letting go */
+	/** (default medium) how hard to brake swiping animation after letting go  */
 	braking?: 'soft' | 'medium' | 'hard'
 	children: JSX.Element[]
 	/** prevent dragging slides */
 	disabled?: boolean
 	/** (default 0) used to set initial slide and to control externally */
 	goTo?: number
-	/** (default 500) Time it takes to transition to desired slide */
+	/** (default 500ms) time it takes to transition to desired slide */
 	goToTime?: number
 	/** loop the slides (i.e. go back to the beginning) */
 	loop?: boolean
-	/** TODO - get rid of this in favor of calculating if fast enough based on braking */
-	minimumSwipeSpeed?: number
+	/** (default snap) snap slides within visible region, freely spin slides per braking, or freely spin them snapping to final slide  */
+	mode?: 'snap' | 'free' | 'free-snap'
 	/** do not render slides that are not visible nor neighbors of visible */
 	neighborsOnly?: boolean
-	/** let slides stop freely (do not snap to edge) */
-	noDetent?: boolean
 	/** called when swiping starts */
 	onSwipeStart?: () => void
 	/** called when swiping ends with current slide*/
@@ -42,18 +40,16 @@ interface Methods {
 export interface InstanceVariables {
 	/** used to calculate velocity and changes in position */
 	clock: number
-	/** active slide */
-	currentSlide: number
-	/** mouse or touch down inside container */
-	isTouching: boolean
+	/** the desired slide to stop at */
+	desiredSlide?: number
 	/** user is swiping - moving while touching */
 	isSwiping: boolean
+	/** mouse or touch down inside container */
+	isTouching: boolean
 	/** stack of final user touch movements to calculate velocity after letting go */
 	movements: Movement[]
-	/** current velocity  */
+	/** current velocity in px/sec */
 	velocity: number
-	desiredOffset: number
-	nextSlide: number
 }
 
 export interface Movement {

@@ -1,19 +1,24 @@
 import { CSSProperties, TouchEvent, forwardRef, useEffect, useMemo, useRef, useState } from 'react'
 import { Movement, SwiperProps as Props } from './types'
-import {
+import sleep, {
 	carouselIndexes,
 	correctPosition,
 	getCurrentClock,
 	getDeceleration,
 	getDelta,
+	getPositionFromVelocity,
+	getVelocityFromDeceleration,
 	getVelocityFromMovements,
 	initialInstanceVariables,
+	minVelocityToTravel,
 	startedSwiping,
 } from './utils'
 import { MouseEvent } from 'react'
 
 /** if carousel, then determine what velocity to stopSwiping */
 const STOP_VELOCITY = 300
+/** how fast swiper updates after letting go */
+const SWIPE_UPDATE_TIME = 10
 
 export type SwiperProps = Props
 
@@ -40,9 +45,7 @@ export default function Swiper(props: SwiperProps) {
 
 	// px amount of room for swiping
 	const [slideSize, setSlideSize] = useState(0)
-	console.log('slideSize: ', slideSize)
 	const [swipePosition, setSwipePosition] = useState(0)
-	const [_, setRerender] = useState(false)
 	const [goTo, setGoTo] = useState(goToParent)
 
 	const slideCount = children.length
@@ -80,122 +83,121 @@ export default function Swiper(props: SwiperProps) {
 		if (amount === slideSize) return
 
 		setSlideSize(amount)
-		setSwipePosition(v.current.currentSlide * amount)
+		setSwipePosition(currentSlide * amount)
 	}, [vertical, visible])
 
 	useEffect(() => {
-		if (goTo != null && goTo !== v.current.nextSlide) goToSlide(goTo)
+		if (goTo != null) goToSlide(goTo)
 	}, [goTo])
 
 	// Finishes swiping after user let's go
 	useEffect(() => {
 		if (v.current.isTouching || !v.current.isSwiping) return
 
-		const swipeUpdateTime = 10
-		setTimeout(() => {
-			// Calculate next swipe offset based on velocity
-			const newClock = getCurrentClock()
-			let correctedClock = newClock + (newClock < v.current.clock ? 1000 : 0)
-			let newSwipePosition = Math.round(
-				swipePosition + (v.current.velocity * (correctedClock - v.current.clock)) / 1000
-			)
-
-			// Slow velocity down if carousel
-			if (carousel) {
-				const newVelocity =
-					v.current.velocity -
-					deceleration * (correctedClock - v.current.clock) * Math.sign(v.current.velocity)
-
-				// prevent sign change
-				if (v.current.velocity / newVelocity < 0) {
-					if (mode === 'snap') {
-						v.current.velocity = STOP_VELOCITY * Math.sign(v.current.velocity)
-					} else {
-						stopSwiping()
-						return
-					}
-				} else v.current.velocity = newVelocity
-			}
-
-			v.current.clock = newClock
-
-			// Correct selection and offsets for overflow condition
-			let correctedDesiredSelection = v.current.nextSlide
-			let correctedOffset = v.current.desiredOffset
-			if (loop) {
-				if (
-					v.current.currentSlide == 0 &&
-					v.current.nextSlide == slideCount - 1 &&
-					newSwipePosition < correctedOffset
-				) {
-					correctedDesiredSelection = -1
-					correctedOffset = -slideSize
-				} else if (
-					v.current.currentSlide == slideCount - 1 &&
-					v.current.nextSlide == 0 &&
-					newSwipePosition > correctedOffset
-				) {
-					correctedDesiredSelection = slideCount
-					correctedOffset = slideCount * slideSize
-				}
-			}
-			const maxPosition = slideCount * slideSize
-			newSwipePosition = correctPosition(newSwipePosition, maxPosition, loop)
-
-			// If current selection got to desired selection
-			if (
-				(v.current.currentSlide > correctedDesiredSelection && newSwipePosition < correctedOffset) ||
-				(v.current.currentSlide < correctedDesiredSelection && newSwipePosition > correctedOffset)
-			) {
-				v.current.currentSlide = v.current.nextSlide
-
-				// Check conditions to stop swiping
-
-				// one neighbor
-				if (!carousel) stopSwiping()
-				// // Beginning and end of selections
-				// else if (v.current.currentSlide == 0 && v.current.velocity < 0) {
-				// 	stopSwiping()
-				// }
-				else if (v.current.currentSlide >= slideCount - visible && v.current.velocity > 0) stopSwiping()
-				else {
-					let finalVelocity = STOP_VELOCITY
-					if (carousel && mode === 'snap') {
-						// Check if velocity is too slow to make it through next selection w/ constant acceleration formula
-						finalVelocity =
-							Math.sqrt(Math.pow(v.current.velocity, 2) - 2 * deceleration * 1000 * slideSize + 100) || 0
-					}
-
-					if (finalVelocity < STOP_VELOCITY) {
-						stopSwiping()
-					} else {
-						// Continue swiping to the next selection
-						v.current.nextSlide += Math.sign(v.current.velocity)
-						v.current.desiredOffset = v.current.nextSlide * slideSize
-						setSwipePosition(newSwipePosition)
-					}
-				}
-			} else if (v.current.isSwiping) {
-				setSwipePosition(newSwipePosition)
-			}
-		}, swipeUpdateTime)
+		finishSwiping()
 	})
+
+	async function finishSwiping() {
+		await sleep(SWIPE_UPDATE_TIME) // maybe move this to the end?
+
+		// Calculate next swipe offset based on velocity
+		const newClock = getCurrentClock()
+		const timeChange = newClock - v.current.clock
+		let newSwipePosition = getPositionFromVelocity(swipePosition, v.current.velocity, timeChange)
+		const newVelocity = getVelocityFromDeceleration(v.current.velocity, deceleration, timeChange)
+		const stopped = v.current.velocity / newVelocity < 0
+		if (stopped) return stopSwiping()
+
+		v.current.velocity = newVelocity
+		v.current.clock = newClock
+
+		const velocityToTravelTwoSlides = minVelocityToTravel(slideSize * 2, deceleration)
+
+		if (v.current.desiredSlide) {
+			const atDesired =
+				(newVelocity > 0 && currentSlide > v.current.desiredSlide) ||
+				(newVelocity < 0 && currentSlide < v.current.desiredSlide)
+
+			if (atDesired) return stopSwiping()
+		} else if (mode !== 'free' && Math.abs(newVelocity) < velocityToTravelTwoSlides) {
+			const desired = currentSlide + Math.sign(newVelocity)
+			v.current.desiredSlide =
+				desired < 0 ? desired + slideCount : desired > slideCount - 1 ? desired - slideCount : desired
+		}
+
+		// // Correct selection and offsets for overflow condition
+		// let correctedDesiredSelection = v.current.desiredSlide
+		// let correctedOffset = v.current.desiredOffset
+		// if (loop) {
+		// 	if (
+		// 		v.current.currentSlide == 0 &&
+		// 		v.current.desiredSlide == slideCount - 1 &&
+		// 		newSwipePosition < correctedOffset
+		// 	) {
+		// 		correctedDesiredSelection = -1
+		// 		correctedOffset = -slideSize
+		// 	} else if (
+		// 		v.current.currentSlide == slideCount - 1 &&
+		// 		v.current.desiredSlide == 0 &&
+		// 		newSwipePosition > correctedOffset
+		// 	) {
+		// 		correctedDesiredSelection = slideCount
+		// 		correctedOffset = slideCount * slideSize
+		// 	}
+		// }
+		const maxPosition = slideCount * slideSize
+		newSwipePosition = correctPosition(newSwipePosition, maxPosition, loop)
+
+		setSwipePosition(newSwipePosition)
+
+		// // If current selection got to desired selection
+		// if (
+		// 	(v.current.currentSlide > correctedDesiredSelection && newSwipePosition < correctedOffset) ||
+		// 	(v.current.currentSlide < correctedDesiredSelection && newSwipePosition > correctedOffset)
+		// ) {
+		// 	v.current.currentSlide = v.current.desiredSlide
+
+		// 	// Check conditions to stop swiping
+
+		// 	// one neighbor
+		// 	if (!carousel) stopSwiping()
+		// 	// // Beginning and end of selections
+		// 	// else if (v.current.currentSlide == 0 && v.current.velocity < 0) {
+		// 	// 	stopSwiping()
+		// 	// }
+		// 	else if (v.current.currentSlide >= slideCount - visible && v.current.velocity > 0) stopSwiping()
+		// 	else {
+		// 		let finalVelocity = STOP_VELOCITY
+		// 		if (carousel && mode === 'snap') {
+		// 			// Check if velocity is too slow to make it through next selection w/ constant acceleration formula
+		// 			finalVelocity =
+		// 				Math.sqrt(Math.pow(v.current.velocity, 2) - 2 * deceleration * 1000 * slideSize + 100) || 0
+		// 		}
+
+		// 		if (finalVelocity < STOP_VELOCITY) {
+		// 			stopSwiping()
+		// 		} else {
+		// 			// Continue swiping to the next selection
+		// 			v.current.desiredSlide += Math.sign(v.current.velocity)
+		// 			v.current.desiredOffset = v.current.desiredSlide * slideSize
+		// 			setSwipePosition(newSwipePosition)
+		// 		}
+		// 	}
+		// } else if (v.current.isSwiping) {
+		// 	setSwipePosition(newSwipePosition)
+		// }
+	}
 
 	/** programmatically go to slide via external control */
 	function goToSlide(goTo: number) {
-		v.current.nextSlide = goTo
-		v.current.desiredOffset = goTo * slideSize
+		v.current.desiredSlide = goTo
+		if (!goToTime) return stopSwiping()
 
-		// If swiper goToTime is zero (or not specified), go straight to index w/o transition
-		if (!goToTime) {
-			v.current.currentSlide = v.current.nextSlide
-			return stopSwiping()
-		}
-
-		const delta = getDelta(v.current.currentSlide, v.current.nextSlide, loop, slideCount)
-		v.current.velocity = (slideSize * delta) / goToTime
+		const delta = getDelta(currentSlide, v.current.desiredSlide, loop, slideCount)
+		v.current.velocity = (slideSize * delta * 1000) / goToTime
 		v.current.clock = getCurrentClock()
 		v.current.isSwiping = true
+		finishSwiping()
 	}
 
 	function getCurrentHeightAndWidth() {
@@ -262,7 +264,6 @@ export default function Swiper(props: SwiperProps) {
 
 	function handleUp() {
 		v.current.isTouching = false
-		setRerender(s => !s) // TODO - get rid of this
 		if (!v.current.isSwiping) return
 
 		v.current.velocity = getVelocityFromMovements(v.current.movements)
@@ -270,48 +271,23 @@ export default function Swiper(props: SwiperProps) {
 		const fasterThanMinVelocity = Math.abs(v.current.velocity) > minimumSwipeSpeed
 		if (!fasterThanMinVelocity && mode !== 'free') {
 			const pastHalfWay = (swipePosition + slideSize) % slideSize > slideSize / 2
-			v.current.velocity = minimumSwipeSpeed * (pastHalfWay ? 1 : -1)
+			v.current.velocity = 1000 * (pastHalfWay ? 1 : -1) // TODO - magic number
 		}
-		// if (fasterThanMinVelocity) {
-		// 	v.current.nextSlide = Math.floor(swipePosition / slideSize) + (v.current.velocity > 0 ? 1 : 0)
-		// 	v.current.currentSlide = v.current.nextSlide - Math.sign(v.current.velocity)
-		// } else {
-		// 	v.current.nextSlide = Math.floor(swipePosition / slideSize) + (pastHalfWay ? 1 : 0)
-		// 	v.current.currentSlide = v.current.nextSlide + (pastHalfWay ? -1 : 1)
 
-		// 	if (!carousel || mode === 'snap') {
-		// 		v.current.velocity = minimumSwipeSpeed * (pastHalfWay ? 1 : -1)
-		// 	}
-		// }
-
-		// if (loop) {
-		// 	if (v.current.currentSlide > slideCount - 1) {
-		// 		v.current.currentSlide = 0
-		// 		setSwipePosition(s => s - slideSize * slideCount)
-		// 	} else if (v.current.currentSlide < 0) {
-		// 		v.current.currentSlide = slideCount - 1
-		// 		setSwipePosition(s => s + slideSize * slideCount)
-		// 	}
-
-		// 	if (v.current.nextSlide > slideCount - 1) v.current.nextSlide = 0
-		// 	else if (v.current.nextSlide < 0) v.current.nextSlide = slideCount - 1
-		// }
-
-		v.current.desiredOffset = slideSize * v.current.nextSlide
 		v.current.clock = getCurrentClock()
+		finishSwiping()
 	}
 
-	// Stop swiping method
 	function stopSwiping() {
-		const minimumSwipeSpeed = 500 // TODO - calculate this
-		if (!carousel || mode === 'snap' || Math.abs(v.current.velocity) > minimumSwipeSpeed) {
-			setSwipePosition(v.current.desiredOffset)
+		if (v.current.desiredSlide) {
+			const desiredOffset = v.current.desiredSlide * slideSize
+			setSwipePosition(desiredOffset)
 		}
 
+		onSwipeEnd?.(v.current.desiredSlide || currentSlide)
 		v.current.velocity = 0
 		v.current.isSwiping = false
-
-		if (onSwipeEnd) setTimeout(() => onSwipeEnd(v.current.currentSlide), 100)
+		v.current.desiredSlide = undefined
 	}
 
 	const flippedIndexes = carouselIndexes(slideCount, visible, currentSlide)

@@ -1,25 +1,24 @@
 import { InstanceVariables, Movement, SwiperProps } from './types'
 
+/** return deceleration in px/sec^2 */
 export function getDeceleration(braking?: SwiperProps['braking']) {
 	switch (braking) {
 		case 'soft':
-			return 2
+			return 2000
 		case 'hard':
-			return 10
+			return 10000
 		default:
-			return 5
+			return 5000
 	}
 }
 
 export const initialInstanceVariables: InstanceVariables = {
 	clock: 0,
-	currentSlide: 0,
+	desiredSlide: undefined,
 	isTouching: false,
 	isSwiping: false,
 	velocity: 0,
-	desiredOffset: 0,
-	nextSlide: 0,
-	movements: [],
+	movements: [{ position: 0, time: 0 }],
 }
 
 /** Return slides between current and next, and if looping, the other direction if faster */
@@ -42,11 +41,26 @@ export function startedSwiping(position: number, startPosition: number, scale: n
 /** get current time in ms */
 export const getCurrentClock = () => new Date().getTime()
 
-export function getVelocityMovements(movements: Movement[]) {
+export function getVelocityFromMovements(movements: Movement[]) {
 	const start = movements[0]
 	const end = movements[movements.length - 1]
 	const velocity = (end.position - start.position) / (end.time - start.time)
 	return velocity * 1000 * -1
+}
+
+export function getPositionFromVelocity(position: number, velocity: number, timeChange: number) {
+	const newPosition = position + (velocity * timeChange) / 1000
+	return Math.round(newPosition)
+}
+
+export function getVelocityFromDeceleration(velocity: number, deceleration: number, timeChange: number) {
+	const newVelocity = velocity - (Math.sign(velocity) * deceleration * timeChange) / 1000
+	return Math.round(newVelocity)
+}
+
+/** determine the minimum velocity to travel a specified distance with deceleration */
+export function minVelocityToTravel(distance: number, deceleration: number) {
+	return Math.round(Math.sqrt(2 * deceleration * distance))
 }
 
 /** given number of slides and which slide is current, generate an array that indicates if a slide should carousel (0: no, 1: yes, small slide to the end, -1: yes, large index to the start) */
@@ -82,4 +96,9 @@ export function correctPosition(position: number, maxPosition: number, loop: boo
 	}
 
 	return position
+}
+
+/** returns a promise that sleeps for specified time in ms. default 0 */
+export default function sleep(ms: number = 0) {
+	return new Promise(resolve => setTimeout(() => resolve(null), ms))
 }

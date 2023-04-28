@@ -42,8 +42,7 @@ const shadows = {
 }
 
 const typography = {
-	fontFamily:
-		"Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Ubuntu, 'Helvetica Neue', sans-serif",
+	fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Ubuntu, 'Helvetica Neue', sans-serif",
 }
 
 const shape = {
@@ -85,25 +84,22 @@ export interface SxProp extends CSSProperties {
 export function convertSx(sx?: SxProp): any {
 	if (!sx) return
 
+	const { m, mx, my, ml, mr, mt, mb, p, px, py, pl, pr, pt, pb, ...vanillaCss } = sx
+
 	let gap = applySpacing(sx.gap)
-	let margin = sx.margin || applySpacing(sx.m)
-	let marginTop = sx.marginTop || applySpacing(sx.mt) || applySpacing(sx.my)
-	let marginBottom =
-		sx.marginBottom || applySpacing(sx.mb) || applySpacing(sx.my)
-	let marginLeft = sx.marginLeft || applySpacing(sx.ml) || applySpacing(sx.mx)
-	let marginRight =
-		sx.marginRight || applySpacing(sx.mr) || applySpacing(sx.mx)
-	let padding = sx.padding || applySpacing(sx.p)
-	let paddingTop = sx.paddingTop || applySpacing(sx.pt) || applySpacing(sx.py)
-	let paddingBottom =
-		sx.paddingBottom || applySpacing(sx.pb) || applySpacing(sx.py)
-	let paddingLeft =
-		sx.paddingLeft || applySpacing(sx.pl) || applySpacing(sx.px)
-	let paddingRight =
-		sx.paddingRight || applySpacing(sx.pr) || applySpacing(sx.px)
+	let margin = sx.margin || applySpacing(m)
+	let marginTop = sx.marginTop || applySpacing(mt) || applySpacing(my)
+	let marginBottom = sx.marginBottom || applySpacing(mb) || applySpacing(my)
+	let marginLeft = sx.marginLeft || applySpacing(ml) || applySpacing(mx)
+	let marginRight = sx.marginRight || applySpacing(mr) || applySpacing(mx)
+	let padding = sx.padding || applySpacing(p)
+	let paddingTop = sx.paddingTop || applySpacing(pt) || applySpacing(py)
+	let paddingBottom = sx.paddingBottom || applySpacing(pb) || applySpacing(py)
+	let paddingLeft = sx.paddingLeft || applySpacing(pl) || applySpacing(px)
+	let paddingRight = sx.paddingRight || applySpacing(pr) || applySpacing(px)
 
 	return {
-		...sx,
+		...vanillaCss,
 		...(gap && { gap }),
 		...(margin && { margin }),
 		...(marginTop && { marginTop }),
