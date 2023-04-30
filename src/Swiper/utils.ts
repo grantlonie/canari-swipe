@@ -63,7 +63,7 @@ export function minVelocityToTravel(distance: number, deceleration: number) {
 	return Math.round(Math.sqrt(2 * deceleration * distance))
 }
 
-/** determine how many pixels can be covered before coming to rest */
+/** determine how many pixels (absolute) can be covered before coming to rest */
 export function howFar(velocity: number, deceleration: number) {
 	return Math.round(Math.pow(velocity, 2) / (2 * deceleration))
 }
@@ -75,7 +75,7 @@ export function howLong(velocity: number, deceleration: number) {
 
 /** get updated deceleration */
 export function updateDeceleration(velocity: number, distance: number) {
-	return Math.round(Math.pow(velocity, 2) / (2 * distance))
+	return Math.round(Math.abs(Math.pow(velocity, 2) / (2 * distance)))
 }
 
 /** given number of slides and which slide is current, generate an array that indicates if a slide should carousel (0: no, 1: yes, small slide to the end, -1: yes, large index to the start) */
