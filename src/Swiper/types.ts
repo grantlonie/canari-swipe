@@ -40,8 +40,6 @@ interface Methods {
 export interface InstanceVariables {
 	/** timer used during animation */
 	animationInterval?: NodeJS.Timer
-	/** the desired slide to stop at */
-	desiredSlide?: number
 	/** true after swiper has been initialized */
 	initialized: boolean
 	/** user is swiping - moving while touching */
