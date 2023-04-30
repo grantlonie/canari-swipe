@@ -4,14 +4,12 @@ export interface SwiperProps {
 	children: JSX.Element[]
 	/** prevent dragging slides */
 	disabled?: boolean
+	/** (default elastic) apply elastic effect or rigid at the end of the slides or carousel them back around */
+	endMode?: 'elastic' | 'rigid' | 'carousel'
 	/** (default 0) used to set initial slide and to control externally */
 	goTo?: number
 	/** (default 500ms) time it takes to transition to desired slide */
 	goToTime?: number
-	/** loop the slides (i.e. go back to the beginning) */
-	loop?: boolean
-	/** (default snap) snap slides within visible region, freely spin slides per braking, or freely spin them snapping to final slide  */
-	mode?: 'snap' | 'free' | 'free-snap'
 	/** only render visible and neighbor slides */
 	lazy?: boolean
 	/** called when swiping starts */
@@ -22,6 +20,8 @@ export interface SwiperProps {
 	onLoad?: (methods: Methods) => void
 	/** (default 1) helpful when applying transform scale to swiper to match swipe movements */
 	scale?: number
+	/** (default single) stop after a single slide, animate slides per braking stopping on whole slide (multiple) or wherever it lies (free)  */
+	stopMode?: 'single' | 'multiple' | 'free'
 	/** (default 1) show multiple slides at the same time */
 	visible?: number
 	/** change to vertical swiper */

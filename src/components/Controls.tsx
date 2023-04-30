@@ -1,6 +1,5 @@
 import HelpTooltip from './HelpTooltip'
 import { Box, Text } from './base'
-import Checkbox from './base/Checkbox'
 import Slider from 'rc-slider'
 import Select, { Option } from './base/Select'
 import { ControlProps } from '../helpers'
@@ -24,14 +23,20 @@ export default function Controls({ value, onUpdate }: Props) {
 				/>
 			</Box>
 
+			<ContainerWithHelp tooltipLabel="Apply elastic effect or rigid at the end of the slides or carousel them back around">
+				<Select value={value.endMode} label="End mode" onChange={endMode => onUpdate({ endMode })}>
+					{endModeOptions}
+				</Select>
+			</ContainerWithHelp>
+
 			<Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
-				<ContainerWithHelp tooltipLabel="Snap slides within visible region or free spin them applying braking with optional snap to final slide">
-					<Select value={value.mode} label="Mode" onChange={mode => onUpdate({ mode })}>
-						{modeOptions}
+				<ContainerWithHelp tooltipLabel="Stop after a single slide, or animate slides per braking stopping on whole slide (multiple) or wherever it lies (free)">
+					<Select value={value.stopMode} label="Stop mode" onChange={stopMode => onUpdate({ stopMode })}>
+						{stopModeOptions}
 					</Select>
 				</ContainerWithHelp>
-				{value.mode !== 'snap' && (
-					<ContainerWithHelp tooltipLabel="How hard to brake after letting go">
+				{value.stopMode !== 'single' && (
+					<ContainerWithHelp tooltipLabel="How hard to brake animation effect">
 						<Select value={value.braking} label="Braking" onChange={braking => onUpdate({ braking })}>
 							{brakingOptions}
 						</Select>
@@ -39,9 +44,6 @@ export default function Controls({ value, onUpdate }: Props) {
 				)}
 			</Box>
 
-			<ContainerWithHelp tooltipLabel="Loop slides back to the beginning">
-				<Checkbox checked={value.loop} label="Loop around" onChange={loop => onUpdate({ loop })} />
-			</ContainerWithHelp>
 			<ContainerWithHelp tooltipLabel="Control selected slide externally">
 				<Select value={String(value.goTo)} label="Go to" onChange={val => onUpdate({ goTo: Number(val) })}>
 					{goToOptions}
@@ -77,10 +79,16 @@ const goToOptions: Option[] = [
 	{ value: '9', label: 'Ten' },
 ]
 
-const modeOptions: Option<ControlProps['mode']>[] = [
-	{ value: 'snap', label: 'Snap' },
+const endModeOptions: Option<ControlProps['endMode']>[] = [
+	{ value: 'elastic', label: 'Elastic' },
+	{ value: 'rigid', label: 'Rigid' },
+	{ value: 'carousel', label: 'Carousel' },
+]
+
+const stopModeOptions: Option<ControlProps['stopMode']>[] = [
+	{ value: 'single', label: 'Single' },
+	{ value: 'multiple', label: 'Multiple' },
 	{ value: 'free', label: 'Free' },
-	{ value: 'free-snap', label: 'Free snap' },
 ]
 
 const brakingOptions: Option<ControlProps['braking']>[] = [

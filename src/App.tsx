@@ -53,10 +53,10 @@ function makeSlides(count: number) {
 
 const initialControlProps: ControlProps = {
 	braking: 'medium',
+	endMode: 'elastic',
 	goTo: 0,
 	goToTime: 500,
-	loop: false,
-	mode: 'snap',
+	stopMode: 'single',
 	scale: 1,
 	visible: 2,
 }

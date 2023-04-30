@@ -2,7 +2,6 @@ import { CSSProperties, TouchEvent, forwardRef, useEffect, useMemo, useRef, useS
 import { Movement, SwiperProps as Props } from './types'
 import {
 	carouselIndexes,
-	clamp,
 	correctPosition,
 	easeOutSine,
 	getCurrentClock,
@@ -25,20 +24,20 @@ export type SwiperProps = Props
 
 export default function Swiper(props: SwiperProps) {
 	const {
-		children,
-		visible = 1,
 		braking,
-		scale = 1,
-		loop = false,
-		mode = 'snap',
+		children,
+		disabled,
 		goTo: goToParent,
 		goToTime,
-		onLoad,
+		endMode = 'elastic',
 		lazy,
-		vertical,
-		disabled,
+		onLoad,
 		onSwipeStart,
 		onSwipeEnd,
+		scale = 1,
+		vertical,
+		visible = 1,
+		stopMode = 'single',
 	} = props
 
 	const currentSlideRef = useRef<HTMLDivElement>(null)
@@ -49,7 +48,7 @@ export default function Swiper(props: SwiperProps) {
 	const [goTo, setGoTo] = useState(goToParent)
 
 	const slideCount = children.length
-	const carousel = visible > 1
+	const carousel = endMode === 'carousel'
 	const deceleration = getDeceleration(braking)
 	const currentSlide = Math.floor(slideSize ? position / slideSize : 0)
 	const totalDistance = slideCount * slideSize
@@ -115,13 +114,13 @@ export default function Swiper(props: SwiperProps) {
 
 	/** external control */
 	function goToSlide(goTo: number) {
-		v.current.desiredSlide = loop ? goTo : Math.min(goTo, slideCount - visible)
+		v.current.desiredSlide = carousel ? goTo : Math.min(goTo, slideCount - visible)
 		if (!v.current.initialized || !goToTime) {
 			v.current.initialized = true
 			return stopSwiping()
 		}
 
-		let distance = getDelta(position, v.current.desiredSlide * slideSize, loop, totalDistance)
+		let distance = getDelta(position, v.current.desiredSlide * slideSize, carousel, totalDistance)
 		finishSwiping(distance, goToTime)
 	}
 
@@ -142,9 +141,6 @@ export default function Swiper(props: SwiperProps) {
 	}
 
 	function handleDown(pagePosition: number) {
-		// For neighbors only, only allow swiping if at rest
-		if (!carousel && v.current.isSwiping) return
-
 		clearInterval(v.current.animationInterval)
 		v.current.isTouching = true
 		const movement: Movement = { pagePosition, time: getCurrentClock() }
@@ -177,11 +173,16 @@ export default function Swiper(props: SwiperProps) {
 		}
 
 		const previousMovement = movements[movements.length - 1]
-		const adjScale = scale * (position > distanceMinusVisible ? 2 : 1)
+		const adjScale = endMode === 'elastic' ? scale * (position > distanceMinusVisible ? 3 : 1) : scale
 		const swipeMovement = (previousMovement.pagePosition - pagePosition) / adjScale
 		const newPosition = correctPosition(position + swipeMovement, totalDistance)
 
-		setPosition(newPosition)
+		if (endMode === 'rigid' && newPosition > distanceMinusVisible) {
+			setPosition(currentSlide === 0 ? 0 : distanceMinusVisible)
+		} else {
+			setPosition(newPosition)
+		}
+
 		v.current.movements.shift()
 		const movement: Movement = { pagePosition, time: getCurrentClock() }
 		v.current.movements.push(movement)
@@ -196,7 +197,7 @@ export default function Swiper(props: SwiperProps) {
 		const desiredPosition = position + Math.sign(velocity) * desiredDistance
 		let maxSlides = Math.floor(desiredDistance / slideSize)
 
-		if (!loop) {
+		if (!carousel) {
 			switch (location) {
 				case 'start':
 					v.current.desiredSlide = 0
@@ -208,7 +209,7 @@ export default function Swiper(props: SwiperProps) {
 					if (desiredPosition > distanceMinusVisible) maxSlides = slideCount - visible - currentSlide
 					else if (desiredPosition < 0) maxSlides = currentSlide
 			}
-		} else if (mode === 'free') {
+		} else if (stopMode === 'free') {
 			const duration = howLong(velocity, deceleration)
 			return finishSwiping(Math.sign(velocity) * desiredDistance, duration)
 		}
@@ -220,7 +221,7 @@ export default function Swiper(props: SwiperProps) {
 			return finishSwiping(distance, SNAP_BACK_TIME)
 		}
 
-		if (mode === 'snap') maxSlides = Math.min(maxSlides, visible)
+		if (stopMode === 'single') maxSlides = velocity > 0 ? 1 : 0
 
 		v.current.desiredSlide = currentSlide + maxSlides * Math.sign(velocity)
 		const distance = Math.abs(v.current.desiredSlide * slideSize - position)
@@ -241,9 +242,9 @@ export default function Swiper(props: SwiperProps) {
 		v.current.desiredSlide = undefined
 	}
 
-	/** if !loop, determine if slide should be hidden  */
+	/** if !carousel, determine if slide should be hidden for elastic effect */
 	function isHidden(isFlipped: boolean) {
-		if (loop) return false
+		if (carousel) return false
 
 		switch (location) {
 			case 'main':

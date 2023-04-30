@@ -117,6 +117,6 @@ export function easeOutSine(ratio: number) {
 	return Math.sin(ratio * (Math.PI / 2))
 }
 
-export function clamp(num: number, min: number, max: number) {
-	return Math.min(Math.max(num, min), max)
-}
+// export function clamp(num: number, min: number, max: number) {
+// 	return Math.min(Math.max(num, min), max)
+// }
