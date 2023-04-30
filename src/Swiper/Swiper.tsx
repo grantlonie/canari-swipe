@@ -1,4 +1,14 @@
-import { CSSProperties, TouchEvent, forwardRef, useEffect, useMemo, useRef, useState, MouseEvent } from 'react'
+import {
+	CSSProperties,
+	TouchEvent,
+	forwardRef,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+	MouseEvent,
+	Children,
+} from 'react'
 import { Movement, SwiperProps as Props } from './types'
 import {
 	carouselIndexes,
@@ -47,7 +57,8 @@ export default function Swiper(props: SwiperProps) {
 	const [position, setPosition] = useState(0)
 	const [goTo, setGoTo] = useState(goToParent)
 
-	const slideCount = children.length
+	const childrenArray = Children.toArray(children) // put single child into array
+	const slideCount = childrenArray.length
 	const carousel = endMode === 'carousel'
 	const deceleration = getDeceleration(braking)
 	const currentSlide = Math.floor(slideSize ? position / slideSize : 0)
@@ -270,7 +281,7 @@ export default function Swiper(props: SwiperProps) {
 			onMouseLeave={handleUp}
 			onTouchCancel={handleUp}
 		>
-			{children.map((child, i) => {
+			{childrenArray.map((child, i) => {
 				const flipped = flippedIndexes[i]
 				const index = i + flipped * slideCount
 				const offsetAmount = index * slideSize - position

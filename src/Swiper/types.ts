@@ -1,7 +1,7 @@
 export interface SwiperProps {
 	/** (default medium) how hard to brake swiping animation after letting go  */
 	braking?: 'soft' | 'medium' | 'hard'
-	children: JSX.Element[]
+	children: JSX.Element[] | JSX.Element
 	/** prevent dragging slides */
 	disabled?: boolean
 	/** (default elastic) apply elastic effect or rigid at the end of the slides or carousel them back around */

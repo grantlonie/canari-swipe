@@ -1,12 +1,10 @@
-change currentSlide to be taken from swipePosition
 get key from child?
+fix wrapper styling and spread extra props to div from user
 clean up Swiper and write tests
-work with only one child element?
 slides of different sizes? what controls swipe dimensions? first slide?
 compare with react-slick, swiper-js, keen-slider (similar implementation), nuka-carousel
 other props:autoplay, spacing
 different easing functions
-rubberband
 handle different slide widths (only when !lazy)
 slides of different sizes?
 change onSwipeStart to include direction and change in direction
