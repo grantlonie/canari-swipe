@@ -1,4 +1,6 @@
-export interface SwiperProps {
+import { HTMLProps } from 'react'
+
+export interface SwiperProps extends HTMLProps<HTMLDivElement> {
 	/** (default medium) how hard to brake swiping animation after letting go  */
 	braking?: 'soft' | 'medium' | 'hard'
 	children: JSX.Element[] | JSX.Element
@@ -10,14 +12,12 @@ export interface SwiperProps {
 	goTo?: number
 	/** (default 500ms) time it takes to transition to desired slide */
 	goToTime?: number
-	/** only render visible and neighbor slides */
-	lazy?: boolean
 	/** called when swiping starts */
 	onSwipeStart?: () => void
 	/** called when swiping ends with current slide*/
 	onSwipeEnd?: (slide: number) => void
 	/** return callable methods */
-	onLoad?: (methods: Methods) => void
+	onLoaded?: (methods: Methods) => void
 	/** (default 1) helpful when applying transform scale to swiper to match swipe movements */
 	scale?: number
 	/** (default single) stop after a single slide, animate slides per braking stopping on whole slide (multiple) or wherever it lies (free)  */
@@ -55,4 +55,9 @@ export interface Movement {
 	pagePosition: number
 	/** ms at position */
 	time: number
+}
+
+export interface Dimension {
+	height: number
+	width: number
 }

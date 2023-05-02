@@ -1,4 +1,5 @@
-import { InstanceVariables, Movement, SwiperProps } from './types'
+import { CSSProperties } from 'react'
+import { Dimension, InstanceVariables, Movement, SwiperProps } from './types'
 
 /** return deceleration in px/sec^2 */
 export function getDeceleration(braking?: SwiperProps['braking']) {
@@ -117,6 +118,22 @@ export function easeOutSine(ratio: number) {
 	return Math.sin(ratio * (Math.PI / 2))
 }
 
-// export function clamp(num: number, min: number, max: number) {
-// 	return Math.min(Math.max(num, min), max)
-// }
+export function makeContainerStyle(slideDimensions?: Dimension[], vertical?: boolean) {
+	if (!slideDimensions) return
+
+	if (vertical) return { width: slideDimensions[0].width }
+	return { height: slideDimensions[0].height }
+}
+
+export function makeSlideStyle(offset: number, span: number, vertical: boolean, hidden: boolean): CSSProperties {
+	let xOffset = 0
+	let yOffset = 0
+	if (vertical) yOffset = offset
+	else xOffset = offset
+
+	return {
+		transform: `translate3d(${xOffset}px, ${yOffset}px, 0)`,
+		...(hidden && { visibility: 'hidden' }),
+		...(vertical ? { height: span } : { width: span }),
+	}
+}

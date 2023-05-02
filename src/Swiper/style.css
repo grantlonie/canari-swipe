@@ -1,0 +1,15 @@
+.canari-swipe__container {
+	align-content: flex-start;
+	display: flex;
+	overflow: hidden;
+	position: relative;
+	user-select: none;
+	width: 100%;
+}
+
+.canari-swipe__slide {
+	position: absolute;
+	/* overflow: hidden;
+	width: 100%;
+	min-height: 100%; */
+}

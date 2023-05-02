@@ -1,15 +1,6 @@
-import {
-	CSSProperties,
-	TouchEvent,
-	forwardRef,
-	useEffect,
-	useMemo,
-	useRef,
-	useState,
-	MouseEvent,
-	Children,
-} from 'react'
-import { Movement, SwiperProps as Props } from './types'
+import { Children, MouseEvent, TouchEvent, cloneElement, useEffect, useRef, useState } from 'react'
+import './style.css'
+import { Dimension, Movement, SwiperProps as Props } from './types'
 import {
 	carouselIndexes,
 	correctPosition,
@@ -21,6 +12,8 @@ import {
 	howFar,
 	howLong,
 	initialInstanceVariables,
+	makeContainerStyle,
+	makeSlideStyle,
 	startedSwiping,
 	updateDeceleration,
 } from './utils'
@@ -36,28 +29,31 @@ export default function Swiper(props: SwiperProps) {
 	const {
 		braking,
 		children,
+		className,
 		disabled,
 		goTo: goToParent,
 		goToTime,
 		endMode = 'elastic',
-		lazy,
-		onLoad,
+		onLoaded,
 		onSwipeStart,
 		onSwipeEnd,
 		scale = 1,
-		vertical,
-		visible = 1,
 		stopMode = 'single',
+		style,
+		vertical = false,
+		visible = 1,
+		...rest
 	} = props
 
-	const currentSlideRef = useRef<HTMLDivElement>(null)
+	const containerRef = useRef<HTMLDivElement>(null)
 	const v = useRef(initialInstanceVariables)
 
-	const [slideSize, setSlideSize] = useState(0)
 	const [position, setPosition] = useState(0)
 	const [goTo, setGoTo] = useState(goToParent)
+	const [dimensions, setDimensions] = useState<{ container: Dimension; slides: Dimension[] } | null>(null)
 
-	const childrenArray = Children.toArray(children) // put single child into array
+	const slideSize = (dimensions?.container[vertical ? 'height' : 'width'] ?? 0) / visible
+	const childrenArray = Children.toArray(children) as JSX.Element[] // put single child into array
 	const slideCount = childrenArray.length
 	const carousel = endMode === 'carousel'
 	const deceleration = getDeceleration(braking)
@@ -66,48 +62,45 @@ export default function Swiper(props: SwiperProps) {
 	const distanceMinusVisible = totalDistance - visible * slideSize
 	const location = getLocation()
 
+	if (goToParent !== goTo) setGoTo(goToParent)
+
 	function getLocation() {
 		if (position < distanceMinusVisible) return 'main'
 		if (position < distanceMinusVisible + (visible / 2) * slideSize) return 'end'
 		return 'start'
 	}
 
-	const wrapperStyle = useMemo(() => {
-		const { width, height } = getCurrentHeightAndWidth()
-		const style: CSSProperties = {
-			overflow: 'hidden',
-			position: 'relative',
-			display: 'inline-block',
-			width: vertical ? width : visible * slideSize,
-			height: vertical ? visible * slideSize : height,
-		}
-		return style
-	}, [slideSize, vertical, visible])
+	useEffect(() => {
+		if (goTo != null) goToSlide(goTo)
+	}, [goTo])
 
 	useEffect(() => {
-		onLoad?.({
+		if (!dimensions || v.current.initialized) return
+
+		init()
+		v.current.initialized = true
+	}, [dimensions])
+
+	useEffect(() => {
+		const { children, offsetHeight = 0, offsetWidth = 0 } = containerRef.current || {}
+		const slideElements = Array.from(children ?? [])
+		const container = { height: offsetHeight, width: offsetWidth }
+		const slides = slideElements.map(c => ({ height: c.clientHeight, width: c.clientWidth }))
+		setDimensions({ container, slides })
+	}, [children, vertical, visible])
+
+	function init() {
+		onLoaded?.({
 			goTo: setGoTo,
 			next: () => setGoTo(s => s ?? 0 + 1),
 			prev: () => setGoTo(s => s ?? 0 - 1),
 		})
-	}, [])
 
-	useEffect(() => {
-		if (goToParent !== goTo) setGoTo(goToParent)
-	}, [goToParent])
+		if (!goTo) return
 
-	useEffect(() => {
-		const { width, height } = getCurrentHeightAndWidth()
-		const amount = vertical ? height : width
-		if (amount === slideSize) return
-
-		setSlideSize(amount)
-		setPosition(currentSlide * amount)
-	}, [vertical, visible])
-
-	useEffect(() => {
-		if (goTo != null) goToSlide(goTo)
-	}, [goTo])
+		const desiredSlide = carousel ? goTo : Math.min(goTo, slideCount - visible)
+		stopSwiping(desiredSlide)
+	}
 
 	function finishSwiping(distance: number, duration: number, desiredSlide?: number) {
 		v.current.isSwiping = false
@@ -125,19 +118,13 @@ export default function Swiper(props: SwiperProps) {
 
 	/** external control */
 	function goToSlide(goTo: number) {
+		if (!v.current.initialized) return
+
 		const desiredSlide = carousel ? goTo : Math.min(goTo, slideCount - visible)
-		if (!v.current.initialized || !goToTime) {
-			v.current.initialized = true
-			return stopSwiping(desiredSlide)
-		}
+		if (!goToTime) return stopSwiping(desiredSlide)
 
 		const distance = getDelta(position, desiredSlide * slideSize, carousel, totalDistance)
 		finishSwiping(distance, goToTime, desiredSlide)
-	}
-
-	function getCurrentHeightAndWidth() {
-		const { offsetWidth, offsetHeight } = currentSlideRef.current ?? {}
-		return { width: offsetWidth || 0, height: offsetHeight || 0 }
 	}
 
 	function handleTouchDown(e: TouchEvent<HTMLDivElement>) {
@@ -268,7 +255,8 @@ export default function Swiper(props: SwiperProps) {
 
 	return (
 		<div
-			style={wrapperStyle}
+			className={className ? `canari-swipe__container ${className}` : 'canari-swipe__container'}
+			ref={containerRef}
 			onMouseDown={handleMouseDown}
 			onTouchStart={handleTouchDown}
 			onMouseMove={handleMouseMove}
@@ -277,49 +265,23 @@ export default function Swiper(props: SwiperProps) {
 			onTouchEnd={handleUp}
 			onMouseLeave={handleUp}
 			onTouchCancel={handleUp}
+			style={{ ...makeContainerStyle(dimensions?.slides, vertical), ...style }}
+			{...rest}
 		>
 			{childrenArray.map((child, i) => {
 				const flipped = flippedIndexes[i]
 				const index = i + flipped * slideCount
 				const offsetAmount = index * slideSize - position
-				const ref = index === currentSlide ? currentSlideRef : undefined
 
-				const slideProps = { key: i, child, offsetAmount, vertical, ref, hidden: isHidden(flipped !== 0) }
+				const span = (dimensions?.container[vertical ? 'height' : 'width'] ?? 0) / visible
+				const hidden = isHidden(flipped !== 0)
+				const style = { ...makeSlideStyle(offsetAmount, span, vertical, hidden), ...child.props.style }
+				const className = child.props.className
+					? `canari-swipe__slide ${child.props.className}`
+					: 'canari-swipe__slide'
 
-				if (lazy) {
-					if (
-						(index > currentSlide - 2 && index < currentSlide + 2) ||
-						(index == 0 && currentSlide == slideCount - 1) ||
-						(index == slideCount - 1 && currentSlide == 0)
-					) {
-						return <Slide {...slideProps} />
-					} else {
-						// Don't render other selections
-						return null
-					}
-				} else {
-					return <Slide {...slideProps} />
-				}
+				return cloneElement(child, { className, style })
 			})}
 		</div>
 	)
 }
-
-const Slide = forwardRef<HTMLDivElement, any>(({ child, offsetAmount, vertical, hidden }, ref) => {
-	let xOffset = 0
-	let yOffset = 0
-	if (vertical) yOffset = offsetAmount
-	else xOffset = offsetAmount
-
-	const style: CSSProperties = {
-		position: 'absolute',
-		transform: `translate3d(${xOffset}px, ${yOffset}px, 0)`,
-		...(hidden && { visibility: 'hidden' }),
-	}
-
-	return (
-		<div style={style} ref={ref}>
-			{child}
-		</div>
-	)
-})
