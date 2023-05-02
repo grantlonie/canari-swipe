@@ -3,6 +3,8 @@ import { HTMLProps } from 'react'
 export interface SwiperProps extends HTMLProps<HTMLDivElement> {
 	/** (default medium) how hard to brake swiping animation after letting go  */
 	braking?: 'soft' | 'medium' | 'hard'
+	/** center the current slide in the container */
+	center?: boolean
 	children: JSX.Element[] | JSX.Element
 	/** prevent dragging slides */
 	disabled?: boolean

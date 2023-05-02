@@ -102,7 +102,7 @@ export function carouselIndexes(count: number, visible: number, currentSlide: nu
 	})
 }
 
-export function correctPosition(position: number, totalDistance: number) {
+export function carouselPosition(position: number, totalDistance: number) {
 	if (position < 0) return position + totalDistance
 	else if (position > totalDistance) return position - totalDistance
 	return position
@@ -118,6 +118,8 @@ export function easeOutSine(ratio: number) {
 	return Math.sin(ratio * (Math.PI / 2))
 }
 
+export const clamp = (num, min, max) => Math.min(Math.max(num, min), max)
+
 export function makeContainerStyle(slideDimensions?: Dimension[], vertical?: boolean) {
 	if (!slideDimensions) return
 
@@ -125,7 +127,7 @@ export function makeContainerStyle(slideDimensions?: Dimension[], vertical?: boo
 	return { height: slideDimensions[0].height }
 }
 
-export function makeSlideStyle(offset: number, span: number, vertical: boolean, hidden: boolean): CSSProperties {
+export function makeSlideStyle(offset: number, span: number, vertical: boolean): CSSProperties {
 	let xOffset = 0
 	let yOffset = 0
 	if (vertical) yOffset = offset
@@ -133,7 +135,6 @@ export function makeSlideStyle(offset: number, span: number, vertical: boolean, 
 
 	return {
 		transform: `translate3d(${xOffset}px, ${yOffset}px, 0)`,
-		...(hidden && { visibility: 'hidden' }),
 		...(vertical ? { height: span } : { width: span }),
 	}
 }

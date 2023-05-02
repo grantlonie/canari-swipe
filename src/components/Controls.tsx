@@ -1,5 +1,5 @@
 import HelpTooltip from './HelpTooltip'
-import { Box, Text } from './base'
+import { Box, Checkbox, Text } from './base'
 import Slider from 'rc-slider'
 import Select, { Option } from './base/Select'
 import { ControlProps } from '../helpers'
@@ -16,8 +16,8 @@ export default function Controls({ value, onUpdate }: Props) {
 				<Text>Visible: </Text>
 				<Slider
 					min={1}
-					max={3}
-					marks={{ 1: '1', 2: '2', 3: '3' }}
+					max={5}
+					marks={{ 1: '1', 2: '2', 3: '3', 4: '4', 5: '5' }}
 					value={value.visible}
 					onChange={val => onUpdate({ visible: val as number })}
 				/>
@@ -49,6 +49,7 @@ export default function Controls({ value, onUpdate }: Props) {
 					{goToOptions}
 				</Select>
 			</ContainerWithHelp>
+
 			<ContainerWithHelp tooltipLabel="How long it takes to get to the desired slide">
 				<Select
 					value={String(value.goToTime)}
@@ -61,6 +62,10 @@ export default function Controls({ value, onUpdate }: Props) {
 						{ value: '1000', label: '1000' },
 					]}
 				</Select>
+			</ContainerWithHelp>
+
+			<ContainerWithHelp tooltipLabel="Center current slide in container">
+				<Checkbox label="Center" checked={value.center} onChange={center => onUpdate({ center })} />
 			</ContainerWithHelp>
 		</Box>
 	)

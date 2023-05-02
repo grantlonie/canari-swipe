@@ -50,6 +50,7 @@ const slides = new Array(SLIDE_COUNT).fill(null).map((_, i) => (
 
 const initialControlProps: ControlProps = {
 	braking: 'medium',
+	center: false,
 	endMode: 'elastic',
 	goTo: 0,
 	goToTime: 500,
