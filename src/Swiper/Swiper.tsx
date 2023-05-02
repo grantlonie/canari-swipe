@@ -1,4 +1,4 @@
-import { Children, MouseEvent, TouchEvent, cloneElement, useEffect, useRef, useState } from 'react'
+import { Children, MouseEvent, TouchEvent, cloneElement, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import './style.css'
 import { Dimension, Movement, SwiperProps as Props } from './types'
 import {
@@ -70,24 +70,24 @@ export default function Swiper(props: SwiperProps) {
 		return 'start'
 	}
 
-	useEffect(() => {
-		if (goTo != null) goToSlide(goTo)
-	}, [goTo])
-
-	useEffect(() => {
-		if (!dimensions || v.current.initialized) return
-
-		init()
-		v.current.initialized = true
-	}, [dimensions])
-
-	useEffect(() => {
+	useLayoutEffect(() => {
 		const { children, offsetHeight = 0, offsetWidth = 0 } = containerRef.current || {}
 		const slideElements = Array.from(children ?? [])
 		const container = { height: offsetHeight, width: offsetWidth }
 		const slides = slideElements.map(c => ({ height: c.clientHeight, width: c.clientWidth }))
 		setDimensions({ container, slides })
-	}, [children, vertical, visible])
+	}, [children])
+
+	useLayoutEffect(() => {
+		if (!dimensions || v.current.initialized) return
+		init()
+		v.current.initialized = true
+	}, [dimensions])
+
+	useEffect(() => {
+		if (goTo == null || !v.current.initialized) return
+		goToSlide(goTo)
+	}, [goTo])
 
 	function init() {
 		onLoaded?.({
@@ -118,8 +118,6 @@ export default function Swiper(props: SwiperProps) {
 
 	/** external control */
 	function goToSlide(goTo: number) {
-		if (!v.current.initialized) return
-
 		const desiredSlide = carousel ? goTo : Math.min(goTo, slideCount - visible)
 		if (!goToTime) return stopSwiping(desiredSlide)
 
