@@ -1,22 +1,27 @@
 import { Children, MouseEvent, TouchEvent, cloneElement, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import './style.css'
-import { Dimension, Movement, SwiperProps as Props } from './types'
+import { Dimensions, Movement, SwiperProps as Props } from './types'
 import {
+	calculateDeceleration,
+	carousel,
 	carouselIndexes,
 	clamp,
-	carouselPosition,
 	easeOutSine,
+	getContainerStyle,
 	getCurrentClock,
 	getDeceleration,
 	getDelta,
-	getVelocityFromMovements,
+	getEndPosition,
 	howFar,
 	howLong,
+	indexFromPosition,
 	initialInstanceVariables,
-	makeContainerStyle,
+	isPastHalfway,
+	makeDimensions,
 	makeSlideStyle,
+	snapDistance,
 	startedSwiping,
-	updateDeceleration,
+	velocityFromMovements,
 } from './utils'
 
 /** how fast swiper updates after letting go */
@@ -33,6 +38,7 @@ export default function Swiper(props: SwiperProps) {
 		children,
 		className,
 		disabled,
+		fit,
 		goTo: goToParent,
 		goToTime,
 		endMode = 'elastic',
@@ -51,7 +57,6 @@ export default function Swiper(props: SwiperProps) {
 		stopMode = 'single',
 		style,
 		vertical = false,
-		visible = 1,
 		...rest
 	} = props
 
@@ -60,27 +65,24 @@ export default function Swiper(props: SwiperProps) {
 
 	const [position, setPosition] = useState(0)
 	const [goTo, setGoTo] = useState(goToParent)
-	const [dimensions, setDimensions] = useState<{ container: Dimension; slides: Dimension[] } | null>(null)
+	const [dimensions, setDimensions] = useState<Dimensions | null>(null)
 
-	const slideSize = (dimensions?.container[vertical ? 'height' : 'width'] ?? 0) / visible
-	const childrenArray = Children.toArray(children) as JSX.Element[] // put single child into array
+	const childrenArray = Children.toArray(children) as JSX.Element[]
 	const slideCount = childrenArray.length
-	const carousel = endMode === 'carousel'
-	const deceleration = getDeceleration(braking)
-	const currentSlide = Math.floor(slideSize ? position / slideSize : 0)
-	const totalDistance = slideCount * slideSize
-	const overflowCount = slideCount - (center ? 1 : visible)
-	const overflowDistance = overflowCount * slideSize
+	const isCarousel = endMode === 'carousel'
+	const { container, slides = [] } = dimensions ?? {}
+	const currentIndex = indexFromPosition(position, slides)
+	const lastSlide = slides[slides.length - 1]
+	const totalSpan = getEndPosition(lastSlide)
+	const overflowDistance = totalSpan - ((center ? lastSlide?.span : container?.span) ?? 0)
+	const flippedIndexes = carouselIndexes(dimensions, currentIndex, center)
 
 	if (goToParent !== goTo) setGoTo(goToParent)
 
 	useLayoutEffect(() => {
-		const { children, offsetHeight = 0, offsetWidth = 0 } = containerRef.current || {}
-		const slideElements = Array.from(children ?? [])
-		const container = { height: offsetHeight, width: offsetWidth }
-		const slides = slideElements.map(c => ({ height: c.clientHeight, width: c.clientWidth }))
-		setDimensions({ container, slides })
-	}, [children])
+		if (!containerRef.current) return
+		setDimensions(makeDimensions(containerRef.current, vertical, fit))
+	}, [children, fit])
 
 	useLayoutEffect(() => {
 		if (!dimensions || v.current.initialized) return
@@ -100,10 +102,16 @@ export default function Swiper(props: SwiperProps) {
 			prev: () => setGoTo(s => s ?? 0 - 1),
 		})
 
-		if (!goTo) return
+		if (goTo) stopSwiping(goTo)
+	}
 
-		const desiredSlide = carousel ? goTo : Math.min(goTo, slideCount - visible)
-		stopSwiping(desiredSlide)
+	function goToSlide(goTo: number) {
+		if (!goToTime) return stopSwiping(goTo)
+
+		const desiredPosition = slides[goTo].startPosition
+		const newPosition = isCarousel ? desiredPosition : Math.min(desiredPosition, overflowDistance)
+		const distance = getDelta(position, newPosition, isCarousel, totalSpan)
+		finishSwiping(distance, goToTime, goTo)
 	}
 
 	function finishSwiping(distance: number, duration: number, desiredSlide?: number) {
@@ -114,19 +122,21 @@ export default function Swiper(props: SwiperProps) {
 			if (clock >= duration) return stopSwiping(desiredSlide)
 
 			let newPosition = position + distance * easeOutSine(clock / duration)
-			if (carousel) newPosition = carouselPosition(newPosition, totalDistance)
+			if (isCarousel) newPosition = carousel(newPosition, totalSpan)
 
 			setPosition(newPosition)
 		}, SWIPE_UPDATE_TIME)
 	}
 
-	/** external control */
-	function goToSlide(goTo: number) {
-		const desiredSlide = carousel ? goTo : Math.min(goTo, slideCount - visible)
-		if (!goToTime) return stopSwiping(desiredSlide)
+	function stopSwiping(desiredSlide?: number) {
+		if (desiredSlide) {
+			const desiredPosition = slides[desiredSlide].startPosition
+			const newPosition = isCarousel ? desiredPosition : Math.min(desiredPosition, overflowDistance)
+			setPosition(newPosition)
+		}
 
-		const distance = getDelta(position, desiredSlide * slideSize, carousel, totalDistance)
-		finishSwiping(distance, goToTime, desiredSlide)
+		onSwipeEnd?.(desiredSlide || currentIndex)
+		clearInterval(v.current.animationInterval)
 	}
 
 	function handleTouchDown(e: TouchEvent<HTMLDivElement>) {
@@ -162,7 +172,6 @@ export default function Swiper(props: SwiperProps) {
 		const { isSwiping, isTouching, movements } = v.current
 		if (disabled || !isTouching || slideCount === 1) return
 
-		// Determine when swiping begins
 		if (!isSwiping) {
 			const startPosition = movements[0].pagePosition
 			const started = startedSwiping(pagePosition, startPosition, scale)
@@ -178,8 +187,8 @@ export default function Swiper(props: SwiperProps) {
 		const swipeMovement = (previousMovement.pagePosition - pagePosition) / adjScale
 
 		let newPosition = position + swipeMovement
-		if (endMode === 'carousel') newPosition = carouselPosition(newPosition, totalDistance)
-		else if (endMode === 'rigid') newPosition = clamp(newPosition, 0, overflowDistance)
+		if (endMode === 'carousel') newPosition = carousel(newPosition, totalSpan)
+		else if (endMode === 'rigid') newPosition = clamp(newPosition, overflowDistance)
 		setPosition(newPosition)
 
 		v.current.movements.shift()
@@ -191,52 +200,39 @@ export default function Swiper(props: SwiperProps) {
 		v.current.isTouching = false
 		if (!v.current.isSwiping) return
 
-		const velocity = getVelocityFromMovements(v.current.movements)
-		const desiredDistance = howFar(velocity, deceleration)
-		const desiredPosition = position + Math.sign(velocity) * desiredDistance
-		let maxSlides = Math.floor(desiredDistance / slideSize)
+		const deceleration = getDeceleration(braking)
+		const velocity = velocityFromMovements(v.current.movements)
+		let desiredDistance = howFar(velocity, deceleration)
+		let desiredIndex: number | undefined
 
-		if (!carousel) {
+		if (!isCarousel) {
 			if (position < 0) {
 				return finishSwiping(-position, SNAP_BACK_TIME, 0)
 			} else if (position > overflowDistance) {
-				return finishSwiping(overflowDistance - position, SNAP_BACK_TIME, overflowCount)
+				return finishSwiping(overflowDistance - position, SNAP_BACK_TIME, slideCount - 1)
 			} else {
-				if (desiredPosition > overflowDistance) maxSlides = overflowCount - currentSlide
-				else if (desiredPosition < 0) maxSlides = currentSlide
+				desiredDistance = clamp(desiredDistance, overflowDistance - position, -position)
 			}
-		} else if (stopMode === 'free') {
-			const duration = howLong(velocity, deceleration)
-			return finishSwiping(Math.sign(velocity) * desiredDistance, duration)
 		}
 
-		if (!maxSlides) {
-			const pastHalfway = (position + slideSize) % slideSize > slideSize / 2
-			const desiredSlide = currentSlide + (pastHalfway ? 1 : 0)
-			const distance = desiredSlide * slideSize - position
-			return finishSwiping(distance, SNAP_BACK_TIME, desiredSlide)
+		if (stopMode !== 'free') {
+			const snappedDistance = snapDistance(position, slides, desiredDistance, center)
+			if (!snappedDistance) {
+				const { span, startPosition } = slides[currentIndex]
+				const pastHalfway = isPastHalfway(position - startPosition, span)
+				desiredDistance = startPosition - position + (pastHalfway ? span : 0)
+				desiredIndex = currentIndex + (pastHalfway ? 1 : 0)
+			} else {
+				const { single, total } = snappedDistance
+				desiredDistance = stopMode === 'single' ? single.distance : total.distance
+				desiredIndex = stopMode === 'single' ? single.index : total.index
+			}
 		}
 
-		if (stopMode === 'single') maxSlides = velocity > 0 ? 1 : 0
-
-		const desiredSlide = currentSlide + maxSlides * Math.sign(velocity)
-		const distance = Math.abs(desiredSlide * slideSize - position)
-		const updatedDeceleration = updateDeceleration(velocity, distance)
+		const updatedDeceleration = calculateDeceleration(velocity, Math.abs(desiredDistance))
 		const duration = howLong(velocity, updatedDeceleration)
-		finishSwiping(Math.sign(velocity) * distance, duration, desiredSlide)
+		finishSwiping(desiredDistance, duration, desiredIndex)
 	}
-
-	function stopSwiping(desiredSlide?: number) {
-		if (desiredSlide) {
-			const desiredOffset = desiredSlide * slideSize
-			setPosition(desiredOffset)
-		}
-
-		onSwipeEnd?.(desiredSlide || currentSlide)
-		clearInterval(v.current.animationInterval)
-	}
-
-	const flippedIndexes = carouselIndexes(slideCount, visible, currentSlide)
 
 	return (
 		<div
@@ -274,15 +270,14 @@ export default function Swiper(props: SwiperProps) {
 				handleUp()
 				onTouchCancel?.(e)
 			}}
-			style={{ ...makeContainerStyle(dimensions?.slides, vertical), ...style }}
+			style={{ ...style, ...getContainerStyle(container?.thick, vertical) }}
 			{...rest}
 		>
 			{childrenArray.map((child, i) => {
-				const index = carousel ? i + flippedIndexes[i] * slideCount : i
-				const containerSpan = dimensions?.container[vertical ? 'height' : 'width'] ?? 0
-				const slideSpan = slideSize ?? dimensions?.slides[i][vertical ? 'height' : 'width'] ?? 0
-				const offsetAmount = index * slideSize - position + (center ? containerSpan / 2 - slideSpan / 2 : 0)
-				const span = containerSpan / visible
+				const index = isCarousel && flippedIndexes ? i + flippedIndexes[i] * slideCount : i
+				const span = slides[i]?.span
+				let offsetAmount = index * span - position
+				if (center) offsetAmount += (container?.span ?? 0) / 2 - span / 2
 				const style = { ...makeSlideStyle(offsetAmount, span, vertical), ...child.props.style }
 				const className = child.props.className
 					? `canari-swipe__slide ${child.props.className}`

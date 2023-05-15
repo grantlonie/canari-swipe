@@ -1,7 +1,5 @@
-slides of different sizes? change visible to fitted and make optional
-add responsive height
+add responsive height?
 different easing functions
 change onSwipeStart to include direction and change in direction
-clean up Swiper and write tests
 compare with react-slick, swiper-js, keen-slider (similar implementation), nuka-carousel
 other props:Cover component, autoplay, spacing, lazy loading

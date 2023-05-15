@@ -1,5 +1,12 @@
 import { CSSProperties } from 'react'
-import { Dimension, InstanceVariables, Movement, SwiperProps } from './types'
+import { Dimension, Dimensions, InstanceVariables, Movement, SwiperProps } from './types'
+
+export const initialInstanceVariables: InstanceVariables = {
+	initialized: false,
+	isTouching: false,
+	isSwiping: false,
+	movements: [{ pagePosition: 0, time: 0 }],
+}
 
 /** return deceleration in px/sec^2 */
 export function getDeceleration(braking?: SwiperProps['braking']) {
@@ -13,23 +20,12 @@ export function getDeceleration(braking?: SwiperProps['braking']) {
 	}
 }
 
-export const initialInstanceVariables: InstanceVariables = {
-	initialized: false,
-	isTouching: false,
-	isSwiping: false,
-	movements: [{ pagePosition: 0, time: 0 }],
-}
-
 /** Return distance between current and next positions, and if looping, the other direction if faster */
-export function getDelta(currentPosition: number, nextPosition: number, loop: boolean, totalDistance: number) {
+export function getDelta(currentPosition: number, nextPosition: number, loop: boolean, totalSpan: number) {
 	const delta = nextPosition - currentPosition
 	if (!loop || !delta) return delta
 
-	const otherDelta =
-		nextPosition > currentPosition
-			? nextPosition - currentPosition - totalDistance
-			: totalDistance - currentPosition + nextPosition
-
+	const otherDelta = delta + totalSpan * (nextPosition > currentPosition ? -1 : 1)
 	return Math.abs(otherDelta) < Math.abs(delta) ? otherDelta : delta
 }
 
@@ -42,31 +38,16 @@ export function startedSwiping(position: number, startPosition: number, scale: n
 /** get current time in ms */
 export const getCurrentClock = () => new Date().getTime()
 
-export function getVelocityFromMovements(movements: Movement[]) {
+export function velocityFromMovements(movements: Movement[]) {
 	const start = movements[0]
 	const end = movements[movements.length - 1]
 	const velocity = (end.pagePosition - start.pagePosition) / (end.time - start.time)
 	return velocity * 1000 * -1
 }
 
-export function getPositionFromVelocity(position: number, velocity: number, timeChange: number) {
-	const newPosition = position + (velocity * timeChange) / 1000
-	return Math.round(newPosition)
-}
-
-export function getVelocityFromDeceleration(velocity: number, deceleration: number, timeChange: number) {
-	const newVelocity = velocity - (Math.sign(velocity) * deceleration * timeChange) / 1000
-	return Math.round(newVelocity)
-}
-
-/** determine the minimum velocity to travel a specified distance with deceleration */
-export function minVelocityToTravel(distance: number, deceleration: number) {
-	return Math.round(Math.sqrt(2 * deceleration * distance))
-}
-
-/** determine how many pixels (absolute) can be covered before coming to rest */
+/** determine how many pixels can be covered before coming to rest */
 export function howFar(velocity: number, deceleration: number) {
-	return Math.round(Math.pow(velocity, 2) / (2 * deceleration))
+	return Math.round(Math.pow(velocity, 2) / (2 * deceleration)) * Math.sign(velocity)
 }
 
 /** determine how long is should take to come to rest in ms */
@@ -75,37 +56,50 @@ export function howLong(velocity: number, deceleration: number) {
 }
 
 /** get updated deceleration */
-export function updateDeceleration(velocity: number, distance: number) {
+export function calculateDeceleration(velocity: number, distance: number) {
 	return Math.round(Math.abs(Math.pow(velocity, 2) / (2 * distance)))
 }
 
-/** given number of slides and which slide is current, generate an array that indicates if a slide should carousel (0: no, 1: yes, small slide to the end, -1: yes, large index to the start) */
-export function carouselIndexes(count: number, visible: number, currentSlide: number) {
-	const overhang = (count - visible) / 2
-	const minIndex = -Math.floor(overhang)
-	const maxIndex = visible - 1 + Math.ceil(overhang)
+/** generate an array that indicates if a slide should carousel (0: no, 1: yes, small slide to the end, -1: yes, large index to the start) */
+export function carouselIndexes(dimensions: Dimensions | null, currentIndex: number, center = false) {
+	if (!dimensions) return
 
-	let index = -currentSlide
-	let carousel = 0
-	if (index < minIndex) {
-		index += count
-		carousel = 1
+	const { slides } = dimensions
+	const firstIndex = getFirstIndex(dimensions, currentIndex, center)
+
+	let i = firstIndex
+	let flipper = i <= currentIndex ? 0 : -1
+	let flipped: number[] = new Array(slides.length)
+
+	while (true) {
+		flipped[i] = flipper
+		i++
+		if (i > slides.length - 1) {
+			i = 0
+			flipper++
+		}
+		if (i === firstIndex) break
 	}
 
-	return new Array(count).fill(null).map(() => {
-		if (index > maxIndex) {
-			carousel = carousel ? 0 : -1
-			index -= count
-		}
-		index++
-		return carousel
-	})
+	return flipped
 }
 
-export function carouselPosition(position: number, totalDistance: number) {
-	if (position < 0) return position + totalDistance
-	else if (position > totalDistance) return position - totalDistance
-	return position
+/** get first slide index based on how much overhang should be on each side of container span */
+function getFirstIndex({ container, slides }: Dimensions, currentIndex: number, center: boolean) {
+	const count = slides.length
+	const lastSlide = slides[count - 1]
+	const overhangDistance = (getEndPosition(lastSlide) - container.span) / 2
+
+	let index = currentIndex
+	let distance = center ? slides[currentIndex].span / 2 : 0
+	while (true) {
+		let nextIndex = carousel(index - 1, count)
+		distance += slides[nextIndex].span
+		if (distance > overhangDistance + (center ? container.span / 2 : 0)) break
+		index = nextIndex
+	}
+
+	return index
 }
 
 /** returns a promise that sleeps for specified time in ms. default 0 */
@@ -118,13 +112,13 @@ export function easeOutSine(ratio: number) {
 	return Math.sin(ratio * (Math.PI / 2))
 }
 
-export const clamp = (num, min, max) => Math.min(Math.max(num, min), max)
+export const carousel = (value: number, maxValue: number) => (value + maxValue) % maxValue
 
-export function makeContainerStyle(slideDimensions?: Dimension[], vertical?: boolean) {
-	if (!slideDimensions) return
+export const clamp = (num: number, max: number, min = 0) => Math.min(Math.max(num, min), max)
 
-	if (vertical) return { width: slideDimensions[0].width }
-	return { height: slideDimensions[0].height }
+export function getEndPosition(slide?: Dimension) {
+	if (!slide) return 0
+	return slide.startPosition + slide.span
 }
 
 export function makeSlideStyle(offset: number, span: number, vertical: boolean): CSSProperties {
@@ -137,4 +131,92 @@ export function makeSlideStyle(offset: number, span: number, vertical: boolean):
 		transform: `translate3d(${xOffset}px, ${yOffset}px, 0)`,
 		...(vertical ? { height: span } : { width: span }),
 	}
+}
+
+export function makeDimensions(containerElement: HTMLDivElement, vertical: boolean, fit?: number): Dimensions {
+	const { children, offsetHeight = 0, offsetWidth = 0 } = containerElement || {}
+	const containerSpan = vertical ? offsetHeight : offsetWidth
+
+	const slideElements = Array.from(children ?? [])
+	const fixedSlideSpan = fit ? containerSpan / fit : undefined
+
+	let startPosition = 0
+	const slides = slideElements.map(c => {
+		const span = fixedSlideSpan || (vertical ? c.clientHeight : c.clientWidth)
+		const thick = vertical ? c.clientWidth : c.clientHeight
+		const currentCumSpan = startPosition
+		startPosition += span
+		return { startPosition: currentCumSpan, span, thick }
+	})
+
+	const maxSlideThickness = slides.reduce((acc, cur) => Math.max(acc, cur.thick), 0)
+	const container = { span: containerSpan, thick: maxSlideThickness }
+
+	return { container, slides }
+}
+
+/** get current slide index from position */
+export function indexFromPosition(position: number, slides: Dimension[], center?: boolean) {
+	if (!slides.length) return 0
+
+	const centerCorrection = slides[0].span / 2
+	for (let i = 0; i < slides.length; i++) {
+		const endPosition = getEndPosition(slides[i])
+		if (center) {
+			const nextSlide = slides[i + 1]
+			const nextSpan = nextSlide?.span ?? slides[0].span
+			if (position < endPosition + nextSpan / 2 - centerCorrection) return i
+		} else {
+			if (position < endPosition) return i
+		}
+	}
+
+	return 0
+}
+
+export const isPastHalfway = (distance: number, span: number) => (distance + span) % span > span / 2
+
+/** update distance to include snap logic */
+export function snapDistance(position: number, slides: Dimension[], desiredDistance: number, center = false) {
+	const currentIndex = indexFromPosition(position, slides)
+	const { startPosition, span } = slides[currentIndex]
+	const direction = Math.sign(desiredDistance)
+	const forward = direction > 0
+	const centerCorrection = slides[0].span / 2
+
+	let distance = startPosition - position + (forward ? span : 0)
+	if (center) {
+		distance -= centerCorrection
+		if (forward) {
+			const nextIndex = carousel(currentIndex + 1, slides.length)
+			distance += slides[nextIndex].span / 2
+		} else {
+			const previousIndex = carousel(currentIndex - 1, slides.length)
+			distance -= slides[previousIndex].span / 2
+		}
+	}
+	const stayOnCurrentSlide = Math.abs(distance) > Math.abs(desiredDistance)
+	if (stayOnCurrentSlide) return
+
+	let i = carousel(currentIndex + (forward ? 1 : center ? -1 : 0), slides.length)
+	let snapped = { single: { distance, index: i }, total: { distance, index: i } }
+
+	while (true) {
+		const nextIndex = carousel(i + (forward ? 1 : -1), slides.length)
+		const previousSpan = slides[i].span
+		const nextSpan = slides[nextIndex].span
+		if (!forward) i = nextIndex
+		const span = slides[i].span
+		distance += (center ? (forward ? nextSpan : previousSpan) / 2 + span / 2 : span) * direction
+		if (Math.abs(distance) > Math.abs(desiredDistance)) return snapped
+
+		if (forward) i = nextIndex
+		snapped.total.distance = distance
+		snapped.total.index = i
+	}
+}
+
+export function getContainerStyle(containerThickness = 0, vertical = false): CSSProperties {
+	if (vertical) return { width: containerThickness }
+	else return { height: containerThickness }
 }

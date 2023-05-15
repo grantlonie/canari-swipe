@@ -3,7 +3,7 @@ import { useState } from 'react'
 import Swiper from './Swiper/Swiper'
 import Controls from './components/Controls'
 import { Box, Text } from './components/base'
-import { ControlProps, SLIDE_COUNT } from './helpers'
+import { ControlProps, SLIDE_COUNT, randomIntFromInterval } from './helpers'
 const canary1 = new URL('./assets/images/canary1.jpg', import.meta.url).toString()
 
 export default function App() {
@@ -12,6 +12,8 @@ export default function App() {
 	function handleUpdate(body: Partial<ControlProps>) {
 		setControlProps(s => ({ ...s, ...body }))
 	}
+
+	const slides = makeSlides()
 
 	return (
 		<Box sx={{ fontFamily: 'Arial, Geneva, Helvetica' }}>
@@ -30,22 +32,23 @@ export default function App() {
 	)
 }
 
-const slides = new Array(SLIDE_COUNT).fill(null).map((_, i) => (
-	<Box
-		key={i}
-		sx={{
-			height: '200px',
-			backgroundColor: 'gray',
-			border: '1px solid black',
-			display: 'flex',
-			justifyContent: 'center',
-			color: 'white',
-			userSelect: 'none',
-		}}
-	>
-		<Text>Slide {i + 1}</Text>
-	</Box>
-))
+const makeSlides = () =>
+	new Array(SLIDE_COUNT).fill(null).map((_, i) => (
+		<Box
+			key={`${i}${randomIntFromInterval(0, 9999)}`}
+			sx={{
+				backgroundColor: 'gray',
+				border: '1px solid black',
+				color: 'white',
+				display: 'flex',
+				height: '200px',
+				justifyContent: 'center',
+				width: `${randomIntFromInterval(100, 400)}px`,
+			}}
+		>
+			<Text>Slide {i + 1}</Text>
+		</Box>
+	))
 // .map(() => <img css={{ pointerEvents: 'none' }} src={canary1} />)
 
 const initialControlProps: ControlProps = {
@@ -56,5 +59,5 @@ const initialControlProps: ControlProps = {
 	goToTime: 500,
 	stopMode: 'single',
 	scale: 1,
-	visible: 2,
+	fit: 0,
 }

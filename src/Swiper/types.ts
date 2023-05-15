@@ -10,6 +10,8 @@ export interface SwiperProps extends HTMLProps<HTMLDivElement> {
 	disabled?: boolean
 	/** (default elastic) apply elastic effect or rigid at the end of the slides or carousel them back around */
 	endMode?: 'elastic' | 'rigid' | 'carousel'
+	/** fit number of slides in container */
+	fit?: number
 	/** (default 0) used to set initial slide and to control externally */
 	goTo?: number
 	/** (default 500ms) time it takes to transition to desired slide */
@@ -24,8 +26,6 @@ export interface SwiperProps extends HTMLProps<HTMLDivElement> {
 	scale?: number
 	/** (default single) stop after a single slide, animate slides per braking stopping on whole slide (multiple) or wherever it lies (free)  */
 	stopMode?: 'single' | 'multiple' | 'free'
-	/** (default 1) show multiple slides at the same time */
-	visible?: number
 	/** change to vertical swiper */
 	vertical?: boolean
 }
@@ -59,7 +59,16 @@ export interface Movement {
 	time: number
 }
 
+export interface Dimensions {
+	container: Omit<Dimension, 'startPosition'>
+	slides: Dimension[]
+}
+
 export interface Dimension {
-	height: number
-	width: number
+	/** position needed to get to start of the slide */
+	startPosition: number
+	/** width or height if vertical */
+	span: number
+	/** height or width if vertical */
+	thick: number
 }
