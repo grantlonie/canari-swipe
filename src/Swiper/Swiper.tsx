@@ -4,7 +4,6 @@ import { Dimensions, Movement, SwiperProps as Props } from './types'
 import {
 	calculateDeceleration,
 	carousel,
-	carouselIndexes,
 	clamp,
 	easeOutSine,
 	getContainerStyle,
@@ -19,6 +18,7 @@ import {
 	isPastHalfway,
 	makeDimensions,
 	makeSlideStyle,
+	carouselSlides,
 	snapDistance,
 	startedSwiping,
 	velocityFromMovements,
@@ -75,7 +75,7 @@ export default function Swiper(props: SwiperProps) {
 	const lastSlide = slides[slides.length - 1]
 	const totalSpan = getEndPosition(lastSlide)
 	const overflowDistance = totalSpan - ((center ? lastSlide?.span : container?.span) ?? 0)
-	const flippedIndexes = carouselIndexes(dimensions, currentIndex, center)
+	const adjSlides = isCarousel ? carouselSlides(dimensions, currentIndex, center) : slides
 
 	if (goToParent !== goTo) setGoTo(goToParent)
 
@@ -130,7 +130,8 @@ export default function Swiper(props: SwiperProps) {
 
 	function stopSwiping(desiredSlide?: number) {
 		if (desiredSlide) {
-			const desiredPosition = slides[desiredSlide].startPosition
+			const { span, startPosition } = slides[desiredSlide]
+			const desiredPosition = startPosition + (center ? span / 2 - slides[0].span / 2 : 0)
 			const newPosition = isCarousel ? desiredPosition : Math.min(desiredPosition, overflowDistance)
 			setPosition(newPosition)
 		}
@@ -274,11 +275,10 @@ export default function Swiper(props: SwiperProps) {
 			{...rest}
 		>
 			{childrenArray.map((child, i) => {
-				const index = isCarousel && flippedIndexes ? i + flippedIndexes[i] * slideCount : i
-				const span = slides[i]?.span
-				let offsetAmount = index * span - position
-				if (center) offsetAmount += (container?.span ?? 0) / 2 - span / 2
-				const style = { ...makeSlideStyle(offsetAmount, span, vertical), ...child.props.style }
+				const { startPosition = 0, span = 0 } = adjSlides?.[i] ?? {}
+				let offsetAmount = startPosition - position
+				if (center) offsetAmount += (container?.span ?? 0) / 2 - slides[0].span / 2
+				const style = { ...makeSlideStyle(offsetAmount, span, vertical, Boolean(fit)), ...child.props.style }
 				const className = child.props.className
 					? `canari-swipe__slide ${child.props.className}`
 					: 'canari-swipe__slide'

@@ -1,5 +1,13 @@
 import { Dimension, Dimensions } from './types'
-import { carousel, carouselIndexes, getDelta, indexFromPosition, isPastHalfway, snapDistance } from './utils'
+import {
+	carousel,
+	carouselSlides,
+	getDelta,
+	getEndPosition,
+	indexFromPosition,
+	isPastHalfway,
+	snapDistance,
+} from './utils'
 
 test('carousel', () => {
 	expect(carousel(-1, 5)).toEqual(4)
@@ -61,40 +69,33 @@ describe('getDelta', () => {
 	})
 })
 
-describe('carouselIndexes', () => {
+describe('carouselSlides', () => {
 	let dimensions: Dimensions = {
 		container: { span: 10, thick: 0 },
 		slides: makeSlides([2, 4, 5, 4, 2]),
 	}
-	let flipped
+	const slides = dimensions.slides
+	const totalSpan = getEndPosition(slides[slides.length - 1])
+	const flipper = (flips: number[]) =>
+		slides.map((s, i) => ({ ...s, startPosition: s.startPosition + flips[i] * totalSpan }))
 
 	test('left aligned', () => {
-		flipped = carouselIndexes(dimensions, 0, false)
-		expect(flipped).toEqual([0, 0, 0, 0, -1])
-		flipped = carouselIndexes(dimensions, 1, false)
-		expect(flipped).toEqual([0, 0, 0, 0, 0])
-		flipped = carouselIndexes(dimensions, 2, false)
-		expect(flipped).toEqual([1, 1, 0, 0, 0])
-		flipped = carouselIndexes(dimensions, 3, false)
-		expect(flipped).toEqual([1, 1, 1, 0, 0])
-		flipped = carouselIndexes(dimensions, 4, false)
-		expect(flipped).toEqual([1, 1, 1, 1, 0])
+		expect(carouselSlides(dimensions, 0, false)).toEqual(flipper([0, 0, 0, 0, -1]))
+		expect(carouselSlides(dimensions, 1, false)).toEqual(flipper([0, 0, 0, 0, 0]))
+		expect(carouselSlides(dimensions, 2, false)).toEqual(flipper([1, 1, 0, 0, 0]))
+		expect(carouselSlides(dimensions, 3, false)).toEqual(flipper([1, 1, 1, 0, 0]))
+		expect(carouselSlides(dimensions, 4, false)).toEqual(flipper([1, 1, 1, 1, 0]))
 	})
 	test('centered', () => {
-		flipped = carouselIndexes(dimensions, 0, true)
-		expect(flipped).toEqual([0, 0, 0, -1, -1])
-		flipped = carouselIndexes(dimensions, 1, true)
-		expect(flipped).toEqual([0, 0, 0, 0, -1])
-		flipped = carouselIndexes(dimensions, 2, true)
-		expect(flipped).toEqual([0, 0, 0, 0, 0])
-		flipped = carouselIndexes(dimensions, 3, true)
-		expect(flipped).toEqual([1, 1, 0, 0, 0])
-		flipped = carouselIndexes(dimensions, 4, true)
-		expect(flipped).toEqual([1, 1, 1, 0, 0])
+		expect(carouselSlides(dimensions, 0, true)).toEqual(flipper([0, 0, 0, -1, -1]))
+		expect(carouselSlides(dimensions, 1, true)).toEqual(flipper([0, 0, 0, 0, -1]))
+		expect(carouselSlides(dimensions, 2, true)).toEqual(flipper([0, 0, 0, 0, 0]))
+		expect(carouselSlides(dimensions, 3, true)).toEqual(flipper([1, 1, 0, 0, 0]))
+		expect(carouselSlides(dimensions, 4, true)).toEqual(flipper([1, 1, 1, 0, 0]))
 	})
 })
 
-describe.only('snapDistance', () => {
+describe('snapDistance', () => {
 	const slides = makeSlides([2, 5, 3, 1])
 
 	test('align start | stay', () => {

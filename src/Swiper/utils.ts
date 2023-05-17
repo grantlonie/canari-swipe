@@ -61,18 +61,20 @@ export function calculateDeceleration(velocity: number, distance: number) {
 }
 
 /** generate an array that indicates if a slide should carousel (0: no, 1: yes, small slide to the end, -1: yes, large index to the start) */
-export function carouselIndexes(dimensions: Dimensions | null, currentIndex: number, center = false) {
+export function carouselSlides(dimensions: Dimensions | null, currentIndex: number, center = false) {
 	if (!dimensions) return
 
 	const { slides } = dimensions
+
+	const totalSpan = getEndPosition(slides[slides.length - 1])
 	const firstIndex = getFirstIndex(dimensions, currentIndex, center)
 
 	let i = firstIndex
 	let flipper = i <= currentIndex ? 0 : -1
-	let flipped: number[] = new Array(slides.length)
+	let adjusted: Dimension[] = new Array(slides.length)
 
 	while (true) {
-		flipped[i] = flipper
+		adjusted[i] = { ...slides[i], startPosition: slides[i].startPosition + flipper * totalSpan }
 		i++
 		if (i > slides.length - 1) {
 			i = 0
@@ -81,7 +83,7 @@ export function carouselIndexes(dimensions: Dimensions | null, currentIndex: num
 		if (i === firstIndex) break
 	}
 
-	return flipped
+	return adjusted
 }
 
 /** get first slide index based on how much overhang should be on each side of container span */
@@ -102,11 +104,6 @@ function getFirstIndex({ container, slides }: Dimensions, currentIndex: number, 
 	return index
 }
 
-/** returns a promise that sleeps for specified time in ms. default 0 */
-export default function sleep(ms: number = 0) {
-	return new Promise(resolve => setTimeout(() => resolve(null), ms))
-}
-
 /** easing function to stop swiping */
 export function easeOutSine(ratio: number) {
 	return Math.sin(ratio * (Math.PI / 2))
@@ -121,15 +118,13 @@ export function getEndPosition(slide?: Dimension) {
 	return slide.startPosition + slide.span
 }
 
-export function makeSlideStyle(offset: number, span: number, vertical: boolean): CSSProperties {
-	let xOffset = 0
-	let yOffset = 0
-	if (vertical) yOffset = offset
-	else xOffset = offset
+export function makeSlideStyle(offset: number, span: number, vertical: boolean, size: boolean): CSSProperties {
+	const xOffset = vertical ? 0 : offset
+	const yOffset = vertical ? offset : 0
 
 	return {
 		transform: `translate3d(${xOffset}px, ${yOffset}px, 0)`,
-		...(vertical ? { height: span } : { width: span }),
+		...(size && (vertical ? { height: span } : { width: span })),
 	}
 }
 
@@ -176,7 +171,6 @@ export function indexFromPosition(position: number, slides: Dimension[], center?
 
 export const isPastHalfway = (distance: number, span: number) => (distance + span) % span > span / 2
 
-/** update distance to include snap logic */
 export function snapDistance(position: number, slides: Dimension[], desiredDistance: number, center = false) {
 	const currentIndex = indexFromPosition(position, slides)
 	const { startPosition, span } = slides[currentIndex]
