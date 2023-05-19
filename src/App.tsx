@@ -13,8 +13,6 @@ export default function App() {
 		setControlProps(s => ({ ...s, ...body }))
 	}
 
-	const slides = makeSlides()
-
 	return (
 		<Box sx={{ fontFamily: 'Arial, Geneva, Helvetica' }}>
 			<Box sx={{ display: 'flex', justifyContent: 'center' }}>
@@ -32,23 +30,22 @@ export default function App() {
 	)
 }
 
-const makeSlides = () =>
-	new Array(SLIDE_COUNT).fill(null).map((_, i) => (
-		<Box
-			key={`${i}${randomIntFromInterval(0, 9999)}`}
-			sx={{
-				backgroundColor: 'gray',
-				border: '1px solid black',
-				color: 'white',
-				display: 'flex',
-				height: '200px',
-				justifyContent: 'center',
-				width: `${randomIntFromInterval(100, 400)}px`,
-			}}
-		>
-			<Text>Slide {i + 1}</Text>
-		</Box>
-	))
+const slides = new Array(SLIDE_COUNT).fill(null).map((_, i) => (
+	<Box
+		key={`${i}${randomIntFromInterval(0, 9999)}`}
+		sx={{
+			backgroundColor: 'gray',
+			border: '1px solid black',
+			color: 'white',
+			display: 'flex',
+			height: '200px',
+			justifyContent: 'center',
+			width: `${randomIntFromInterval(100, 400)}px`,
+		}}
+	>
+		<Text>Slide {i + 1}</Text>
+	</Box>
+))
 // .map(() => <img css={{ pointerEvents: 'none' }} src={canary1} />)
 
 const initialControlProps: ControlProps = {

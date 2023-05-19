@@ -150,8 +150,8 @@ export function makeDimensions(containerElement: HTMLDivElement, vertical: boole
 	return { container, slides }
 }
 
-/** get current slide index from position */
-export function indexFromPosition(position: number, slides: Dimension[], center?: boolean) {
+/** get current slide index from position (if center, from middle of current slide to middle of next) */
+export function indexFromPosition(position: number, slides: Dimension[], center: boolean) {
 	if (!slides.length) return 0
 
 	const centerCorrection = slides[0].span / 2
@@ -171,8 +171,8 @@ export function indexFromPosition(position: number, slides: Dimension[], center?
 
 export const isPastHalfway = (distance: number, span: number) => (distance + span) % span > span / 2
 
-export function snapDistance(position: number, slides: Dimension[], desiredDistance: number, center = false) {
-	const currentIndex = indexFromPosition(position, slides)
+export function snapDistance(position: number, slides: Dimension[], desiredDistance: number, center: boolean) {
+	const currentIndex = indexFromPosition(position, slides, center)
 	const { startPosition, span } = slides[currentIndex]
 	const direction = Math.sign(desiredDistance)
 	const forward = direction > 0
@@ -207,6 +207,28 @@ export function snapDistance(position: number, slides: Dimension[], desiredDista
 		if (forward) i = nextIndex
 		snapped.total.distance = distance
 		snapped.total.index = i
+	}
+}
+
+export function snapToNearest(position: number, slides: Dimension[], center: boolean) {
+	const currentIndex = indexFromPosition(position, slides, center)
+	const { span, startPosition } = slides[currentIndex]
+
+	let distance = span
+	let distanceAlong = position - startPosition
+
+	if (center) {
+		const centerCorrection = slides[0].span / 2
+		const nextSlide = slides[carousel(currentIndex + 1, slides.length)]
+		distance = (span + nextSlide.span) / 2
+		distanceAlong += centerCorrection - span / 2
+	}
+
+	const pastHalfway = isPastHalfway(distanceAlong, distance)
+
+	return {
+		desiredDistance: (pastHalfway ? distance : 0) - distanceAlong,
+		desiredIndex: carousel(currentIndex + (pastHalfway ? 1 : 0), slides.length),
 	}
 }
 

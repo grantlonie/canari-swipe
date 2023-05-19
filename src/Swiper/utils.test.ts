@@ -6,6 +6,7 @@ import {
 	getEndPosition,
 	indexFromPosition,
 	isPastHalfway,
+	snapToNearest,
 	snapDistance,
 } from './utils'
 
@@ -27,16 +28,16 @@ test('isPastHalfway', () => {
 describe('indexFromPosition', () => {
 	test('align start', () => {
 		const slides = makeSlides([4, 1, 8, 6])
-		expect(indexFromPosition(3.9, slides)).toEqual(0)
-		expect(indexFromPosition(4, slides)).toEqual(1)
-		expect(indexFromPosition(4.5, slides)).toEqual(1)
-		expect(indexFromPosition(5, slides)).toEqual(2)
-		expect(indexFromPosition(18.9, slides)).toEqual(3)
-		expect(indexFromPosition(19, slides)).toEqual(0)
+		expect(indexFromPosition(3.9, slides, false)).toEqual(0)
+		expect(indexFromPosition(4, slides, false)).toEqual(1)
+		expect(indexFromPosition(4.5, slides, false)).toEqual(1)
+		expect(indexFromPosition(5, slides, false)).toEqual(2)
+		expect(indexFromPosition(18.9, slides, false)).toEqual(3)
+		expect(indexFromPosition(19, slides, false)).toEqual(0)
 	})
 	test('align center', () => {
 		const slides = makeSlides([4, 1, 8, 6])
-		expect(indexFromPosition(2.4, slides)).toEqual(0)
+		expect(indexFromPosition(2.4, slides, true)).toEqual(0)
 		expect(indexFromPosition(2.5, slides, true)).toEqual(1)
 		expect(indexFromPosition(6.9, slides, true)).toEqual(1)
 		expect(indexFromPosition(7, slides, true)).toEqual(2)
@@ -99,26 +100,26 @@ describe('snapDistance', () => {
 	const slides = makeSlides([2, 5, 3, 1])
 
 	test('align start | stay', () => {
-		expect(snapDistance(4, slides, 2.9)).toBeUndefined()
-		expect(snapDistance(4, slides, -1.9)).toBeUndefined()
+		expect(snapDistance(4, slides, 2.9, false)).toBeUndefined()
+		expect(snapDistance(4, slides, -1.9, false)).toBeUndefined()
 	})
 	test('align start | one slide', () => {
 		const forward = { single: { distance: 3, index: 2 }, total: { distance: 3, index: 2 } }
-		expect(snapDistance(4, slides, 3)).toEqual(forward)
-		expect(snapDistance(4, slides, 5.9)).toEqual(forward)
+		expect(snapDistance(4, slides, 3, false)).toEqual(forward)
+		expect(snapDistance(4, slides, 5.9, false)).toEqual(forward)
 		const backward = { single: { distance: -2, index: 1 }, total: { distance: -2, index: 1 } }
-		expect(snapDistance(4, slides, -2)).toEqual(backward)
-		expect(snapDistance(4, slides, -3.9)).toEqual(backward)
+		expect(snapDistance(4, slides, -2, false)).toEqual(backward)
+		expect(snapDistance(4, slides, -3.9, false)).toEqual(backward)
 	})
 	test('align start | multiple', () => {
 		let single = { distance: 3, index: 2 }
-		expect(snapDistance(4, slides, 6)).toEqual({ single, total: { distance: 6, index: 3 } })
-		expect(snapDistance(4, slides, 8.9)).toEqual({ single, total: { distance: 7, index: 0 } })
-		expect(snapDistance(4, slides, 22)).toEqual({ single, total: { distance: 20, index: 1 } })
+		expect(snapDistance(4, slides, 6, false)).toEqual({ single, total: { distance: 6, index: 3 } })
+		expect(snapDistance(4, slides, 8.9, false)).toEqual({ single, total: { distance: 7, index: 0 } })
+		expect(snapDistance(4, slides, 22, false)).toEqual({ single, total: { distance: 20, index: 1 } })
 		single = { distance: -2, index: 1 }
-		expect(snapDistance(4, slides, -4)).toEqual({ single, total: { distance: -4, index: 0 } })
-		expect(snapDistance(4, slides, -7.9)).toEqual({ single, total: { distance: -5, index: 3 } })
-		expect(snapDistance(4, slides, -22)).toEqual({ single, total: { distance: -19, index: 2 } })
+		expect(snapDistance(4, slides, -4, false)).toEqual({ single, total: { distance: -4, index: 0 } })
+		expect(snapDistance(4, slides, -7.9, false)).toEqual({ single, total: { distance: -5, index: 3 } })
+		expect(snapDistance(4, slides, -22, false)).toEqual({ single, total: { distance: -19, index: 2 } })
 	})
 	test('align center | stay', () => {
 		expect(snapDistance(4, slides, 3.4, true)).toBeUndefined()
@@ -141,6 +142,23 @@ describe('snapDistance', () => {
 		expect(snapDistance(4, slides, -5.5, true)).toEqual({ single, total: { distance: -5.5, index: 3 } })
 		expect(snapDistance(4, slides, -7.4, true)).toEqual({ single, total: { distance: -5.5, index: 3 } })
 		expect(snapDistance(4, slides, -25, true)).toEqual({ single, total: { distance: -22.5, index: 1 } })
+	})
+})
+
+describe('snapToNearest', () => {
+	const slides = makeSlides([20, 40, 50, 40, 20])
+	test('align left', () => {
+		expect(snapToNearest(40, slides, false)).toEqual({ desiredDistance: -20, desiredIndex: 1 })
+		expect(snapToNearest(41, slides, false)).toEqual({ desiredDistance: 19, desiredIndex: 2 })
+		expect(snapToNearest(160, slides, false)).toEqual({ desiredDistance: -10, desiredIndex: 4 })
+		expect(snapToNearest(161, slides, false)).toEqual({ desiredDistance: 9, desiredIndex: 0 })
+	})
+	test('align center', () => {
+		expect(snapToNearest(40, slides, true)).toEqual({ desiredDistance: -10, desiredIndex: 1 })
+		expect(snapToNearest(52.5, slides, true)).toEqual({ desiredDistance: -22.5, desiredIndex: 1 })
+		expect(snapToNearest(52.6, slides, true)).toEqual({ desiredDistance: 22.4, desiredIndex: 2 })
+		expect(snapToNearest(160, slides, true)).toEqual({ desiredDistance: -10, desiredIndex: 4 })
+		expect(snapToNearest(161, slides, true)).toEqual({ desiredDistance: 9, desiredIndex: 0 })
 	})
 })
 

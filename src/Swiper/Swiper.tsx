@@ -4,6 +4,7 @@ import { Dimensions, Movement, SwiperProps as Props } from './types'
 import {
 	calculateDeceleration,
 	carousel,
+	carouselSlides,
 	clamp,
 	easeOutSine,
 	getContainerStyle,
@@ -15,26 +16,25 @@ import {
 	howLong,
 	indexFromPosition,
 	initialInstanceVariables,
-	isPastHalfway,
 	makeDimensions,
 	makeSlideStyle,
-	carouselSlides,
+	snapToNearest,
 	snapDistance,
 	startedSwiping,
 	velocityFromMovements,
 } from './utils'
 
 /** how fast swiper updates after letting go */
-const SWIPE_UPDATE_TIME = 10
+export const SWIPE_UPDATE_TIME = 10
 /** ms time to go to nearest slide from stationary */
-const SNAP_BACK_TIME = 300
+export const SNAP_BACK_TIME = 200
 
 export type SwiperProps = Props
 
 export default function Swiper(props: SwiperProps) {
 	const {
 		braking,
-		center,
+		center = false,
 		children,
 		className,
 		disabled,
@@ -71,7 +71,7 @@ export default function Swiper(props: SwiperProps) {
 	const slideCount = childrenArray.length
 	const isCarousel = endMode === 'carousel'
 	const { container, slides = [] } = dimensions ?? {}
-	const currentIndex = indexFromPosition(position, slides)
+	const currentIndex = indexFromPosition(position, slides, center)
 	const lastSlide = slides[slides.length - 1]
 	const totalSpan = getEndPosition(lastSlide)
 	const overflowDistance = totalSpan - ((center ? lastSlide?.span : container?.span) ?? 0)
@@ -202,7 +202,7 @@ export default function Swiper(props: SwiperProps) {
 		if (!v.current.isSwiping) return
 
 		const deceleration = getDeceleration(braking)
-		const velocity = velocityFromMovements(v.current.movements)
+		let velocity = velocityFromMovements(v.current.movements)
 		let desiredDistance = howFar(velocity, deceleration)
 		let desiredIndex: number | undefined
 
@@ -219,10 +219,10 @@ export default function Swiper(props: SwiperProps) {
 		if (stopMode !== 'free') {
 			const snappedDistance = snapDistance(position, slides, desiredDistance, center)
 			if (!snappedDistance) {
-				const { span, startPosition } = slides[currentIndex]
-				const pastHalfway = isPastHalfway(position - startPosition, span)
-				desiredDistance = startPosition - position + (pastHalfway ? span : 0)
-				desiredIndex = currentIndex + (pastHalfway ? 1 : 0)
+				const n = snapToNearest(position, slides, center)
+				desiredDistance = n.desiredDistance
+				desiredIndex = n.desiredIndex
+				velocity = (desiredDistance / SNAP_BACK_TIME) * 1000
 			} else {
 				const { single, total } = snappedDistance
 				desiredDistance = stopMode === 'single' ? single.distance : total.distance
