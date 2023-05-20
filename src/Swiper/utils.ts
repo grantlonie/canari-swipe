@@ -52,11 +52,13 @@ export function howFar(velocity: number, deceleration: number) {
 
 /** determine how long is should take to come to rest in ms */
 export function howLong(velocity: number, deceleration: number) {
+	if (!deceleration) return 0
 	return Math.round((Math.abs(velocity) / deceleration) * 1000)
 }
 
 /** get updated deceleration */
 export function calculateDeceleration(velocity: number, distance: number) {
+	if (!Math.abs(distance)) return 0
 	return Math.round(Math.abs(Math.pow(velocity, 2) / (2 * distance)))
 }
 
@@ -172,6 +174,8 @@ export function indexFromPosition(position: number, slides: Dimension[], center:
 export const isPastHalfway = (distance: number, span: number) => (distance + span) % span > span / 2
 
 export function snapDistance(position: number, slides: Dimension[], desiredDistance: number, center: boolean) {
+	if (!Math.abs(desiredDistance)) return
+
 	const currentIndex = indexFromPosition(position, slides, center)
 	const { startPosition, span } = slides[currentIndex]
 	const direction = Math.sign(desiredDistance)

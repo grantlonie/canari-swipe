@@ -100,6 +100,7 @@ describe('snapDistance', () => {
 	const slides = makeSlides([2, 5, 3, 1])
 
 	test('align start | stay', () => {
+		expect(snapDistance(0, slides, 0, false)).toBeUndefined()
 		expect(snapDistance(4, slides, 2.9, false)).toBeUndefined()
 		expect(snapDistance(4, slides, -1.9, false)).toBeUndefined()
 	})
