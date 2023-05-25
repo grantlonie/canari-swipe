@@ -1,5 +1,6 @@
 import { CSSProperties } from 'react'
-import { Dimension, Dimensions, InstanceVariables, Movement, SwiperProps } from './types'
+import { SwiperProps } from './Swiper'
+import { Dimension, Dimensions, InstanceVariables, Movement } from './types'
 
 export const initialInstanceVariables: InstanceVariables = {
 	initialized: false,

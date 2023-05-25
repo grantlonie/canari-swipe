@@ -1,6 +1,16 @@
-import { Children, MouseEvent, TouchEvent, cloneElement, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import {
+	Children,
+	HTMLProps,
+	MouseEvent,
+	TouchEvent,
+	cloneElement,
+	useEffect,
+	useLayoutEffect,
+	useRef,
+	useState,
+} from 'react'
 import './style.css'
-import { Dimensions, Movement, SwiperProps as Props } from './types'
+import { Dimensions, Movement } from './types'
 import {
 	calculateDeceleration,
 	carousel,
@@ -25,16 +35,53 @@ import {
 } from './utils'
 
 /** how fast swiper updates after letting go */
-export const SWIPE_UPDATE_TIME = 10
+const SWIPE_UPDATE_TIME = 10
 /** ms time to go to nearest slide from stationary */
-export const SNAP_BACK_TIME = 200
+const SNAP_BACK_TIME = 200
 
-export type SwiperProps = Props
+export interface SwiperProps extends HTMLProps<HTMLDivElement> {
+	/** (default start) align the slides with the start or center of the container */
+	align: 'center' | 'start'
+	/** (default medium) how hard to brake swiping animation after letting go  */
+	braking?: 'soft' | 'medium' | 'hard'
+	children: JSX.Element[] | JSX.Element
+	/** prevent dragging slides */
+	disabled?: boolean
+	/** (default elastic) apply elastic effect or rigid at the end of the slides or carousel them back around */
+	endMode?: 'elastic' | 'rigid' | 'carousel'
+	/** fit number of slides in container */
+	fit?: number
+	/** (default 0) used to set initial slide and to control externally */
+	goTo?: number
+	/** (default 500ms) time it takes to transition to desired slide */
+	goToTime?: number
+	/** called when swiping starts */
+	onSwipeStart?: () => void
+	/** called when swiping ends with current slide*/
+	onSwipeEnd?: (slide: number) => void
+	/** return callable methods */
+	onLoaded?: (methods: Methods) => void
+	/** (default 1) helpful when applying transform scale to swiper to match swipe movements */
+	scale?: number
+	/** (default single) stop after a single slide, animate slides per braking stopping on whole slide (multiple) or wherever it lies (free)  */
+	stopMode?: 'single' | 'multiple' | 'free'
+	/** change to vertical swiper */
+	vertical?: boolean
+}
+
+interface Methods {
+	/** go to a slide */
+	goTo: (slide: number) => void
+	/** go to next slide */
+	next: () => void
+	/** go to previous slide */
+	prev: () => void
+}
 
 export default function Swiper(props: SwiperProps) {
 	const {
+		align = 'start',
 		braking,
-		center = false,
 		children,
 		className,
 		disabled,
@@ -70,6 +117,7 @@ export default function Swiper(props: SwiperProps) {
 	const childrenArray = Children.toArray(children) as JSX.Element[]
 	const slideCount = childrenArray.length
 	const isCarousel = endMode === 'carousel'
+	const center = align === 'center'
 	const { container, slides = [] } = dimensions ?? {}
 	const currentIndex = indexFromPosition(position, slides, center)
 	const lastSlide = slides[slides.length - 1]
@@ -277,7 +325,7 @@ export default function Swiper(props: SwiperProps) {
 			{childrenArray.map((child, i) => {
 				const { startPosition = 0, span = 0 } = adjSlides?.[i] ?? {}
 				let offsetAmount = startPosition - position
-				if (center) offsetAmount += (container?.span ?? 0) / 2 - slides[0].span / 2
+				if (center) offsetAmount += ((container?.span ?? 0) - (slides[0]?.span ?? 0)) / 2
 				const style = { ...makeSlideStyle(offsetAmount, span, vertical, Boolean(fit)), ...child.props.style }
 				const className = child.props.className
 					? `canari-swipe__slide ${child.props.className}`

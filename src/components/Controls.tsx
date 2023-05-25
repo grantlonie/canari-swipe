@@ -57,8 +57,10 @@ export default function Controls({ value, onUpdate }: Props) {
 				</Select>
 			</ContainerWithHelp>
 
-			<ContainerWithHelp tooltipLabel="Center current slide in container">
-				<Checkbox label="Center" checked={value.center} onChange={center => onUpdate({ center })} />
+			<ContainerWithHelp tooltipLabel="Align the slides inside the container">
+				<Select value={value.align} label="Align" onChange={align => onUpdate({ align })}>
+					{alignOptions}
+				</Select>
 			</ContainerWithHelp>
 		</Box>
 	)
@@ -100,4 +102,9 @@ const brakingOptions: Option<ControlProps['braking']>[] = [
 	{ value: 'soft', label: 'Soft' },
 	{ value: 'medium', label: 'Medium' },
 	{ value: 'hard', label: 'Hard' },
+]
+
+const alignOptions: Option<ControlProps['align']>[] = [
+	{ value: 'start', label: 'Start' },
+	{ value: 'center', label: 'Center' },
 ]

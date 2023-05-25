@@ -49,12 +49,12 @@ const slides = new Array(SLIDE_COUNT).fill(null).map((_, i) => (
 // .map(() => <img css={{ pointerEvents: 'none' }} src={canary1} />)
 
 const initialControlProps: ControlProps = {
+	align: 'center',
 	braking: 'medium',
-	center: false,
-	endMode: 'elastic',
+	endMode: 'carousel',
 	goTo: 0,
 	goToTime: 500,
-	stopMode: 'single',
+	stopMode: 'multiple',
 	scale: 1,
 	fit: 0,
 }
