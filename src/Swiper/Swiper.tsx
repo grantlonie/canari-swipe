@@ -9,7 +9,7 @@ import {
 	useRef,
 	useState,
 } from 'react'
-import './style.css'
+import './style'
 import { Dimensions, Movement } from './types'
 import {
 	calculateDeceleration,
@@ -28,8 +28,8 @@ import {
 	initialInstanceVariables,
 	makeDimensions,
 	makeSlideStyle,
-	snapToNearest,
 	snapDistance,
+	snapToNearest,
 	startedSwiping,
 	velocityFromMovements,
 } from './utils'
@@ -41,7 +41,7 @@ const SNAP_BACK_TIME = 200
 
 export interface SwiperProps extends HTMLProps<HTMLDivElement> {
 	/** (default start) align the slides with the start or center of the container */
-	align: 'center' | 'start'
+	align?: 'center' | 'start'
 	/** (default medium) how hard to brake swiping animation after letting go  */
 	braking?: 'soft' | 'medium' | 'hard'
 	children: JSX.Element[] | JSX.Element
