@@ -1,14 +1,4 @@
-import {
-	Children,
-	HTMLProps,
-	MouseEvent,
-	TouchEvent,
-	cloneElement,
-	useEffect,
-	useLayoutEffect,
-	useRef,
-	useState,
-} from 'react'
+import { Children, HTMLProps, MouseEvent, TouchEvent, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import './style'
 import { Dimensions, Movement } from './types'
 import {
@@ -326,12 +316,13 @@ export default function Swiper(props: SwiperProps) {
 				const { startPosition = 0, span = 0 } = adjSlides?.[i] ?? {}
 				let offsetAmount = startPosition - position
 				if (center) offsetAmount += ((container?.span ?? 0) - (slides[0]?.span ?? 0)) / 2
-				const style = { ...makeSlideStyle(offsetAmount, span, vertical, Boolean(fit)), ...child.props.style }
-				const className = child.props.className
-					? `canari-swipe__slide ${child.props.className}`
-					: 'canari-swipe__slide'
+				const style = makeSlideStyle(offsetAmount, span, vertical, Boolean(fit))
 
-				return cloneElement(child, { className, style })
+				return (
+					<div className="canari-swipe__slide" key={child.key} style={style}>
+						{child}
+					</div>
+				)
 			})}
 		</div>
 	)
