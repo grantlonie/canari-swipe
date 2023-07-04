@@ -4,6 +4,7 @@ import Swiper from './Swiper/Swiper'
 import Controls from './components/Controls'
 import { Box, Text } from './components/base'
 import { ControlProps, SLIDE_COUNT, randomIntFromInterval } from './helpers'
+import Overlay from './Overlay'
 const canary1 = new URL('./assets/images/canary1.jpg', import.meta.url).toString()
 
 export default function App() {
@@ -13,11 +14,14 @@ export default function App() {
 		setControlProps(s => ({ ...s, ...body }))
 	}
 
+	const { overlayType, ...rest } = controlProps
+	const overlay = overlayType === 'none' ? undefined : (p, m) => <Overlay {...p} methods={m} type={overlayType} />
+
 	return (
 		<Box sx={{ fontFamily: 'Arial, Geneva, Helvetica' }}>
 			<Box sx={{ display: 'flex', justifyContent: 'center' }}>
 				<Box sx={{ display: 'flex', justifyContent: 'center' }}>
-					<Swiper css={{ width: '600px', maxWidth: '90vw' }} {...controlProps}>
+					<Swiper css={{ width: '600px', maxWidth: '90vw' }} overlay={overlay} {...rest}>
 						{slides}
 					</Swiper>
 				</Box>
@@ -52,9 +56,10 @@ const initialControlProps: ControlProps = {
 	align: 'center',
 	braking: 'medium',
 	endMode: 'carousel',
+	fit: 0,
 	goTo: 0,
 	goToTime: 500,
 	stopMode: 'multiple',
 	scale: 1,
-	fit: 0,
+	overlayType: 'controls',
 }

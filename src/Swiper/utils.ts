@@ -127,16 +127,26 @@ export function makeSlideStyle(offset: number, span: number, vertical: boolean, 
 
 	return {
 		transform: `translate3d(${xOffset}px, ${yOffset}px, 0)`,
-		...(size && (vertical ? { height: span } : { width: span })),
+		...(size && (vertical ? { height: `${span}px` } : { width: `${span}px` })),
 	}
 }
 
-export function makeDimensions(containerElement: HTMLDivElement, vertical: boolean, fit?: number): Dimensions {
+export function makeDimensions(
+	containerElement: HTMLDivElement,
+	vertical: boolean,
+	hasOverlay: boolean,
+	fit?: number
+): Dimensions {
 	const { children, offsetHeight = 0, offsetWidth = 0 } = containerElement || {}
 	const containerSpan = vertical ? offsetHeight : offsetWidth
 
-	const slideElements = Array.from(children ?? [])
+	let slideElements = Array.from(children ?? [])
+	if (hasOverlay) slideElements.shift()
 	const fixedSlideSpan = fit ? containerSpan / fit : undefined
+
+	for (let element of slideElements) {
+		element.className = `${element.className ? element.className + ' ' : ''}canari-swipe__slide`
+	}
 
 	let startPosition = 0
 	const slides = slideElements.map(c => {

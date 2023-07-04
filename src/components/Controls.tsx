@@ -62,6 +62,12 @@ export default function Controls({ value, onUpdate }: Props) {
 					{alignOptions}
 				</Select>
 			</ContainerWithHelp>
+
+			<ContainerWithHelp tooltipLabel="Overlay controls or fade effects over content">
+				<Select value={value.overlayType} label="Overlay" onChange={overlayType => onUpdate({ overlayType })}>
+					{overlayTypeOptions}
+				</Select>
+			</ContainerWithHelp>
 		</Box>
 	)
 }
@@ -107,4 +113,9 @@ const brakingOptions: Option<ControlProps['braking']>[] = [
 const alignOptions: Option<ControlProps['align']>[] = [
 	{ value: 'start', label: 'Start' },
 	{ value: 'center', label: 'Center' },
+]
+
+const overlayTypeOptions: Option<ControlProps['overlayType']>[] = [
+	{ value: 'controls', label: 'Controls' },
+	{ value: 'none', label: 'None' },
 ]

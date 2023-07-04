@@ -1,4 +1,15 @@
-import { Children, HTMLProps, MouseEvent, TouchEvent, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import {
+	Children,
+	HTMLAttributes,
+	HTMLProps,
+	MouseEvent,
+	TouchEvent,
+	useEffect,
+	useLayoutEffect,
+	useMemo,
+	useRef,
+	useState,
+} from 'react'
 import './style'
 import { Dimensions, Movement } from './types'
 import {
@@ -51,6 +62,8 @@ export interface SwiperProps extends HTMLProps<HTMLDivElement> {
 	onSwipeEnd?: (slide: number) => void
 	/** return callable methods */
 	onLoaded?: (methods: Methods) => void
+	/** Render component over swiper (used for controls, fade effect, etc.) */
+	overlay?: (props: HTMLAttributes<HTMLDivElement>, methods: Methods) => JSX.Element
 	/** (default 1) helpful when applying transform scale to swiper to match swipe movements */
 	scale?: number
 	/** (default single) stop after a single slide, animate slides per braking stopping on whole slide (multiple) or wherever it lies (free)  */
@@ -59,7 +72,7 @@ export interface SwiperProps extends HTMLProps<HTMLDivElement> {
 	vertical?: boolean
 }
 
-interface Methods {
+export interface Methods {
 	/** go to a slide */
 	goTo: (slide: number) => void
 	/** go to next slide */
@@ -90,6 +103,7 @@ export default function Swiper(props: SwiperProps) {
 		onTouchEnd,
 		onTouchMove,
 		onTouchStart,
+		overlay,
 		scale = 1,
 		stopMode = 'single',
 		style,
@@ -113,14 +127,14 @@ export default function Swiper(props: SwiperProps) {
 	const lastSlide = slides[slides.length - 1]
 	const totalSpan = getEndPosition(lastSlide)
 	const overflowDistance = totalSpan - ((center ? lastSlide?.span : container?.span) ?? 0)
-	const adjSlides = isCarousel ? carouselSlides(dimensions, currentIndex, center) : slides
+	const hasOverlay = Boolean(overlay)
 
 	if (goToParent !== goTo) setGoTo(goToParent)
 
 	useLayoutEffect(() => {
 		if (!containerRef.current) return
-		setDimensions(makeDimensions(containerRef.current, vertical, fit))
-	}, [children, fit])
+		setDimensions(makeDimensions(containerRef.current, vertical, hasOverlay, fit))
+	}, [children, fit, hasOverlay])
 
 	useLayoutEffect(() => {
 		if (!dimensions || v.current.initialized) return
@@ -133,12 +147,37 @@ export default function Swiper(props: SwiperProps) {
 		goToSlide(goTo)
 	}, [goTo])
 
-	function init() {
-		onLoaded?.({
+	useEffect(() => {
+		const { children } = containerRef.current || {}
+		if (!children) return
+
+		let slideElements = Array.from(children) as HTMLElement[]
+		if (hasOverlay) slideElements.shift()
+		const adjSlides = isCarousel ? carouselSlides(dimensions, currentIndex, center) : slides
+
+		slideElements.forEach((slide, i) => {
+			const { startPosition = 0, span = 0 } = adjSlides?.[i] ?? {}
+			let offsetAmount = startPosition - position
+			if (center) offsetAmount += ((container?.span ?? 0) - (slides[0]?.span ?? 0)) / 2
+			const style = makeSlideStyle(offsetAmount, span, vertical, Boolean(fit))
+
+			for (let key in style) {
+				slide.style[key] = style[key]
+			}
+		})
+	})
+
+	const methods = useMemo(
+		() => ({
 			goTo: setGoTo,
 			next: () => setGoTo(s => s ?? 0 + 1),
 			prev: () => setGoTo(s => s ?? 0 - 1),
-		})
+		}),
+		[]
+	)
+
+	function init() {
+		onLoaded?.(methods)
 
 		if (goTo) stopSwiping(goTo)
 	}
@@ -275,7 +314,7 @@ export default function Swiper(props: SwiperProps) {
 
 	return (
 		<div
-			className={className ? `canari-swipe__container ${className}` : 'canari-swipe__container'}
+			className={`canari-swipe__container${className ? ' ' + className : ''}`}
 			ref={containerRef}
 			onMouseDown={e => {
 				handleMouseDown(e)
@@ -312,18 +351,8 @@ export default function Swiper(props: SwiperProps) {
 			style={{ ...style, ...getContainerStyle(container?.thick, vertical) }}
 			{...rest}
 		>
-			{childrenArray.map((child, i) => {
-				const { startPosition = 0, span = 0 } = adjSlides?.[i] ?? {}
-				let offsetAmount = startPosition - position
-				if (center) offsetAmount += ((container?.span ?? 0) - (slides[0]?.span ?? 0)) / 2
-				const style = makeSlideStyle(offsetAmount, span, vertical, Boolean(fit))
-
-				return (
-					<div className="canari-swipe__slide" key={child.key} style={style}>
-						{child}
-					</div>
-				)
-			})}
+			{overlay?.({ className: 'canari-swipe__overlay' }, methods)}
+			{children}
 		</div>
 	)
 }

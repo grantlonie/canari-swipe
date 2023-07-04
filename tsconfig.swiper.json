@@ -2,9 +2,9 @@
 	"compilerOptions": {
 		"declaration": true,
 		"emitDeclarationOnly": true,
-		"jsx": "react",
-		"esModuleInterop": true,
-		"outFile": "index.js"
+		"jsx": "react-jsx",
+		"target": "ES6",
+		"declarationDir": "."
 	},
 	"files": ["src/Swiper/Swiper.tsx"]
 }

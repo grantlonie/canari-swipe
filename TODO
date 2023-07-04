@@ -1,5 +1,6 @@
+import intellisense
 add responsive height?
 different easing functions
 change onSwipeStart to include direction and change in direction
 compare with react-slick, swiper-js, keen-slider (similar implementation), nuka-carousel
-other props:Cover component, autoplay, spacing, lazy loading
+other props: autoplay, spacing, lazy loading

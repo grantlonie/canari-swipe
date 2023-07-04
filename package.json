@@ -5,15 +5,16 @@
 	"description": "Swiping library designed for Canari platform",
 	"homepage": "https://github.com/GeeDollaHolla/canari-swipe#readme",
 	"license": "MIT",
-	"files": [
-		"index.js",
-		"index.d.ts"
-	],
+	"type": "module",
+	"main": "./index.js",
+	"module": "./index.esm.js",
+	"types": "./index.d.ts",
 	"scripts": {
 		"start": "parcel ./src/index.html",
 		"test": "jest --watch",
 		"build": "parcel build ./src/index.html --no-source-maps --public-url=.",
-		"build:swiper": "babel ./src/Swiper/Swiper.tsx --out-file index.js --presets=@babel/preset-env,@babel/preset-typescript,@babel/preset-react,minify && tsc -p ./tsconfig.swiper.json"
+		"build:swiper": "./build-script.sh",
+		"publish:swiper": "npm run build:swiper && cd build && npm publish"
 	},
 	"browserslist": "> 0.5%, last 2 versions, not dead",
 	"repository": {
@@ -38,6 +39,8 @@
 		"@emotion/babel-plugin": "^11.9.2",
 		"@emotion/react": "^11.9.3",
 		"@parcel/transformer-typescript-tsc": "^2.8.3",
+		"@rollup/plugin-node-resolve": "^15.0.2",
+		"@rollup/plugin-typescript": "^11.1.1",
 		"@types/jest": "^29.5.1",
 		"@types/react": "^18.0.38",
 		"@types/react-dom": "^18.0.11",
@@ -47,6 +50,7 @@
 		"parcel": "^2.8.3",
 		"process": "^0.11.10",
 		"react-tooltip": "^5.11.1",
+		"rollup": "^3.23.0",
 		"ts-jest": "^29.1.0",
 		"typescript": "^5.0.4"
 	}

@@ -19,8 +19,13 @@ const styleText = `
 	user-select: none;
 	width: 100%;
 }
+.canari-swipe__overlay {
+	height: 100%;
+	width: 100%;
+	z-index: 1;
+}
 .canari-swipe__slide {
-	position: absolute;
+	position: absolute !important;
 }
 `
 
