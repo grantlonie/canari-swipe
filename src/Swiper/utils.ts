@@ -144,9 +144,7 @@ export function makeDimensions(
 	if (hasOverlay) slideElements.shift()
 	const fixedSlideSpan = fit ? containerSpan / fit : undefined
 
-	for (let element of slideElements) {
-		element.className = `${element.className ? element.className + ' ' : ''}canari-swipe__slide`
-	}
+	addClassToSlides(slideElements)
 
 	let startPosition = 0
 	const slides = slideElements.map(c => {
@@ -161,6 +159,15 @@ export function makeDimensions(
 	const container = { span: containerSpan, thick: maxSlideThickness }
 
 	return { container, slides }
+}
+
+function addClassToSlides(slideElements: Element[]) {
+	const className = 'canari-swipe__slide'
+	if (slideElements[0].classList.contains(className)) return
+
+	for (let element of slideElements) {
+		element.className = `${element.className ? element.className + ' ' : ''}${className}`
+	}
 }
 
 /** get current slide index from position (if center, from middle of current slide to middle of next) */
