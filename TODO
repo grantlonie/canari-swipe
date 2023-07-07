@@ -1,6 +1,8 @@
+fix: swipe backwards in single stop mode/align center goes more than 1 slide
+
 import intellisense
 add responsive height?
 different easing functions
 change onSwipeStart to include direction and change in direction
 compare with react-slick, swiper-js, keen-slider (similar implementation), nuka-carousel
-other props: autoplay, spacing, lazy loading
+other props: autoplay, lazy loading

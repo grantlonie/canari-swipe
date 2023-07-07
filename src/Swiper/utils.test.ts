@@ -98,6 +98,7 @@ describe('carouselSlides', () => {
 
 describe('snapDistance', () => {
 	const slides = makeSlides([2, 5, 3, 1])
+	const slidesWithGap = makeSlides([2, 5, 3, 1], 1)
 
 	test('align start | stay', () => {
 		expect(snapDistance(0, slides, 0, false)).toBeUndefined()
@@ -122,6 +123,11 @@ describe('snapDistance', () => {
 		expect(snapDistance(4, slides, -7.9, false)).toEqual({ single, total: { distance: -5, index: 3 } })
 		expect(snapDistance(4, slides, -22, false)).toEqual({ single, total: { distance: -19, index: 2 } })
 	})
+	test('align start | gap', () => {
+		const single = { distance: 6, index: 2 }
+		const total = { distance: 10, index: 3 }
+		expect(snapDistance(4, slidesWithGap, 10, false)).toEqual({ single, total })
+	})
 	test('align center | stay', () => {
 		expect(snapDistance(4, slides, 3.4, true)).toBeUndefined()
 		expect(snapDistance(4, slides, -0.4, true)).toBeUndefined()
@@ -144,15 +150,22 @@ describe('snapDistance', () => {
 		expect(snapDistance(4, slides, -7.4, true)).toEqual({ single, total: { distance: -5.5, index: 3 } })
 		expect(snapDistance(4, slides, -25, true)).toEqual({ single, total: { distance: -22.5, index: 1 } })
 	})
+	test('align center | gap', () => {
+		const single = { distance: 1.5, index: 1 }
+		const total = { distance: 9.5, index: 3 }
+		expect(snapDistance(4, slidesWithGap, 10, true)).toEqual({ single, total })
+	})
 })
 
 describe('snapToNearest', () => {
 	const slides = makeSlides([20, 40, 50, 40, 20])
+	const slidesWithGap = makeSlides([20, 40, 50, 40, 20], 10)
 	test('align left', () => {
 		expect(snapToNearest(40, slides, false)).toEqual({ desiredDistance: -20, desiredIndex: 1 })
 		expect(snapToNearest(41, slides, false)).toEqual({ desiredDistance: 19, desiredIndex: 2 })
 		expect(snapToNearest(160, slides, false)).toEqual({ desiredDistance: -10, desiredIndex: 4 })
 		expect(snapToNearest(161, slides, false)).toEqual({ desiredDistance: 9, desiredIndex: 0 })
+		expect(snapToNearest(50, slidesWithGap, false)).toEqual({ desiredDistance: -10, desiredIndex: 1 })
 	})
 	test('align center', () => {
 		expect(snapToNearest(40, slides, true)).toEqual({ desiredDistance: -10, desiredIndex: 1 })
@@ -160,16 +173,17 @@ describe('snapToNearest', () => {
 		expect(snapToNearest(52.6, slides, true)).toEqual({ desiredDistance: 22.4, desiredIndex: 2 })
 		expect(snapToNearest(160, slides, true)).toEqual({ desiredDistance: -10, desiredIndex: 4 })
 		expect(snapToNearest(161, slides, true)).toEqual({ desiredDistance: 9, desiredIndex: 0 })
+		expect(snapToNearest(60, slidesWithGap, true)).toEqual({ desiredDistance: -10, desiredIndex: 1 })
 	})
 })
 
-function makeSlides(spans: number[]) {
+function makeSlides(spans: number[], gap = 0) {
 	const [firstSpan, ...rest] = spans
 	return rest.reduce<Dimension[]>(
 		(acc, span, i) => {
-			acc.push({ span, startPosition: acc[i].startPosition + acc[i].span, thick: 0 })
+			acc.push({ span, startPosition: acc[i].startPosition + acc[i].span + gap, thick: 0 })
 			return acc
 		},
-		[{ span: firstSpan, startPosition: 0, thick: 0 }]
+		[{ span: firstSpan, startPosition: gap, thick: 0 }]
 	)
 }

@@ -26,8 +26,8 @@ export interface Dimensions {
 export interface Dimension {
 	/** position needed to get to start of the slide */
 	startPosition: number
-	/** width or height if vertical */
+	/** width (or height if vertical) */
 	span: number
-	/** height or width if vertical */
+	/** height (or width if vertical) */
 	thick: number
 }

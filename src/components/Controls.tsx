@@ -32,13 +32,11 @@ export default function Controls({ value, onUpdate }: Props) {
 						{stopModeOptions}
 					</Select>
 				</ContainerWithHelp>
-				{value.stopMode !== 'single' && (
-					<ContainerWithHelp tooltipLabel="How hard to brake animation effect">
-						<Select value={value.braking} label="Braking" onChange={braking => onUpdate({ braking })}>
-							{brakingOptions}
-						</Select>
-					</ContainerWithHelp>
-				)}
+				<ContainerWithHelp tooltipLabel="How hard to brake animation effect">
+					<Select value={value.braking} label="Braking" onChange={braking => onUpdate({ braking })}>
+						{brakingOptions}
+					</Select>
+				</ContainerWithHelp>
 			</Box>
 
 			<ContainerWithHelp tooltipLabel="Control selected slide externally">

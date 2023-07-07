@@ -52,6 +52,8 @@ export interface SwiperProps extends HTMLProps<HTMLDivElement> {
 	endMode?: 'elastic' | 'rigid' | 'carousel'
 	/** fit number of slides in container */
 	fit?: number
+	/** (default 0) px gap between slide */
+	gap?: number
 	/** (default 0) used to set initial slide and to control externally */
 	goTo?: number
 	/** (default 500ms) time it takes to transition to desired slide */
@@ -89,6 +91,7 @@ export default function Swiper(props: SwiperProps) {
 		className,
 		disabled,
 		fit,
+		gap = 0,
 		goTo: goToParent,
 		goToTime,
 		endMode = 'elastic',
@@ -133,7 +136,7 @@ export default function Swiper(props: SwiperProps) {
 
 	useLayoutEffect(() => {
 		if (!containerRef.current) return
-		setDimensions(makeDimensions(containerRef.current, vertical, hasOverlay, fit))
+		setDimensions(makeDimensions(containerRef.current, gap, vertical, hasOverlay, fit))
 	}, [children, fit, hasOverlay])
 
 	useLayoutEffect(() => {
@@ -206,7 +209,7 @@ export default function Swiper(props: SwiperProps) {
 	}
 
 	function stopSwiping(desiredSlide?: number) {
-		if (desiredSlide) {
+		if (desiredSlide != null) {
 			const { span, startPosition } = slides[desiredSlide]
 			const desiredPosition = startPosition + (center ? span / 2 - slides[0].span / 2 : 0)
 			const newPosition = isCarousel ? desiredPosition : Math.min(desiredPosition, overflowDistance)
@@ -266,7 +269,7 @@ export default function Swiper(props: SwiperProps) {
 
 		let newPosition = position + swipeMovement
 		if (endMode === 'carousel') newPosition = carousel(newPosition, totalSpan)
-		else if (endMode === 'rigid') newPosition = clamp(newPosition, overflowDistance)
+		else if (endMode === 'rigid') newPosition = clamp(newPosition, overflowDistance, gap)
 		setPosition(newPosition)
 
 		v.current.movements.shift()

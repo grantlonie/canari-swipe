@@ -21,7 +21,12 @@ export default function App() {
 		<Box sx={{ fontFamily: 'Arial, Geneva, Helvetica' }}>
 			<Box sx={{ display: 'flex', justifyContent: 'center' }}>
 				<Box sx={{ display: 'flex', justifyContent: 'center' }}>
-					<Swiper css={{ width: '600px', maxWidth: '90vw' }} overlay={overlay} {...rest}>
+					<Swiper
+						css={{ width: '600px', maxWidth: '90vw', border: '1px solid black' }}
+						gap={20}
+						overlay={overlay}
+						{...rest}
+					>
 						{slides}
 					</Swiper>
 				</Box>
@@ -39,7 +44,6 @@ const slides = new Array(SLIDE_COUNT).fill(null).map((_, i) => (
 		key={`${i}${randomIntFromInterval(0, 9999)}`}
 		sx={{
 			backgroundColor: 'gray',
-			border: '1px solid black',
 			color: 'white',
 			display: 'flex',
 			height: '200px',
