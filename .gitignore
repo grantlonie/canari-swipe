@@ -33,11 +33,11 @@ bower_components
 # Dependency directories
 node_modules/
 jspm_packages/
-.parcel-cache/
 .vscode/
 dist/
 build/
 coverage/
+dev/
 
 # Optional npm cache directory
 .npm
