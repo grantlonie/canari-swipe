@@ -1,6 +1,6 @@
 {
 	"compilerOptions": {
-		"types": ["node", "@emotion/react/types/css-prop", "jest"],
+		"types": ["node", "@emotion/react/types/css-prop", "jest", "mdx"],
 		"target": "es5",
 		"lib": ["dom", "dom.iterable", "esnext"],
 		"allowJs": true,

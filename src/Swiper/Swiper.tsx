@@ -40,7 +40,7 @@ const SWIPE_UPDATE_TIME = 10
 /** ms time to go to nearest slide from stationary */
 const SNAP_BACK_TIME = 200
 
-export interface SwiperProps extends HTMLProps<HTMLDivElement> {
+export interface SwiperProps extends Omit<HTMLProps<HTMLDivElement>, 'onLoad'> {
 	/** (default start) align the slides with the start or center of the container */
 	align?: 'center' | 'start'
 	/** (default medium) how hard to brake swiping animation after letting go  */
@@ -63,7 +63,7 @@ export interface SwiperProps extends HTMLProps<HTMLDivElement> {
 	/** called when swiping ends with current slide*/
 	onSwipeEnd?: (slide: number) => void
 	/** return callable methods */
-	onLoaded?: (methods: Methods) => void
+	onLoad?: (methods: Methods) => void
 	/** Render component over swiper (used for controls, fade effect, etc.) */
 	overlay?: (props: HTMLAttributes<HTMLDivElement>, methods: Methods) => JSX.Element
 	/** (default 1) helpful when applying transform scale to swiper to match swipe movements */
@@ -95,7 +95,7 @@ export default function Swiper(props: SwiperProps) {
 		goTo: goToParent,
 		goToTime,
 		endMode = 'elastic',
-		onLoaded,
+		onLoad,
 		onMouseDown,
 		onMouseLeave,
 		onMouseMove,
@@ -180,7 +180,7 @@ export default function Swiper(props: SwiperProps) {
 	)
 
 	function init() {
-		onLoaded?.(methods)
+		onLoad?.(methods)
 
 		if (goTo) stopSwiping(goTo)
 	}

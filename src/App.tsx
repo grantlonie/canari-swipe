@@ -4,7 +4,8 @@ import Swiper from './Swiper/Swiper'
 import Controls from './components/Controls'
 import { Box, Text } from './components/base'
 import { ControlProps, SLIDE_COUNT, randomIntFromInterval } from './helpers'
-import Overlay from './Overlay'
+import Overlay from './components/Overlay'
+import Docs from './Docs.mdx'
 const canary1 = new URL('./assets/images/canary1.jpg', import.meta.url).toString()
 
 export default function App() {
@@ -34,6 +35,7 @@ export default function App() {
 			<Box sx={{ width: '500px', maxWidth: '90%', margin: 'auto' }}>
 				<Text fontSize="xl">Options</Text>
 				<Controls value={controlProps} onUpdate={handleUpdate} />
+				<Docs />
 			</Box>
 		</Box>
 	)

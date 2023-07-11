@@ -3,7 +3,7 @@ import { SwiperProps } from './Swiper/Swiper'
 export const SLIDE_COUNT = 10
 
 export type ControlProps = WithRequired<
-	Omit<SwiperProps, 'onLoaded' | 'children' | 'overlay'>,
+	Omit<SwiperProps, 'onLoad' | 'children' | 'overlay'>,
 	'align' | 'braking' | 'goTo' | 'goToTime' | 'endMode' | 'scale' | 'fit' | 'stopMode'
 > & { overlayType: OverlayType }
 
