@@ -6,9 +6,8 @@
 	"homepage": "https://github.com/GeeDollaHolla/canari-swipe#readme",
 	"license": "MIT",
 	"type": "module",
-	"main": "./index.js",
-	"module": "./index.esm.js",
-	"types": "./index.d.ts",
+	"main": "./Swiper.js",
+	"types": "./Swiper.d.ts",
 	"scripts": {
 		"start": "./build-config/dev.sh",
 		"test": "jest --watch",
