@@ -9,7 +9,7 @@ In order to prevent html image dragging interfering with swiping, `-webkit-user-
 | Property       | Type                                             | Default     | Description                                                                                                         |
 | :------------- | :----------------------------------------------- | :---------- | ------------------------------------------------------------------------------------------------------------------- |
 | `align`        | `'center'` &#124; `'start'`                      | `'start'`   | Align the slides with the start or center of the container                                                          |
-| `braking`      | `'soft'` &#124; `'medium'` &#124; `'hard'`       | `'medium'`  | How hard to brake swiping animation after letting go                                                                |
+| `braking`      | `number`                                         | `50`        | `1-100`. How hard to brake swiping animation after letting go                                                       |
 | `children`     | `JSX.Element[]` &#124; `JSX.Element`             | Required    | Slide elements                                                                                                      |
 | `disabled`     | `boolean`                                        | `false`     | Prevent dragging slides                                                                                             |
 | `endMode`      | `'elastic'` &#124; `'rigid'` &#124; `'carousel'` | `'elastic'` | Apply elastic effect or rigid at the end of the slides or carousel them back around                                 |

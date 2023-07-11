@@ -1,10 +1,8 @@
 fix: swipe backwards in single stop mode/align center goes more than 1 slide
-
+Change snap back time to snap back speed
 import intellisense
 add responsive height?
 change onSwipeStart to include direction and change in direction
 compare with react-slick, swiper-js, keen-slider (similar implementation), nuka-carousel
 other props: easingFunction, autoplay, lazy loading
 add codegenerator
-Change braking to number with min and need
-Change snap back time to snap back speed

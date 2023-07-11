@@ -9,16 +9,14 @@ export const initialInstanceVariables: InstanceVariables = {
 	movements: [{ pagePosition: 0, time: 0 }],
 }
 
-/** return deceleration in px/sec^2 */
+/** return px/sec^2 deceleration */
 export function getDeceleration(braking?: SwiperProps['braking']) {
-	switch (braking) {
-		case 'soft':
-			return 2000
-		case 'hard':
-			return 10000
-		default:
-			return 5000
-	}
+	const min = 1
+	const max = 100
+
+	const corrected = Math.max(Math.min(braking || 50, max), min)
+	const converted = ((20000 - 2000) / (max - min)) * corrected
+	return Math.round(converted)
 }
 
 /** Return distance between current and next positions, and if looping, the other direction if faster */

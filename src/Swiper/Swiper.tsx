@@ -43,8 +43,8 @@ const SNAP_BACK_TIME = 200
 export interface SwiperProps extends Omit<HTMLProps<HTMLDivElement>, 'onLoad'> {
 	/** (default start) align the slides with the start or center of the container */
 	align?: 'center' | 'start'
-	/** (default medium) how hard to brake swiping animation after letting go  */
-	braking?: 'soft' | 'medium' | 'hard'
+	/** (default 5000) 1 - 100. How hard to brake swiping animation after letting go */
+	braking?: number
 	children: JSX.Element[] | JSX.Element
 	/** prevent dragging slides */
 	disabled?: boolean

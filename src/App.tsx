@@ -60,7 +60,7 @@ const slides = new Array(SLIDE_COUNT).fill(null).map((_, i) => (
 
 const initialControlProps: ControlProps = {
 	align: 'center',
-	braking: 'medium',
+	braking: 50,
 	endMode: 'carousel',
 	fit: 0,
 	goTo: 0,

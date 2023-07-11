@@ -103,9 +103,9 @@ const stopModeOptions: Option<ControlProps['stopMode']>[] = [
 ]
 
 const brakingOptions: Option<ControlProps['braking']>[] = [
-	{ value: 'soft', label: 'Soft' },
-	{ value: 'medium', label: 'Medium' },
-	{ value: 'hard', label: 'Hard' },
+	{ value: 20, label: 'Soft' },
+	{ value: 50, label: 'Medium' },
+	{ value: 80, label: 'Hard' },
 ]
 
 const alignOptions: Option<ControlProps['align']>[] = [
