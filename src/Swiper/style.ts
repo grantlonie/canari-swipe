@@ -19,6 +19,9 @@ const styleText = `
 	user-select: none;
 	width: 100%;
 }
+.canari-swipe__container img {
+	-webkit-user-drag: none;
+}
 .canari-swipe__overlay {
 	height: 100%;
 	width: 100%;
