@@ -13,7 +13,7 @@ function addStyle() {
 const styleText = `
 .canari-swipe__container {
 	align-content: flex-start;
-	display: flex;
+	flex: 1;
 	overflow: hidden;
 	position: relative;
 	user-select: none;
@@ -24,6 +24,7 @@ const styleText = `
 }
 .canari-swipe__overlay {
 	height: 100%;
+	position: absolute;
 	width: 100%;
 	z-index: 1;
 }

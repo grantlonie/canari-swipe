@@ -1,14 +1,14 @@
 import {
 	Children,
-	HTMLAttributes,
-	HTMLProps,
-	MouseEvent,
-	TouchEvent,
 	useEffect,
 	useLayoutEffect,
 	useMemo,
 	useRef,
 	useState,
+	type HTMLAttributes,
+	type HTMLProps,
+	type MouseEvent,
+	type TouchEvent,
 } from 'react'
 import './style'
 import { Dimensions, Movement } from './types'
@@ -40,7 +40,7 @@ const SWIPE_UPDATE_TIME = 10
 /** ms time to go to nearest slide from stationary */
 const SNAP_BACK_TIME = 200
 
-export interface SwiperProps extends Omit<HTMLProps<HTMLDivElement>, 'onLoad'> {
+export declare interface SwiperProps extends Omit<HTMLProps<HTMLDivElement>, 'onLoad'> {
 	/** (default start) align the slides with the start or center of the container */
 	align?: 'center' | 'start'
 	/** (default 5000) 1 - 100. How hard to brake swiping animation after letting go */
@@ -63,9 +63,9 @@ export interface SwiperProps extends Omit<HTMLProps<HTMLDivElement>, 'onLoad'> {
 	/** called when swiping ends with current slide*/
 	onSwipeEnd?: (slide: number) => void
 	/** return callable methods */
-	onLoad?: (methods: Methods) => void
+	onLoad?: (methods: SwiperMethods) => void
 	/** Render component over swiper (used for controls, fade effect, etc.) */
-	overlay?: (props: HTMLAttributes<HTMLDivElement>, methods: Methods) => JSX.Element
+	overlay?: (props: HTMLAttributes<HTMLDivElement>, methods: SwiperMethods) => JSX.Element
 	/** (default 1) helpful when applying transform scale to swiper to match swipe movements */
 	scale?: number
 	/** (default single) stop after a single slide, animate slides per braking stopping on whole slide (multiple) or wherever it lies (free)  */
@@ -74,7 +74,7 @@ export interface SwiperProps extends Omit<HTMLProps<HTMLDivElement>, 'onLoad'> {
 	vertical?: boolean
 }
 
-export interface Methods {
+export declare interface SwiperMethods {
 	/** go to a slide */
 	goTo: (slide: number) => void
 	/** go to next slide */
@@ -83,7 +83,7 @@ export interface Methods {
 	prev: () => void
 }
 
-export default function Swiper(props: SwiperProps) {
+export default function Swiper(props: SwiperProps): JSX.Element {
 	const {
 		align = 'start',
 		braking,
@@ -137,7 +137,7 @@ export default function Swiper(props: SwiperProps) {
 	useLayoutEffect(() => {
 		if (!containerRef.current) return
 		setDimensions(makeDimensions(containerRef.current, gap, vertical, hasOverlay, fit))
-	}, [children, fit, hasOverlay])
+	}, [children, fit, hasOverlay, vertical])
 
 	useLayoutEffect(() => {
 		if (!dimensions || v.current.initialized) return

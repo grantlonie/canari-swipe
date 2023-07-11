@@ -4,7 +4,7 @@ export const SLIDE_COUNT = 10
 
 export type ControlProps = WithRequired<
 	Omit<SwiperProps, 'onLoad' | 'children' | 'overlay'>,
-	'align' | 'braking' | 'goTo' | 'goToTime' | 'endMode' | 'scale' | 'fit' | 'stopMode'
+	'align' | 'braking' | 'goTo' | 'goToTime' | 'endMode' | 'scale' | 'fit' | 'stopMode' | 'vertical'
 > & { overlayType: OverlayType }
 
 export type OverlayType = 'none' | 'controls'

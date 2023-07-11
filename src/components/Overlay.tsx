@@ -1,9 +1,9 @@
 import { HTMLAttributes } from 'react'
-import { Methods } from '../Swiper/Swiper'
+import { SwiperMethods } from '../Swiper/Swiper'
 import { OverlayType } from '../helpers'
 
 interface Props extends HTMLAttributes<HTMLDivElement> {
-	methods: Methods
+	methods: SwiperMethods
 	type: OverlayType
 }
 

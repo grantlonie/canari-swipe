@@ -1,6 +1,6 @@
 ## Usage
 
-The Swiper component returns a container with all the provided children slide components and an optional Overlay component rendered on top of the slides. The height of the container is controlled by the slides, so make sure their height is set. The container width is set to 100% by default and the slide width can be set by the slide or can be set using the fit property (i.e. fit=2 will set the slide widths to half of the container width). This is all assuming a default horizontal Swiper, and the logic flips if vertical is true.
+The Swiper component returns a container with all the provided children slide components and an optional Overlay component rendered on top of the slides. The `height` of the container is controlled by the slides, so make sure their `height`s are set. The container `width` is set to 100% by default and the slide `width` can be set by the slide or can be set using the `fit` property (i.e. `fit = 2` will set the slide `width`s to half of the container `width`). This is all assuming a default horizontal Swiper; when `vertical` is `true`, you have to set `height` on the Swiper container and should also set the slide `width`s.
 
 In order to prevent html image dragging interfering with swiping, `-webkit-user-drag` is set to `none` for all child img elements. This behavior can be overwritten if desired.
 
@@ -19,18 +19,18 @@ In order to prevent html image dragging interfering with swiping, `-webkit-user-
 | `goToTime`     | `number`                                         | `500`       | ms time it takes to transition to desired slide                                                                     |
 | `onSwipeStart` | `() => void   `                                  | `undefined` | Called when swiping starts                                                                                          |
 | `onSwipeEnd`   | `(slide: number) => void`                        | `undefined` | Called when swiping ends with current slide                                                                         |
-| `onLoad`       | `(methods: Methods) => void`                     | `undefined` | Return callable methods                                                                                             |
-| `overlay`      | `(props, methods: Methods) => JSX.Element`       | `undefined` | Render component over swiper (used for controls, fade effect, etc.)                                                 |
+| `onLoad`       | `(methods: SwiperMethods) => void`               | `undefined` | Return callable methods                                                                                             |
+| `overlay`      | `(props, methods: SwiperMethods) => JSX.Element` | `undefined` | Render component over swiper (used for controls, fade effect, etc.)                                                 |
 | `scale`        | `number`                                         | `1`         | Helpful when applying transform scale to swiper to match swipe movements                                            |
 | `stopMode`     | `'single'` &#124; `'multiple'` &#124; `'free'`   | `'single'`  | Stop after a single slide, animate slides per braking stopping on whole slide (multiple) or wherever it lies (free) |
 | `vertical`     | `boolean`                                        | `false`     | Change to vertical swiper                                                                                           |
 
-## Methods
+## SwiperMethods
 
-The `onLoad` and `overlay` props give access to the swiper control `Methods` that allows you to programmatically control the swiper.
+The `onLoad` and `overlay` props give access to the swiper control `SwiperMethods` that allows you to programmatically control the swiper.
 
 ```
-interface Methods {
+interface SwiperMethods {
 	/** go to a slide */
 	goTo: (slide: number) => void
 	/** go to next slide */

@@ -61,6 +61,10 @@ export default function Controls({ value, onUpdate }: Props) {
 				</Select>
 			</ContainerWithHelp>
 
+			<ContainerWithHelp tooltipLabel="Swipe vertically">
+				<Checkbox checked={value.vertical} label="Vertical" onChange={vertical => onUpdate({ vertical })} />
+			</ContainerWithHelp>
+
 			<ContainerWithHelp tooltipLabel="Overlay controls or fade effects over content">
 				<Select value={value.overlayType} label="Overlay" onChange={overlayType => onUpdate({ overlayType })}>
 					{overlayTypeOptions}
