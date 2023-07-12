@@ -1,5 +1,4 @@
 fix: swipe backwards in single stop mode/align center goes more than 1 slide
-Change snap back time to snap back speed
 import intellisense
 add responsive height?
 change onSwipeStart to include direction and change in direction
