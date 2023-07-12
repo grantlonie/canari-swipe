@@ -65,7 +65,7 @@ export declare interface SwiperProps extends Omit<HTMLProps<HTMLDivElement>, 'on
 	/** return callable methods */
 	onLoad?: (methods: SwiperMethods) => void
 	/** Render component over swiper (used for controls, fade effect, etc.) */
-	overlay?: (props: HTMLAttributes<HTMLDivElement>, methods: SwiperMethods) => JSX.Element
+	overlay?: (props: HTMLAttributes<HTMLDivElement>, currentIndex: number, methods: SwiperMethods) => JSX.Element
 	/** (default 1) helpful when applying transform scale to swiper to match swipe movements */
 	scale?: number
 	/** (default single) stop after a single slide, animate slides per braking stopping on whole slide (multiple) or wherever it lies (free)  */
@@ -92,7 +92,7 @@ export default function Swiper(props: SwiperProps): JSX.Element {
 		disabled,
 		fit,
 		gap = 0,
-		goTo: goToParent,
+		goTo: goToParent = 0,
 		goToTime,
 		endMode = 'elastic',
 		onLoad,
@@ -123,6 +123,8 @@ export default function Swiper(props: SwiperProps): JSX.Element {
 
 	const childrenArray = Children.toArray(children) as JSX.Element[]
 	const slideCount = childrenArray.length
+	const slideCountRef = useRef(0)
+	slideCountRef.current = slideCount
 	const isCarousel = endMode === 'carousel'
 	const center = align === 'center'
 	const { container, slides = [] } = dimensions ?? {}
@@ -131,8 +133,6 @@ export default function Swiper(props: SwiperProps): JSX.Element {
 	const totalSpan = getEndPosition(lastSlide)
 	const overflowDistance = totalSpan - ((center ? lastSlide?.span : container?.span) ?? 0)
 	const hasOverlay = Boolean(overlay)
-
-	if (goToParent !== goTo) setGoTo(goToParent)
 
 	useLayoutEffect(() => {
 		if (!containerRef.current) return
@@ -146,7 +146,11 @@ export default function Swiper(props: SwiperProps): JSX.Element {
 	}, [dimensions])
 
 	useEffect(() => {
-		if (goTo == null || !v.current.initialized) return
+		setGoTo(goToParent)
+	}, [goToParent])
+
+	useEffect(() => {
+		if (!v.current.initialized) return
 		goToSlide(goTo)
 	}, [goTo])
 
@@ -172,9 +176,9 @@ export default function Swiper(props: SwiperProps): JSX.Element {
 
 	const methods = useMemo(
 		() => ({
-			goTo: setGoTo,
-			next: () => setGoTo(s => s ?? 0 + 1),
-			prev: () => setGoTo(s => s ?? 0 - 1),
+			goTo: v => setGoTo(carousel(v, slideCountRef.current)),
+			next: () => setGoTo(s => carousel(s + 1, slideCountRef.current)),
+			prev: () => setGoTo(s => carousel(s - 1, slideCountRef.current)),
 		}),
 		[]
 	)
@@ -188,18 +192,17 @@ export default function Swiper(props: SwiperProps): JSX.Element {
 	function goToSlide(goTo: number) {
 		if (!goToTime) return stopSwiping(goTo)
 
-		const desiredPosition = slides[goTo].startPosition
-		const newPosition = isCarousel ? desiredPosition : Math.min(desiredPosition, overflowDistance)
+		const newPosition = positionFromIndex(goTo)
 		const distance = getDelta(position, newPosition, isCarousel, totalSpan)
 		finishSwiping(distance, goToTime, goTo)
 	}
 
-	function finishSwiping(distance: number, duration: number, desiredSlide?: number) {
+	function finishSwiping(distance: number, duration: number, desiredIndex?: number) {
 		v.current.isSwiping = false
 		const startClock = getCurrentClock()
 		v.current.animationInterval = setInterval(() => {
 			const clock = getCurrentClock() - startClock
-			if (clock >= duration) return stopSwiping(desiredSlide)
+			if (clock >= duration) return stopSwiping(desiredIndex)
 
 			let newPosition = position + distance * easeOutSine(clock / duration)
 			if (isCarousel) newPosition = carousel(newPosition, totalSpan)
@@ -208,16 +211,20 @@ export default function Swiper(props: SwiperProps): JSX.Element {
 		}, SWIPE_UPDATE_TIME)
 	}
 
-	function stopSwiping(desiredSlide?: number) {
-		if (desiredSlide != null) {
-			const { span, startPosition } = slides[desiredSlide]
-			const desiredPosition = startPosition + (center ? span / 2 - slides[0].span / 2 : 0)
-			const newPosition = isCarousel ? desiredPosition : Math.min(desiredPosition, overflowDistance)
-			setPosition(newPosition)
+	function stopSwiping(desiredIndex?: number) {
+		if (desiredIndex != null) {
+			setPosition(positionFromIndex(desiredIndex))
+			setGoTo(desiredIndex)
 		}
 
-		onSwipeEnd?.(desiredSlide || currentIndex)
+		onSwipeEnd?.(desiredIndex || currentIndex)
 		clearInterval(v.current.animationInterval)
+	}
+
+	function positionFromIndex(index: number) {
+		const { span, startPosition } = slides[index]
+		const desiredPosition = startPosition + (center ? span / 2 - slides[0].span / 2 : 0)
+		return isCarousel ? desiredPosition : Math.min(desiredPosition, overflowDistance)
 	}
 
 	function handleTouchDown(e: TouchEvent<HTMLDivElement>) {
@@ -354,7 +361,7 @@ export default function Swiper(props: SwiperProps): JSX.Element {
 			style={{ ...style, ...getContainerStyle(container?.thick, vertical) }}
 			{...rest}
 		>
-			{overlay?.({ className: 'canari-swipe__overlay' }, methods)}
+			{overlay?.({ className: 'canari-swipe__overlay' }, currentIndex, methods)}
 			{children}
 		</div>
 	)

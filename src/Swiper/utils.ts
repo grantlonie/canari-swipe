@@ -174,13 +174,12 @@ function addClassToSlides(slideElements: Element[]) {
 export function indexFromPosition(position: number, slides: Dimension[], center: boolean) {
 	if (!slides.length) return 0
 
-	const firstSlideSpan = slides[0].span
-	const centerCorrection = firstSlideSpan / 2
+	const centerCorrection = slides[0].span / 2
 	for (let i = 0; i < slides.length; i++) {
 		const endPosition = getEndPosition(slides[i])
 		if (center) {
-			const nextSlide = slides[i + 1]
-			const nextSpan = nextSlide?.span ?? firstSlideSpan
+			const nextSlide = slides[carousel(i + 1, slides.length)]
+			const nextSpan = nextSlide.span
 			if (position < endPosition + nextSpan / 2 - centerCorrection) return i
 		} else {
 			if (position < endPosition) return i

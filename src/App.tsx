@@ -16,7 +16,12 @@ export default function App() {
 	}
 
 	const { overlayType, ...rest } = controlProps
-	const overlay = overlayType === 'none' ? undefined : (p, m) => <Overlay {...p} methods={m} type={overlayType} />
+
+	let overlay
+	if (overlayType !== 'none')
+		overlay = (p, c, m) => (
+			<Overlay {...p} methods={m} currentIndex={c} type={overlayType} vertical={controlProps.vertical} />
+		)
 
 	return (
 		<Box sx={{ fontFamily: 'Arial, Geneva, Helvetica' }}>
