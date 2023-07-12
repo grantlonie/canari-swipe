@@ -16,6 +16,7 @@ import {
 	calculateDeceleration,
 	carousel,
 	carouselSlides,
+	centerCorrection,
 	clamp,
 	easeOutSine,
 	getContainerStyle,
@@ -222,8 +223,8 @@ export default function Swiper(props: SwiperProps): JSX.Element {
 	}
 
 	function positionFromIndex(index: number) {
-		const { span, startPosition } = slides[index]
-		const desiredPosition = startPosition + (center ? span / 2 - slides[0].span / 2 : 0)
+		const { startPosition } = slides[index]
+		const desiredPosition = startPosition + (center ? centerCorrection(slides, index) : 0)
 		return isCarousel ? desiredPosition : Math.min(desiredPosition, overflowDistance)
 	}
 

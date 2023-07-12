@@ -174,13 +174,11 @@ function addClassToSlides(slideElements: Element[]) {
 export function indexFromPosition(position: number, slides: Dimension[], center: boolean) {
 	if (!slides.length) return 0
 
-	const centerCorrection = slides[0].span / 2
 	for (let i = 0; i < slides.length; i++) {
 		const endPosition = getEndPosition(slides[i])
 		if (center) {
-			const nextSlide = slides[carousel(i + 1, slides.length)]
-			const nextSpan = nextSlide.span
-			if (position < endPosition + nextSpan / 2 - centerCorrection) return i
+			const nextIndex = carousel(i + 1, slides.length)
+			if (position < endPosition + centerCorrection(slides, nextIndex)) return i
 		} else {
 			if (position < endPosition) return i
 		}
@@ -238,8 +236,7 @@ export function snapToNearest(position: number, slides: Dimension[], center: boo
 	const currentIndex = indexFromPosition(position, slides, center)
 	const { span, startPosition } = slides[currentIndex]
 	const gap = gapFromSlides(slides)
-	const centerCorrection = slides[0].span / 2
-	const distanceAlong = position - startPosition + (center ? centerCorrection - span / 2 : 0)
+	const distanceAlong = position - startPosition - (center ? centerCorrection(slides, currentIndex) : 0)
 	const insideGap = distanceAlong < 0
 	if (insideGap) return { desiredIndex: currentIndex, desiredDistance: Math.abs(distanceAlong) }
 
@@ -259,6 +256,13 @@ export function snapToNearest(position: number, slides: Dimension[], center: boo
 
 function gapFromSlides(slides: Dimension[]) {
 	return slides?.[0].startPosition ?? 0
+}
+
+/** for center alignment, create position correction */
+export function centerCorrection(slides: Dimension[], index: number) {
+	const firstSpan = slides[0].span
+	const currentSpan = slides[index].span
+	return (currentSpan - firstSpan) / 2
 }
 
 export function getContainerStyle(containerThickness = 0, vertical = false): CSSProperties {
