@@ -13,7 +13,7 @@
 		"test": "jest --watch",
 		"build": "./build-config/build.sh",
 		"build:swiper": "./build-config/build.swiper.sh",
-		"publish:swiper": "npm run dist:swiper && cd dist && npm publish"
+		"publish:swiper": "npm run build:swiper && cd dist && npm publish"
 	},
 	"browserslist": "> 0.5%, last 2 versions, not dead",
 	"repository": {
