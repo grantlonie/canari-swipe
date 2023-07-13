@@ -137,10 +137,10 @@ export function makeDimensions(
 	hasOverlay: boolean,
 	fit?: number
 ): Dimensions {
-	const { children, clientHeight = 0, clientWidth = 0 } = containerElement || {}
-	const containerSpan = vertical ? clientHeight : clientWidth
+	const { children, offsetHeight, offsetWidth } = containerElement
+	const containerSpan = vertical ? offsetHeight : offsetWidth
 
-	let slideElements = Array.from(children ?? [])
+	let slideElements = Array.from(children ?? []) as HTMLElement[]
 	if (hasOverlay) slideElements.shift()
 	const fixedSlideSpan = fit ? (containerSpan - gap * (fit - 1)) / fit : undefined
 
@@ -148,8 +148,9 @@ export function makeDimensions(
 
 	let currentCumSpan = gap
 	const slides = slideElements.map(c => {
-		const span = fixedSlideSpan || (vertical ? c.clientHeight : c.clientWidth)
-		const thick = vertical ? c.clientWidth : c.clientHeight
+		const [width, height] = getDimensionsWithMargins(c)
+		const span = fixedSlideSpan || (vertical ? height : width)
+		const thick = vertical ? width : height
 		const startPosition = currentCumSpan
 		currentCumSpan += span + gap
 		return { startPosition, span, thick }
@@ -168,6 +169,18 @@ function addClassToSlides(slideElements: Element[]) {
 	for (let element of slideElements) {
 		element.className = `${element.className ? element.className + ' ' : ''}${className}`
 	}
+}
+
+function getDimensionsWithMargins(element: HTMLElement): [number, number] {
+	const style = window.getComputedStyle(element)
+
+	function getDimension(baseDimension: number, sides: [string, string]) {
+		return sides.map(side => parseInt(style[`margin-${side}`])).reduce((total, side) => total + side, baseDimension)
+	}
+
+	const width = getDimension(element.offsetWidth, ['left', 'right'])
+	const height = getDimension(element.offsetHeight, ['top', 'bottom'])
+	return [width, height]
 }
 
 /** get current slide index from position (if center, from middle of current slide to middle of next) */

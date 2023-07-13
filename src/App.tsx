@@ -37,7 +37,7 @@ export default function App() {
 						alignItems: 'center',
 					}}
 				>
-					<Swiper css={{ height: '100%' }} gap={20} overlay={overlay} {...rest}>
+					<Swiper css={{ height: '100%' }} gap={10} overlay={overlay} {...rest}>
 						{makeSlides(controlProps.vertical)}
 					</Swiper>
 				</Box>
