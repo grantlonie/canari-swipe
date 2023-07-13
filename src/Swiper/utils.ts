@@ -62,7 +62,7 @@ export function calculateDeceleration(velocity: number, distance: number) {
 }
 
 /** update startPosition of each slide based to carousel around current slide */
-export function carouselSlides(dimensions: Dimensions | null, currentIndex: number, center: boolean) {
+export function carouselSlides(dimensions: Dimensions | undefined, currentIndex: number, center: boolean) {
 	if (!dimensions) return
 
 	const { slides } = dimensions
@@ -281,4 +281,14 @@ export function centerCorrection(slides: Dimension[], index: number) {
 export function getContainerStyle(containerThickness = 0, vertical = false): CSSProperties {
 	if (vertical) return { width: containerThickness }
 	else return { height: containerThickness }
+}
+
+export function getTotalSpan(dimensions: Dimensions | undefined, center: boolean) {
+	if (!dimensions) return { totalSpan: 0, overflowDistance: 0 }
+
+	const { container, slides } = dimensions
+	const lastSlide = slides[slides.length - 1]
+	const totalSpan = getEndPosition(lastSlide)
+	const overflowDistance = totalSpan - ((center ? lastSlide?.span : container?.span) ?? 0)
+	return { totalSpan, overflowDistance }
 }

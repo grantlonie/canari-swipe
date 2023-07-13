@@ -23,7 +23,7 @@ import {
 	getCurrentClock,
 	getDeceleration,
 	getDelta,
-	getEndPosition,
+	getTotalSpan,
 	howFar,
 	howLong,
 	indexFromPosition,
@@ -120,24 +120,26 @@ export default function Swiper(props: SwiperProps): JSX.Element {
 
 	const [position, setPosition] = useState(0)
 	const [goTo, setGoTo] = useState(goToParent)
-	const [dimensions, setDimensions] = useState<Dimensions | null>(null)
+	const [dimensions, setDimensions] = useState<Dimensions | undefined>()
 
 	const childrenArray = Children.toArray(children) as JSX.Element[]
 	const slideCount = childrenArray.length
-	const slideCountRef = useRef(0)
-	slideCountRef.current = slideCount
 	const isCarousel = endMode === 'carousel'
 	const center = align === 'center'
 	const { container, slides = [] } = dimensions ?? {}
 	const currentIndex = indexFromPosition(position, slides, center)
-	const lastSlide = slides[slides.length - 1]
-	const totalSpan = getEndPosition(lastSlide)
-	const overflowDistance = totalSpan - ((center ? lastSlide?.span : container?.span) ?? 0)
+	const { totalSpan, overflowDistance } = getTotalSpan(dimensions, center)
 	const hasOverlay = Boolean(overlay)
 
+	const slideCountRef = useRef(0)
+	slideCountRef.current = slideCount
+	const goToRef = useRef(0)
+	goToRef.current = goTo
+
 	useLayoutEffect(() => {
-		if (!containerRef.current) return
-		setDimensions(makeDimensions(containerRef.current, gap, vertical, hasOverlay, fit))
+		updateDimensions()
+		window.addEventListener('resize', () => updateDimensions())
+		return window.removeEventListener('resize', () => updateDimensions())
 	}, [children, fit, hasOverlay, vertical])
 
 	useLayoutEffect(() => {
@@ -175,6 +177,13 @@ export default function Swiper(props: SwiperProps): JSX.Element {
 		})
 	})
 
+	function updateDimensions() {
+		if (!containerRef.current) return
+		const dimensions = makeDimensions(containerRef.current, gap, vertical, hasOverlay, fit)
+		setDimensions(dimensions)
+		setPosition(positionFromIndex(dimensions, goToRef.current))
+	}
+
 	const methods = useMemo(
 		() => ({
 			goTo: v => setGoTo(carousel(v, slideCountRef.current)),
@@ -193,7 +202,7 @@ export default function Swiper(props: SwiperProps): JSX.Element {
 	function goToSlide(goTo: number) {
 		if (!goToTime) return stopSwiping(goTo)
 
-		const newPosition = positionFromIndex(goTo)
+		const newPosition = positionFromIndex(dimensions, goTo)
 		const distance = getDelta(position, newPosition, isCarousel, totalSpan)
 		finishSwiping(distance, goToTime, goTo)
 	}
@@ -214,7 +223,7 @@ export default function Swiper(props: SwiperProps): JSX.Element {
 
 	function stopSwiping(desiredIndex?: number) {
 		if (desiredIndex != null) {
-			setPosition(positionFromIndex(desiredIndex))
+			setPosition(positionFromIndex(dimensions, desiredIndex))
 			setGoTo(desiredIndex)
 		}
 
@@ -222,7 +231,11 @@ export default function Swiper(props: SwiperProps): JSX.Element {
 		clearInterval(v.current.animationInterval)
 	}
 
-	function positionFromIndex(index: number) {
+	function positionFromIndex(dimensions: Dimensions | undefined, index: number) {
+		if (!dimensions) return 0
+
+		const { overflowDistance } = getTotalSpan(dimensions, center)
+		const { slides } = dimensions
 		const { startPosition } = slides[index]
 		const desiredPosition = startPosition + (center ? centerCorrection(slides, index) : 0)
 		return isCarousel ? desiredPosition : Math.min(desiredPosition, overflowDistance)
