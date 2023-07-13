@@ -123,10 +123,11 @@ export function getEndPosition(slide?: Dimension) {
 export function makeSlideStyle(offset: number, span: number, vertical: boolean, size: boolean): CSSProperties {
 	const xOffset = vertical ? 0 : offset
 	const yOffset = vertical ? offset : 0
+	const dimensionKey = vertical ? 'Height' : 'Width'
 
 	return {
 		transform: `translate3d(${xOffset}px, ${yOffset}px, 0)`,
-		...(size && (vertical ? { height: `${span}px` } : { width: `${span}px` })),
+		...(size && { [`max${dimensionKey}`]: `${span}px`, [`min${dimensionKey}`]: `${span}px` }),
 	}
 }
 
