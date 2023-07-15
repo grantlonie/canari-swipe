@@ -10,7 +10,7 @@ import {
 	type MouseEvent,
 	type TouchEvent,
 } from 'react'
-import './style'
+import addStyle from './style'
 import { Dimensions, Movement } from './types'
 import {
 	calculateDeceleration,
@@ -194,6 +194,7 @@ export default function Swiper(props: SwiperProps): JSX.Element {
 	)
 
 	function init() {
+		addStyle()
 		onLoad?.(methods)
 
 		if (goTo) stopSwiping(goTo)

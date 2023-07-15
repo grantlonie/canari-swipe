@@ -1,4 +1,4 @@
-function addStyle() {
+export default function addStyle() {
 	const STYLE_ID = 'canari-swipe-style'
 	const existing = document.getElementById(STYLE_ID)
 	if (existing) return
@@ -32,5 +32,3 @@ const styleText = `
 	position: absolute !important;
 }
 `
-
-addStyle()
