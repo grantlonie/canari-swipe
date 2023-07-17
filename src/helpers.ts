@@ -3,11 +3,11 @@ import { SwiperProps } from './Swiper/Swiper'
 export const SLIDE_COUNT = 10
 
 export type ControlProps = WithRequired<
-	Omit<SwiperProps, 'onLoad' | 'children' | 'overlay'>,
+	Omit<SwiperProps, 'onLoad' | 'children' | 'Overlay'>,
 	'align' | 'braking' | 'goTo' | 'goToTime' | 'endMode' | 'scale' | 'fit' | 'stopMode' | 'vertical'
 > & { overlayType: OverlayType }
 
-export type OverlayType = 'none' | 'controls'
+export type OverlayType = 'none' | 'controls' | 'fade'
 
 export type WithRequired<T, K extends keyof T> = T & { [P in K]-?: T[P] }
 

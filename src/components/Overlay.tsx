@@ -1,16 +1,15 @@
-import { HTMLAttributes, SVGAttributes, SVGProps } from 'react'
-import { SwiperMethods } from '../Swiper/Swiper'
+import { SVGAttributes } from 'react'
+import { SwiperOverlayProps } from '../Swiper/Swiper'
 import { OverlayType, SLIDE_COUNT } from '../helpers'
+import { theme } from '../theme'
 import { Box } from './base'
 
-interface Props extends HTMLAttributes<HTMLDivElement> {
-	currentIndex: number
-	methods: SwiperMethods
+interface Props extends SwiperOverlayProps {
 	type: OverlayType
 	vertical: boolean
 }
 
-export default function Overlay({ currentIndex, methods, type, vertical, ...rest }: Props) {
+export default function Overlay({ currentIndex, methods, type, vertical }: Props) {
 	switch (type) {
 		case 'none':
 			return null
@@ -18,7 +17,7 @@ export default function Overlay({ currentIndex, methods, type, vertical, ...rest
 			const flexDirection = vertical ? 'column' : 'row'
 			const gridProp = vertical ? 'gridTemplateColumns' : 'gridTemplateRows'
 			return (
-				<Box sx={{ display: 'grid', [gridProp]: '50px auto 50px' }} {...rest}>
+				<Box sx={{ display: 'grid', [gridProp]: '50px auto 50px' }}>
 					<Box />
 					<Box
 						sx={{
@@ -35,6 +34,16 @@ export default function Overlay({ currentIndex, methods, type, vertical, ...rest
 					</Box>
 					<Dots currentIndex={currentIndex} goTo={methods.goTo} flexDirection={flexDirection} />
 				</Box>
+			)
+		case 'fade':
+			const angle = vertical ? '0deg' : '90deg'
+			const background = theme.palette.grey[100]
+			return (
+				<Box
+					sx={{
+						background: `linear-gradient(${angle}, ${background} 5%, rgba(0,0,0,0) 30%,rgba(0,0,0,0) 70%, ${background} 95%)`,
+					}}
+				/>
 			)
 	}
 }

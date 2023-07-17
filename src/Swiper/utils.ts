@@ -142,7 +142,10 @@ export function makeDimensions(
 	const containerSpan = vertical ? offsetHeight : offsetWidth
 
 	let slideElements = Array.from(children ?? []) as HTMLElement[]
-	if (hasOverlay) slideElements.shift()
+	if (hasOverlay) {
+		const overlayElement = slideElements.shift()
+		if (overlayElement) addClassToOverlay(overlayElement)
+	}
 	const fixedSlideSpan = fit ? (containerSpan - gap * (fit - 1)) / fit : undefined
 
 	addClassToSlides(slideElements)
@@ -161,6 +164,13 @@ export function makeDimensions(
 	const container = { span: containerSpan, thick: maxSlideThickness }
 
 	return { container, slides }
+}
+
+function addClassToOverlay(element: Element) {
+	const className = 'canari-swipe__overlay'
+	if (element.classList.contains(className)) return
+
+	element.className = `${className}${element.className ? ' ' + element.className : ''}`
 }
 
 function addClassToSlides(slideElements: Element[]) {

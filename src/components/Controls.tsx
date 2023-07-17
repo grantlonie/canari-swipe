@@ -119,5 +119,6 @@ const alignOptions: Option<ControlProps['align']>[] = [
 
 const overlayTypeOptions: Option<ControlProps['overlayType']>[] = [
 	{ value: 'controls', label: 'Controls' },
+	{ value: 'fade', label: 'Fade' },
 	{ value: 'none', label: 'None' },
 ]

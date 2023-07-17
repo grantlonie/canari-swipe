@@ -20,14 +20,14 @@ In order to prevent html image dragging interfering with swiping, `-webkit-user-
 | `onSwipeStart` | `() => void   `                                  | `undefined` | Called when swiping starts                                                                                          |
 | `onSwipeEnd`   | `(slide: number) => void`                        | `undefined` | Called when swiping ends with current slide                                                                         |
 | `onLoad`       | `(methods: SwiperMethods) => void`               | `undefined` | Return callable methods                                                                                             |
-| `overlay`      | `(props, methods: SwiperMethods) => JSX.Element` | `undefined` | Render component over swiper (used for controls, fade effect, etc.)                                                 |
+| `Overlay`      | `(props, SwiperOverlayProps) => JSX.Element`     | `undefined` | Render component over swiper (used for controls, fade effect, etc.)                                                 |
 | `scale`        | `number`                                         | `1`         | Helpful when applying transform scale to swiper to match swipe movements                                            |
 | `stopMode`     | `'single'` &#124; `'multiple'` &#124; `'free'`   | `'single'`  | Stop after a single slide, animate slides per braking stopping on whole slide (multiple) or wherever it lies (free) |
 | `vertical`     | `boolean`                                        | `false`     | Change to vertical swiper                                                                                           |
 
 ## SwiperMethods
 
-The `onLoad` and `overlay` props give access to the swiper control `SwiperMethods` that allows you to programmatically control the swiper.
+The `onLoad` and `Overlay` props give access to the swiper control `SwiperMethods` that allows you to programmatically control the swiper.
 
 ```
 interface SwiperMethods {
@@ -37,5 +37,16 @@ interface SwiperMethods {
 	next: () => void
 	/** go to previous slide */
 	prev: () => void
+}
+```
+
+## SwiperOverlay
+
+An `Overlay` component can be defined that covers the full swiper container above the slides. Common use cases involve adding controls and gradient fade effects. The component must return an element (not `null`). The props given to the component are:
+
+```
+interface SwiperOverlayProps {
+	currentIndex: number
+	methods: SwiperMethods
 }
 ```

@@ -66,13 +66,18 @@ export declare interface SwiperProps extends Omit<HTMLProps<HTMLDivElement>, 'on
 	/** return callable methods */
 	onLoad?: (methods: SwiperMethods) => void
 	/** Render component over swiper (used for controls, fade effect, etc.) */
-	overlay?: (props: HTMLAttributes<HTMLDivElement>, currentIndex: number, methods: SwiperMethods) => JSX.Element
+	Overlay?: (props: SwiperOverlayProps) => JSX.Element
 	/** (default 1) helpful when applying transform scale to swiper to match swipe movements */
 	scale?: number
 	/** (default single) stop after a single slide, animate slides per braking stopping on whole slide (multiple) or wherever it lies (free)  */
 	stopMode?: 'single' | 'multiple' | 'free'
 	/** change to vertical swiper */
 	vertical?: boolean
+}
+
+export declare interface SwiperOverlayProps {
+	currentIndex: number
+	methods: SwiperMethods
 }
 
 export declare interface SwiperMethods {
@@ -107,7 +112,7 @@ export default function Swiper(props: SwiperProps): JSX.Element {
 		onTouchEnd,
 		onTouchMove,
 		onTouchStart,
-		overlay,
+		Overlay,
 		scale = 1,
 		stopMode = 'single',
 		style,
@@ -129,7 +134,7 @@ export default function Swiper(props: SwiperProps): JSX.Element {
 	const { container, slides = [] } = dimensions ?? {}
 	const currentIndex = indexFromPosition(position, slides, center)
 	const { totalSpan, overflowDistance } = getTotalSpan(dimensions, center)
-	const hasOverlay = Boolean(overlay)
+	const hasOverlay = Boolean(Overlay)
 
 	const slideCountRef = useRef(0)
 	slideCountRef.current = slideCount
@@ -376,7 +381,7 @@ export default function Swiper(props: SwiperProps): JSX.Element {
 			style={{ ...style, ...getContainerStyle(container?.thick, vertical) }}
 			{...rest}
 		>
-			{overlay?.({ className: 'canari-swipe__overlay' }, currentIndex, methods)}
+			{Overlay?.({ currentIndex, methods })}
 			{children}
 		</div>
 	)

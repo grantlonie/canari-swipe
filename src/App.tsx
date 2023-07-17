@@ -6,6 +6,7 @@ import { Box, Text } from './components/base'
 import { ControlProps, SLIDE_COUNT, randomIntFromInterval } from './helpers'
 import Overlay from './components/Overlay'
 import Docs from './Docs.mdx'
+import { theme } from './theme'
 const canary1 = new URL('./assets/images/canary1.jpg', import.meta.url).toString()
 
 export default function App() {
@@ -17,27 +18,26 @@ export default function App() {
 
 	const { overlayType, ...rest } = controlProps
 
-	let overlay
+	let SwiperOverlay
 	if (overlayType !== 'none')
-		overlay = (p, c, m) => (
-			<Overlay {...p} methods={m} currentIndex={c} type={overlayType} vertical={controlProps.vertical} />
-		)
+		SwiperOverlay = props => <Overlay {...props} type={overlayType} vertical={controlProps.vertical} />
 
 	return (
 		<Box sx={{ fontFamily: 'Arial, Geneva, Helvetica' }}>
 			<Box sx={{ display: 'flex', justifyContent: 'center' }}>
 				<Box
 					sx={{
-						height: '400px',
-						width: '600px',
-						maxWidth: '90vw',
-						display: 'flex',
-						justifyContent: 'center',
-						border: '1px solid black',
 						alignItems: 'center',
+						background: theme.palette.grey[100],
+						border: '1px solid black',
+						display: 'flex',
+						height: '400px',
+						justifyContent: 'center',
+						maxWidth: '90vw',
+						width: '600px',
 					}}
 				>
-					<Swiper css={{ height: '100%' }} gap={10} overlay={overlay} {...rest}>
+					<Swiper css={{ height: '100%' }} gap={10} Overlay={SwiperOverlay} {...rest}>
 						{makeSlides(controlProps.vertical)}
 					</Swiper>
 				</Box>
