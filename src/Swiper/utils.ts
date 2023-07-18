@@ -1,6 +1,6 @@
 import { CSSProperties } from 'react'
 import { SwiperProps } from './Swiper'
-import { Dimension, Dimensions, InstanceVariables, Movement } from './types'
+import { Dimension, Dimensions, InstanceVariables, Movement, Snap } from './types'
 
 export const initialInstanceVariables: InstanceVariables = {
 	initialized: false,
@@ -213,33 +213,38 @@ export function indexFromPosition(position: number, slides: Dimension[], center:
 
 export const isPastHalfway = (distance: number, span: number) => (distance + span) % span > span / 2
 
-/** based on current position and desiredDistance (positive or negative), determine the next slide (for single stopMode) and final slide (for multiple stopMode) returning undefined if should stay on current slide */
-export function snapDistance(position: number, slides: Dimension[], desiredDistance: number, center: boolean) {
-	if (!Math.abs(desiredDistance)) return
-
+/** based on current position and desiredDistance (positive or negative), determine the next slide and final slide */
+export function snapDistance(
+	position: number,
+	slides: Dimension[],
+	desiredDistance: number,
+	center: boolean
+): { next: Snap; prev: Snap; total?: Snap } {
 	const currentIndex = indexFromPosition(position, slides, center)
 	const { startPosition, span } = slides[currentIndex]
-	const direction = Math.sign(desiredDistance)
+	const direction = Math.sign(desiredDistance) || 1
 	const forward = direction > 0
 	const gap = gapFromSlides(slides)
+	const forwardIndex = carousel(currentIndex + 1, slides.length)
 
-	let distance = startPosition - position + (forward ? span + gap : 0)
+	let backwardDistance = startPosition - position
+	let forwardDistance = backwardDistance + span + gap
 	if (center) {
-		const centerCorrection = slides[0].span / 2
-		distance -= centerCorrection
-		if (forward) {
-			const nextIndex = carousel(currentIndex + 1, slides.length)
-			distance += slides[nextIndex].span / 2
-		} else {
-			const previousIndex = carousel(currentIndex - 1, slides.length)
-			distance -= slides[previousIndex].span / 2 + gap
-		}
+		forwardDistance += centerCorrection(slides, forwardIndex)
+		backwardDistance += centerCorrection(slides, currentIndex)
 	}
-	const stayOnCurrentSlide = Math.abs(distance) > Math.abs(desiredDistance)
-	if (stayOnCurrentSlide) return
 
-	let i = carousel(currentIndex + (forward ? 1 : center ? -1 : 0), slides.length)
-	let snapped = { single: { distance, index: i }, total: { distance, index: i } }
+	let distance = forward ? forwardDistance : backwardDistance
+	let i = forward ? forwardIndex : currentIndex
+	const next = { distance, index: i }
+	const prev = {
+		distance: forward ? backwardDistance : forwardDistance,
+		index: forward ? currentIndex : forwardIndex,
+	}
+	const stayOnCurrentSlide = !desiredDistance || Math.abs(distance) > Math.abs(desiredDistance)
+	if (stayOnCurrentSlide) return { next, prev }
+
+	let snapped = { next, prev, total: { ...next } }
 
 	while (true) {
 		const nextIndex = carousel(i + (forward ? 1 : -1), slides.length)
@@ -253,28 +258,6 @@ export function snapDistance(position: number, slides: Dimension[], desiredDista
 		if (forward) i = nextIndex
 		snapped.total.distance = distance
 		snapped.total.index = i
-	}
-}
-
-export function snapToNearest(position: number, slides: Dimension[], center: boolean) {
-	const currentIndex = indexFromPosition(position, slides, center)
-	const { span, startPosition } = slides[currentIndex]
-	const gap = gapFromSlides(slides)
-	const distanceAlong = position - startPosition - (center ? centerCorrection(slides, currentIndex) : 0)
-	const insideGap = distanceAlong < 0
-	if (insideGap) return { desiredIndex: currentIndex, desiredDistance: Math.abs(distanceAlong) }
-
-	let distance = span + gap
-	if (center) {
-		const nextSlide = slides[carousel(currentIndex + 1, slides.length)]
-		distance = (span + nextSlide.span) / 2 + gap
-	}
-
-	const pastHalfway = isPastHalfway(distanceAlong, distance)
-
-	return {
-		desiredDistance: (pastHalfway ? distance : 0) - distanceAlong,
-		desiredIndex: carousel(currentIndex + (pastHalfway ? 1 : 0), slides.length),
 	}
 }
 

@@ -5,7 +5,6 @@ import {
 	useMemo,
 	useRef,
 	useState,
-	type HTMLAttributes,
 	type HTMLProps,
 	type MouseEvent,
 	type TouchEvent,
@@ -31,7 +30,6 @@ import {
 	makeDimensions,
 	makeSlideStyle,
 	snapDistance,
-	snapToNearest,
 	startedSwiping,
 	velocityFromMovements,
 } from './utils'
@@ -40,6 +38,8 @@ import {
 const SWIPE_UPDATE_TIME = 10
 /** ms time to go to nearest slide from stationary */
 const SNAP_BACK_TIME = 200
+/** px/sec^2 deceleration required to get to next slide (if stopMode !== 'free') regardless of braking */
+const MIN_DECELERATION_TO_NEXT = 1000
 
 export declare interface SwiperProps extends Omit<HTMLProps<HTMLDivElement>, 'onLoad'> {
 	/** (default start) align the slides with the start or center of the container */
@@ -324,20 +324,25 @@ export default function Swiper(props: SwiperProps): JSX.Element {
 		}
 
 		if (stopMode !== 'free') {
-			const snappedDistance = snapDistance(position, slides, desiredDistance, center)
-			if (!snappedDistance) {
-				const n = snapToNearest(position, slides, center)
-				desiredDistance = n.desiredDistance
-				desiredIndex = n.desiredIndex
-				velocity = (desiredDistance / SNAP_BACK_TIME) * 1000
+			const { next, prev, total } = snapDistance(position, slides, desiredDistance, center)
+			if (!total) {
+				const decelerationToNext = calculateDeceleration(velocity, next.distance)
+				if (decelerationToNext > MIN_DECELERATION_TO_NEXT) {
+					desiredDistance = next.distance
+					desiredIndex = next.index
+				} else {
+					const closest = next.distance <= prev.distance ? next : prev
+					desiredDistance = closest.distance
+					desiredIndex = closest.index
+					velocity = (desiredDistance / SNAP_BACK_TIME) * 1000
+				}
 			} else {
-				const { single, total } = snappedDistance
-				desiredDistance = stopMode === 'single' ? single.distance : total.distance
-				desiredIndex = stopMode === 'single' ? single.index : total.index
+				desiredDistance = stopMode === 'single' ? next.distance : total.distance
+				desiredIndex = stopMode === 'single' ? next.index : total.index
 			}
 		}
 
-		const updatedDeceleration = calculateDeceleration(velocity, Math.abs(desiredDistance))
+		const updatedDeceleration = calculateDeceleration(velocity, desiredDistance)
 		const duration = howLong(velocity, updatedDeceleration)
 		finishSwiping(desiredDistance, duration, desiredIndex)
 	}

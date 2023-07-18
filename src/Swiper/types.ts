@@ -31,3 +31,8 @@ export interface Dimension {
 	/** height (or width if vertical) */
 	thick: number
 }
+
+export interface Snap {
+	index: number
+	distance: number
+}

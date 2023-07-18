@@ -1,4 +1,3 @@
-fix: swipe backwards in single stop mode/align center goes more than 1 slide
 import intellisense
 add responsive height?
 change onSwipeStart to include direction and change in direction
