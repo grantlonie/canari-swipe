@@ -142,6 +142,10 @@ export default function Swiper(props: SwiperProps): JSX.Element {
 	goToRef.current = goTo
 
 	useLayoutEffect(() => {
+		addStyle()
+	}, [])
+
+	useLayoutEffect(() => {
 		updateDimensions()
 		window.addEventListener('resize', () => updateDimensions())
 		return window.removeEventListener('resize', () => updateDimensions())
@@ -199,7 +203,6 @@ export default function Swiper(props: SwiperProps): JSX.Element {
 	)
 
 	function init() {
-		addStyle()
 		onLoad?.(methods)
 
 		if (goTo) stopSwiping(goTo)
