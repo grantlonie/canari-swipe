@@ -334,7 +334,7 @@ export default function Swiper(props: SwiperProps): JSX.Element {
 					desiredDistance = next.distance
 					desiredIndex = next.index
 				} else {
-					const closest = next.distance <= prev.distance ? next : prev
+					const closest = Math.abs(next.distance) <= Math.abs(prev.distance) ? next : prev
 					desiredDistance = closest.distance
 					desiredIndex = closest.index
 					velocity = (desiredDistance / SNAP_BACK_TIME) * 1000
