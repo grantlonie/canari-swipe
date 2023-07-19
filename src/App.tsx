@@ -76,6 +76,7 @@ function makeSlides(vertical: boolean) {
 const initialControlProps: ControlProps = {
 	align: 'center',
 	braking: 50,
+	easingFunction: 'quart',
 	endMode: 'carousel',
 	fit: 0,
 	goTo: 0,

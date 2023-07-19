@@ -70,6 +70,18 @@ export default function Controls({ value, onUpdate }: Props) {
 					{overlayTypeOptions}
 				</Select>
 			</ContainerWithHelp>
+
+			{value.stopMode !== 'free' && (
+				<ContainerWithHelp tooltipLabel="Handle the easing animation after letting go ()">
+					<Select
+						value={value.easingFunction}
+						label="Easing function"
+						onChange={easingFunction => onUpdate({ easingFunction })}
+					>
+						{easingFunctionOptions}
+					</Select>
+				</ContainerWithHelp>
+			)}
 		</Box>
 	)
 }
@@ -92,6 +104,13 @@ const fitOptions: Option<ControlProps['fit']>[] = [
 	{ value: 1, label: 'One' },
 	{ value: 2, label: 'Two' },
 	{ value: 3, label: 'Three' },
+]
+
+const easingFunctionOptions: Option<ControlProps['easingFunction']>[] = [
+	{ value: 'quad', label: 'Quadratic' },
+	{ value: 'quart', label: 'Quartic' },
+	{ value: 'linear', label: 'Linear' },
+	{ value: 'overshoot', label: 'Overshoot' },
 ]
 
 const endModeOptions: Option<ControlProps['endMode']>[] = [

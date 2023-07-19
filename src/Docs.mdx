@@ -6,24 +6,25 @@ In order to prevent html image dragging interfering with swiping, `-webkit-user-
 
 ## Props
 
-| Property       | Type                                             | Default     | Description                                                                                                         |
-| :------------- | :----------------------------------------------- | :---------- | ------------------------------------------------------------------------------------------------------------------- |
-| `align`        | `'center'` &#124; `'start'`                      | `'start'`   | Align the slides with the start or center of the container                                                          |
-| `braking`      | `number`                                         | `50`        | `1-100`. How hard to brake swiping animation after letting go                                                       |
-| `children`     | `JSX.Element[]` &#124; `JSX.Element`             | Required    | Slide elements                                                                                                      |
-| `disabled`     | `boolean`                                        | `false`     | Prevent dragging slides                                                                                             |
-| `endMode`      | `'elastic'` &#124; `'rigid'` &#124; `'carousel'` | `'elastic'` | Apply elastic effect or rigid at the end of the slides or carousel them back around                                 |
-| `fit`          | `number`                                         | `undefined` | Fit `number` of slides in container                                                                                 |
-| `gap`          | `number`                                         | `0`         | px gap between slide                                                                                                |
-| `goTo`         | `number`                                         | `0`         | Used to set initial slide and to control externally                                                                 |
-| `goToTime`     | `number`                                         | `500`       | ms time it takes to transition to desired slide                                                                     |
-| `onSwipeStart` | `() => void   `                                  | `undefined` | Called when swiping starts                                                                                          |
-| `onSwipeEnd`   | `(slide: number) => void`                        | `undefined` | Called when swiping ends with current slide                                                                         |
-| `onLoad`       | `(methods: SwiperMethods) => void`               | `undefined` | Return callable methods                                                                                             |
-| `Overlay`      | `(props, SwiperOverlayProps) => JSX.Element`     | `undefined` | Render component over swiper (used for controls, fade effect, etc.)                                                 |
-| `scale`        | `number`                                         | `1`         | Helpful when applying transform scale to swiper to match swipe movements                                            |
-| `stopMode`     | `'single'` &#124; `'multiple'` &#124; `'free'`   | `'single'`  | Stop after a single slide, animate slides per braking stopping on whole slide (multiple) or wherever it lies (free) |
-| `vertical`     | `boolean`                                        | `false`     | Change to vertical swiper                                                                                           |
+| Property         | Type                                                             | Default     | Description                                                                                                         |
+| :--------------- | :--------------------------------------------------------------- | :---------- | ------------------------------------------------------------------------------------------------------------------- |
+| `align`          | `'center'` &#124; `'start'`                                      | `'start'`   | Align the slides with the start or center of the container                                                          |
+| `braking`        | `number`                                                         | `50`        | `1-100`. How hard to brake swiping animation after letting go                                                       |
+| `children`       | `JSX.Element[]` &#124; `JSX.Element`                             | Required    | Slide elements                                                                                                      |
+| `disabled`       | `boolean`                                                        | `false`     | Prevent dragging slides                                                                                             |
+| `easingFunction` | `'linear'` &#124; `'quad'` &#124; `'quart'` &#124; `'overshoot'` | `'quart'`   | Set the ease stop animation for when stopMode != 'free'                                                             |
+| `endMode`        | `'elastic'` &#124; `'rigid'` &#124; `'carousel'`                 | `'elastic'` | Apply elastic effect or rigid at the end of the slides or carousel them back around                                 |
+| `fit`            | `number`                                                         | `undefined` | Fit `number` of slides in container                                                                                 |
+| `gap`            | `number`                                                         | `0`         | px gap between slide                                                                                                |
+| `goTo`           | `number`                                                         | `0`         | Used to set initial slide and to control externally                                                                 |
+| `goToTime`       | `number`                                                         | `500`       | ms time it takes to transition to desired slide                                                                     |
+| `onSwipeStart`   | `() => void   `                                                  | `undefined` | Called when swiping starts                                                                                          |
+| `onSwipeEnd`     | `(slide: number) => void`                                        | `undefined` | Called when swiping ends with current slide                                                                         |
+| `onLoad`         | `(methods: SwiperMethods) => void`                               | `undefined` | Return callable methods                                                                                             |
+| `Overlay`        | `(props, SwiperOverlayProps) => JSX.Element`                     | `undefined` | Render component over swiper (used for controls, fade effect, etc.)                                                 |
+| `scale`          | `number`                                                         | `1`         | Helpful when applying transform scale to swiper to match swipe movements                                            |
+| `stopMode`       | `'single'` &#124; `'multiple'` &#124; `'free'`                   | `'single'`  | Stop after a single slide, animate slides per braking stopping on whole slide (multiple) or wherever it lies (free) |
+| `vertical`       | `boolean`                                                        | `false`     | Change to vertical swiper                                                                                           |
 
 ## SwiperMethods
 

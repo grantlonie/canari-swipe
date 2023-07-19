@@ -17,7 +17,7 @@ import {
 	carouselSlides,
 	centerCorrection,
 	clamp,
-	easeOutSine,
+	easyDoesIt,
 	getContainerStyle,
 	getCurrentClock,
 	getDeceleration,
@@ -49,6 +49,8 @@ export declare interface SwiperProps extends Omit<HTMLProps<HTMLDivElement>, 'on
 	children: JSX.Element[] | JSX.Element
 	/** prevent dragging slides */
 	disabled?: boolean
+	/** (default quart) set the ease stop animation for when stopMode != 'free' */
+	easingFunction?: EasingFunction
 	/** (default elastic) apply elastic effect or rigid at the end of the slides or carousel them back around */
 	endMode?: 'elastic' | 'rigid' | 'carousel'
 	/** fit number of slides in container */
@@ -65,7 +67,7 @@ export declare interface SwiperProps extends Omit<HTMLProps<HTMLDivElement>, 'on
 	onSwipeEnd?: (slide: number) => void
 	/** return callable methods */
 	onLoad?: (methods: SwiperMethods) => void
-	/** Render component over swiper (used for controls, fade effect, etc.) */
+	/** render component over swiper (used for controls, fade effect, etc.) */
 	Overlay?: (props: SwiperOverlayProps) => JSX.Element
 	/** (default 1) helpful when applying transform scale to swiper to match swipe movements */
 	scale?: number
@@ -74,6 +76,8 @@ export declare interface SwiperProps extends Omit<HTMLProps<HTMLDivElement>, 'on
 	/** change to vertical swiper */
 	vertical?: boolean
 }
+
+export type EasingFunction = 'linear' | 'overshoot' | 'quad' | 'quart'
 
 export declare interface SwiperOverlayProps {
 	currentIndex: number
@@ -96,11 +100,12 @@ export default function Swiper(props: SwiperProps): JSX.Element {
 		children,
 		className,
 		disabled,
+		easingFunction = 'quart',
+		endMode = 'elastic',
 		fit,
 		gap = 0,
 		goTo: goToParent = 0,
 		goToTime,
-		endMode = 'elastic',
 		onLoad,
 		onMouseDown,
 		onMouseLeave,
@@ -223,7 +228,7 @@ export default function Swiper(props: SwiperProps): JSX.Element {
 			const clock = getCurrentClock() - startClock
 			if (clock >= duration) return stopSwiping(desiredIndex)
 
-			let newPosition = position + distance * easeOutSine(clock / duration)
+			let newPosition = position + distance * easyDoesIt(clock / duration, easingFunction)
 			if (isCarousel) newPosition = carousel(newPosition, totalSpan)
 
 			setPosition(newPosition)

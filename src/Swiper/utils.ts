@@ -1,5 +1,5 @@
 import { CSSProperties } from 'react'
-import { SwiperProps } from './Swiper'
+import { EasingFunction, SwiperProps } from './Swiper'
 import { Dimension, Dimensions, InstanceVariables, Movement, Snap } from './types'
 
 export const initialInstanceVariables: InstanceVariables = {
@@ -106,9 +106,20 @@ function getFirstIndex({ container, slides }: Dimensions, currentIndex: number, 
 	return index
 }
 
-/** easing function to stop swiping */
-export function easeOutSine(ratio: number) {
-	return Math.sin(ratio * (Math.PI / 2))
+/** apply easing function to stop swiping */
+export function easyDoesIt(ratio: number, easingFunction: EasingFunction) {
+	switch (easingFunction) {
+		case 'linear':
+			return ratio
+		case 'quad':
+			return 1 - Math.pow(1 - ratio, 2)
+		case 'quart':
+			return 1 - Math.pow(1 - ratio, 4)
+		case 'overshoot':
+			const c1 = 1
+			const c3 = c1 + 1
+			return 1 + c3 * Math.pow(ratio - 1, 3) + c1 * Math.pow(ratio - 1, 2)
+	}
 }
 
 export const carousel = (value: number, maxValue: number) => (value + maxValue) % maxValue
