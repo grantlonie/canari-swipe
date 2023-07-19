@@ -323,6 +323,7 @@ export default function Swiper(props: SwiperProps): JSX.Element {
 				return finishSwiping(overflowDistance - position, SNAP_BACK_TIME, slideCount - 1)
 			} else {
 				desiredDistance = clamp(desiredDistance, overflowDistance - position, -position)
+				if (!desiredDistance) velocity = 0
 			}
 		}
 
