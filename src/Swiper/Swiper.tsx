@@ -395,7 +395,7 @@ export default function Swiper(props: SwiperProps): JSX.Element {
 			style={{ ...style, ...getContainerStyle(container?.thick, vertical) }}
 			{...rest}
 		>
-			{Overlay?.({ currentIndex, methods })}
+			{Overlay && <Overlay {...{ currentIndex, methods }} />}
 			{children}
 		</div>
 	)
