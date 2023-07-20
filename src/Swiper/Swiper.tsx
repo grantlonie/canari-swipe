@@ -152,8 +152,8 @@ export default function Swiper(props: SwiperProps): JSX.Element {
 
 	useLayoutEffect(() => {
 		updateDimensions()
-		window.addEventListener('resize', () => updateDimensions())
-		return window.removeEventListener('resize', () => updateDimensions())
+		window.addEventListener('resize', updateDimensions)
+		return () => window.removeEventListener('resize', updateDimensions)
 	}, [children, fit, hasOverlay, vertical])
 
 	useLayoutEffect(() => {
