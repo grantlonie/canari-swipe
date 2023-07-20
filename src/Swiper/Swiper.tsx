@@ -323,7 +323,7 @@ export default function Swiper(props: SwiperProps): JSX.Element {
 
 		if (!isCarousel) {
 			if (position < 0) {
-				return finishSwiping(-position, SNAP_BACK_TIME, 0)
+				return finishSwiping(-position + gap, SNAP_BACK_TIME, 0)
 			} else if (position > overflowDistance) {
 				return finishSwiping(overflowDistance - position, SNAP_BACK_TIME, slideCount - 1)
 			} else {
