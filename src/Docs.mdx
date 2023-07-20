@@ -43,7 +43,11 @@ interface SwiperMethods {
 
 ## SwiperOverlay
 
-An `Overlay` component can be defined that covers the full swiper container above the slides. Common use cases involve adding controls and gradient fade effects. The component must return an element (not `null`). The props given to the component are:
+An `Overlay` component can be defined that covers the full swiper container above the slides. Common use cases involve adding controls and gradient fade effects. The component must return an element (not `null`).
+
+The component will remove pointer events (i.e. `pointer-events: none`) in order to allow clicking through to the slide components. Therefore, if you want to add control elements (left, right, selected dot, etc.) make sure to set `pointer-events: auto` on each element. You can also apply add the control class name to accomplish this - `className="canari-swipe__control"`.
+
+The props given to the component are:
 
 ```
 interface SwiperOverlayProps {

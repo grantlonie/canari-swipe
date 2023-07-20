@@ -28,9 +28,17 @@ export default function Overlay({ currentIndex, methods, type, vertical }: Props
 							m: 2,
 						}}
 					>
-						<NextIcon style={{ transform: `rotate(${vertical ? -90 : 180}deg)` }} onClick={methods.prev} />
+						<NextIcon
+							className="canari-swipe__control"
+							style={{ transform: `rotate(${vertical ? -90 : 180}deg)` }}
+							onClick={methods.prev}
+						/>
 						<Box />
-						<NextIcon style={{ transform: `rotate(${vertical ? 90 : 0}deg)` }} onClick={methods.next} />
+						<NextIcon
+							className="canari-swipe__control"
+							style={{ transform: `rotate(${vertical ? 90 : 0}deg)` }}
+							onClick={methods.next}
+						/>
 					</Box>
 					<Dots currentIndex={currentIndex} goTo={methods.goTo} flexDirection={flexDirection} />
 				</Box>
@@ -68,6 +76,7 @@ function Dots({ currentIndex, goTo, flexDirection }) {
 		<Box sx={{ display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'center', flexDirection }}>
 			{new Array(SLIDE_COUNT).fill(null).map((_, i) => (
 				<Box
+					className="canari-swipe__control"
 					key={i}
 					onClick={() => goTo(i)}
 					style={{ background: currentIndex === i ? 'blue' : 'white' }}

@@ -24,9 +24,13 @@ const styleText = `
 }
 .canari-swipe__overlay {
 	height: 100%;
+	pointer-events: none;
 	position: absolute;
 	width: 100%;
 	z-index: 1;
+}
+.canari-swipe__control {
+	pointer-events: auto;
 }
 .canari-swipe__slide {
 	position: absolute !important;
