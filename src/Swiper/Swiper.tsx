@@ -106,6 +106,7 @@ export default function Swiper(props: SwiperProps): JSX.Element {
 		gap = 0,
 		goTo: goToParent = 0,
 		goToTime,
+		onClickCapture,
 		onLoad,
 		onMouseDown,
 		onMouseLeave,
@@ -114,7 +115,7 @@ export default function Swiper(props: SwiperProps): JSX.Element {
 		onSwipeEnd,
 		onSwipeStart,
 		onTouchCancel,
-		onTouchEnd,
+		onTouchEndCapture,
 		onTouchMove,
 		onTouchStart,
 		Overlay,
@@ -222,7 +223,6 @@ export default function Swiper(props: SwiperProps): JSX.Element {
 	}
 
 	function finishSwiping(distance: number, duration: number, desiredIndex?: number) {
-		v.current.isSwiping = false
 		const startClock = getCurrentClock()
 		v.current.animationInterval = setInterval(() => {
 			const clock = getCurrentClock() - startClock
@@ -356,10 +356,20 @@ export default function Swiper(props: SwiperProps): JSX.Element {
 		finishSwiping(desiredDistance, duration, desiredIndex)
 	}
 
+	/** Prevent clicking on slides when swiping */
+	function captureStop(e) {
+		if (v.current.isSwiping) e.stopPropagation()
+		v.current.isSwiping = false
+	}
+
 	return (
 		<div
 			className={`canari-swipe__container${className ? ' ' + className : ''}`}
 			ref={containerRef}
+			onClickCapture={e => {
+				captureStop(e)
+				onClickCapture?.(e)
+			}}
 			onMouseDown={e => {
 				handleMouseDown(e)
 				onMouseDown?.(e)
@@ -380,9 +390,10 @@ export default function Swiper(props: SwiperProps): JSX.Element {
 				handleUp()
 				onMouseUp?.(e)
 			}}
-			onTouchEnd={e => {
+			onTouchEndCapture={e => {
 				handleUp()
-				onTouchEnd?.(e)
+				captureStop(e)
+				onTouchEndCapture?.(e)
 			}}
 			onMouseLeave={e => {
 				handleUp()
