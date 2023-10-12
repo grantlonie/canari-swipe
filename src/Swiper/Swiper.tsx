@@ -28,6 +28,7 @@ import {
 	howLong,
 	indexFromPosition,
 	initialInstanceVariables,
+	isEqual,
 	makeDimensions,
 	makeSlideStyle,
 	snapDistance,
@@ -196,9 +197,11 @@ export default function Swiper(props: SwiperProps): JSX.Element {
 
 	function updateDimensions() {
 		if (!containerRef.current) return
-		const dimensions = makeDimensions(containerRef.current, gap, vertical, hasOverlay, fit)
-		setDimensions(dimensions)
-		setPosition(positionFromIndex(dimensions, goToRef.current))
+		const updatedDimensions = makeDimensions(containerRef.current, gap, vertical, hasOverlay, fit)
+		if (isEqual(updatedDimensions, dimensions)) return
+
+		setDimensions(updatedDimensions)
+		setPosition(positionFromIndex(updatedDimensions, goToRef.current))
 	}
 
 	const methods = useMemo(

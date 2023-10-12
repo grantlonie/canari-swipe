@@ -299,3 +299,8 @@ export function getTotalSpan(dimensions: Dimensions | undefined, center: boolean
 }
 
 export const handlePreventDefault = e => e.preventDefault()
+
+/** Simple deep isEqual function comparing strings */
+export function isEqual(a, b) {
+	return JSON.stringify(a) === JSON.stringify(b)
+}
