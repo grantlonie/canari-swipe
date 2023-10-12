@@ -107,7 +107,7 @@ export default function Swiper(props: SwiperProps): JSX.Element {
 		fit,
 		gap = 0,
 		goTo: goToParent = 0,
-		goToTime,
+		goToTime = 500,
 		onClickCapture,
 		onLoad,
 		onMouseDown,
