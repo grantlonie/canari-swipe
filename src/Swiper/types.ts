@@ -12,8 +12,10 @@ export interface InstanceVariables {
 }
 
 export interface Movement {
-	/** touch position */
+	/** position on page in direction of swiping */
 	pagePosition: number
+	/** position on page opposite direction of swiping used for detected scrolling on mobile */
+	scrollPosition: number
 	/** ms at position */
 	time: number
 }

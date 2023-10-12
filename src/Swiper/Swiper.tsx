@@ -23,6 +23,7 @@ import {
 	getDeceleration,
 	getDelta,
 	getTotalSpan,
+	handlePreventDefault,
 	howFar,
 	howLong,
 	indexFromPosition,
@@ -149,6 +150,7 @@ export default function Swiper(props: SwiperProps): JSX.Element {
 
 	useLayoutEffect(() => {
 		addStyle()
+		preventScrolling()
 	}, [])
 
 	useLayoutEffect(() => {
@@ -255,46 +257,61 @@ export default function Swiper(props: SwiperProps): JSX.Element {
 		return isCarousel ? desiredPosition : Math.min(desiredPosition, overflowDistance)
 	}
 
+	function preventScrolling() {
+		containerRef.current?.addEventListener('touchmove', handlePreventDefault)
+	}
+
+	function allowScrolling() {
+		containerRef.current?.removeEventListener('touchmove', handlePreventDefault)
+	}
+
 	function handleTouchDown(e: TouchEvent<HTMLDivElement>) {
-		const { pageX, pageY } = e.targetTouches[0]
-		const pagePosition = vertical ? pageY : pageX
-		handleDown(pagePosition)
+		handleDown(e.targetTouches[0])
 	}
 
 	function handleMouseDown(e: MouseEvent<HTMLDivElement>) {
-		const pagePosition = vertical ? e.pageY : e.pageX
-		handleDown(pagePosition)
+		handleDown(e)
 	}
 
-	function handleDown(pagePosition: number) {
+	function handleDown({ pageX, pageY }: { pageX: number; pageY: number }) {
 		clearInterval(v.current.animationInterval)
 		v.current.isTouching = true
-		const movement: Movement = { pagePosition, time: getCurrentClock() }
+		const pagePosition = vertical ? pageY : pageX
+		const scrollPosition = vertical ? pageX : pageY
+		const movement: Movement = { pagePosition, scrollPosition, time: getCurrentClock() }
 		v.current.movements = new Array(5).fill(movement)
 	}
 
 	function handleTouchMove(e: TouchEvent<HTMLDivElement>) {
-		const { pageX, pageY } = e.targetTouches[0]
-		const pagePosition = vertical ? pageY : pageX
-		handleMove(pagePosition)
+		handleMove(e.targetTouches[0])
 	}
 
 	function handleMouseMove(e: MouseEvent<HTMLDivElement>) {
-		const pagePosition = vertical ? e.pageY : e.pageX
-		handleMove(pagePosition)
+		handleMove(e)
 	}
 
-	function handleMove(pagePosition: number) {
+	function handleMove({ pageX, pageY }: { pageX: number; pageY: number }) {
 		const { isSwiping, isTouching, movements } = v.current
 		if (disabled || !isTouching || slideCount === 1) return
 
-		if (!isSwiping) {
-			const startPosition = movements[0].pagePosition
-			const started = startedSwiping(pagePosition, startPosition, scale)
-			if (!started) return
+		const pagePosition = vertical ? pageY : pageX
+		const scrollPosition = vertical ? pageX : pageY
 
-			v.current.isSwiping = true
-			onSwipeStart?.()
+		if (!isSwiping) {
+			const startPagePosition = movements[0].pagePosition
+			const startScrollPosition = movements[0].scrollPosition
+			const startSwiping = startedSwiping(pagePosition, startPagePosition, scale)
+			const startScrolling = startedSwiping(scrollPosition, startScrollPosition, scale)
+			if (startSwiping) {
+				v.current.isSwiping = true
+				onSwipeStart?.()
+			} else {
+				if (startScrolling) {
+					v.current.isTouching = false
+					allowScrolling()
+				}
+				return
+			}
 		}
 
 		const previousMovement = movements[movements.length - 1]
@@ -308,12 +325,13 @@ export default function Swiper(props: SwiperProps): JSX.Element {
 		setPosition(newPosition)
 
 		v.current.movements.shift()
-		const movement: Movement = { pagePosition, time: getCurrentClock() }
+		const movement: Movement = { pagePosition, scrollPosition, time: getCurrentClock() }
 		v.current.movements.push(movement)
 	}
 
 	function handleUp() {
 		v.current.isTouching = false
+		preventScrolling()
 		if (!v.current.isSwiping) return
 
 		const deceleration = getDeceleration(braking)

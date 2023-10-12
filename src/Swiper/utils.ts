@@ -6,7 +6,7 @@ export const initialInstanceVariables: InstanceVariables = {
 	initialized: false,
 	isTouching: false,
 	isSwiping: false,
-	movements: [{ pagePosition: 0, time: 0 }],
+	movements: [{ pagePosition: 0, scrollPosition: 0, time: 0 }],
 }
 
 /** return px/sec^2 deceleration */
@@ -297,3 +297,5 @@ export function getTotalSpan(dimensions: Dimensions | undefined, center: boolean
 	const overflowDistance = totalSpan - ((center ? lastSlide?.span : container?.span) ?? 0)
 	return { totalSpan, overflowDistance }
 }
+
+export const handlePreventDefault = e => e.preventDefault()
