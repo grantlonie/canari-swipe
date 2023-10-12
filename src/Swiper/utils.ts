@@ -122,7 +122,7 @@ export function easyDoesIt(ratio: number, easingFunction: EasingFunction) {
 	}
 }
 
-export const carousel = (value: number, maxValue: number) => (value + maxValue) % maxValue
+export const carousel = (value: number, maxValue: number) => (value + maxValue * 100) % maxValue
 
 export const clamp = (num: number, max: number, min = 0) => Math.min(Math.max(num, min), max)
 

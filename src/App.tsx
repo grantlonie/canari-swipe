@@ -1,13 +1,18 @@
 import { useState } from 'react'
 
+import Docs from './Docs.mdx'
 import Swiper from './Swiper/Swiper'
 import Controls from './components/Controls'
+import Overlay from './components/Overlay'
 import { Box, Text } from './components/base'
 import { ControlProps, SLIDE_COUNT, randomIntFromInterval } from './helpers'
-import Overlay from './components/Overlay'
-import Docs from './Docs.mdx'
 import { theme } from './theme'
 const canary1 = new URL('./assets/images/canary1.jpg', import.meta.url).toString()
+
+const appStyle = {
+	fontFamily: 'Arial, Geneva, Helvetica',
+	'& code': { background: 'orange', padding: '1px 3px', borderRadius: '4px' },
+}
 
 export default function App() {
 	const [controlProps, setControlProps] = useState(initialControlProps)
@@ -23,7 +28,7 @@ export default function App() {
 		SwiperOverlay = props => <Overlay {...props} type={overlayType} vertical={controlProps.vertical} />
 
 	return (
-		<Box sx={{ fontFamily: 'Arial, Geneva, Helvetica' }}>
+		<Box sx={appStyle}>
 			<Box sx={{ display: 'flex', justifyContent: 'center' }}>
 				<Box
 					sx={{
@@ -42,7 +47,7 @@ export default function App() {
 					</Swiper>
 				</Box>
 			</Box>
-			<Box sx={{ width: '500px', maxWidth: '90%', margin: 'auto' }}>
+			<Box sx={{ width: '800px', maxWidth: '90%', margin: 'auto' }}>
 				<Text fontSize="xl">Options</Text>
 				<Controls value={controlProps} onUpdate={handleUpdate} />
 				<Docs />
