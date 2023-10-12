@@ -45,7 +45,7 @@ const MIN_DECELERATION_TO_NEXT = 1000
 export declare interface SwiperProps extends Omit<HTMLProps<HTMLDivElement>, 'onLoad'> {
 	/** (default start) align the slides with the start or center of the container */
 	align?: 'center' | 'start'
-	/** (default 5000) 1 - 100. How hard to brake swiping animation after letting go */
+	/** (default 50) 1 - 100. How hard to brake swiping animation after letting go */
 	braking?: number
 	children: JSX.Element[] | JSX.Element
 	/** prevent dragging slides */
@@ -345,7 +345,9 @@ export default function Swiper(props: SwiperProps): JSX.Element {
 			} else if (position > overflowDistance) {
 				return finishSwiping(overflowDistance - position, SNAP_BACK_TIME, slideCount - 1)
 			} else {
-				desiredDistance = clamp(desiredDistance, overflowDistance - position, -position)
+				const clampedDistance = clamp(desiredDistance, overflowDistance - position, -position)
+				if (clampedDistance !== desiredDistance) desiredIndex = clampedDistance > 0 ? slideCount - 1 : 0
+				desiredDistance = clampedDistance
 				if (!desiredDistance) velocity = 0
 			}
 		}

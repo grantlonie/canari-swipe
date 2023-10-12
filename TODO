@@ -1,5 +1,3 @@
-prevent phone vertical swiping while swiping
-keep touching (for sure for phone) even outside container?
 import intellisense
 add responsive height?
 change onSwipeStart to include direction and change in direction

@@ -71,17 +71,15 @@ export default function Controls({ value, onUpdate }: Props) {
 				</Select>
 			</ContainerWithHelp>
 
-			{value.stopMode !== 'free' && (
-				<ContainerWithHelp tooltipLabel="Handle the easing animation after letting go ()">
-					<Select
-						value={value.easingFunction}
-						label="Easing function"
-						onChange={easingFunction => onUpdate({ easingFunction })}
-					>
-						{easingFunctionOptions}
-					</Select>
-				</ContainerWithHelp>
-			)}
+			<ContainerWithHelp tooltipLabel="Handle the easing animation after letting go ()">
+				<Select
+					value={value.easingFunction}
+					label="Easing function"
+					onChange={easingFunction => onUpdate({ easingFunction })}
+				>
+					{easingFunctionOptions}
+				</Select>
+			</ContainerWithHelp>
 		</Box>
 	)
 }
