@@ -233,7 +233,8 @@ export default function Swiper(props: SwiperProps): JSX.Element {
 			const clock = getCurrentClock() - startClock
 			if (clock >= duration) return stopSwiping(desiredIndex)
 
-			let newPosition = position + distance * easyDoesIt(clock / duration, easingFunction)
+			const easing = desiredIndex == null ? 'quart' : easingFunction
+			let newPosition = position + distance * easyDoesIt(clock / duration, easing)
 			if (isCarousel) newPosition = carousel(newPosition, totalSpan)
 
 			setPosition(newPosition)
@@ -343,12 +344,14 @@ export default function Swiper(props: SwiperProps): JSX.Element {
 		let desiredIndex: number | undefined
 
 		if (!isCarousel) {
-			if (position < 0) {
-				return finishSwiping(-position + gap, SNAP_BACK_TIME, 0)
-			} else if (position > overflowDistance) {
-				return finishSwiping(overflowDistance - position, SNAP_BACK_TIME, slideCount - 1)
+			const distanceToStart = gap - position
+			const distanceToEnd = overflowDistance - position
+			if (distanceToStart > 0) {
+				return finishSwiping(distanceToStart, SNAP_BACK_TIME, 0)
+			} else if (distanceToEnd < 0) {
+				return finishSwiping(distanceToEnd, SNAP_BACK_TIME, slideCount - 1)
 			} else {
-				const clampedDistance = clamp(desiredDistance, overflowDistance - position, -position)
+				const clampedDistance = clamp(desiredDistance, distanceToEnd, distanceToStart)
 				if (clampedDistance !== desiredDistance) desiredIndex = clampedDistance > 0 ? slideCount - 1 : 0
 				desiredDistance = clampedDistance
 				if (!desiredDistance) velocity = 0
