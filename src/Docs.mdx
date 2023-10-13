@@ -28,7 +28,7 @@ In order to prevent html image dragging interfering with swiping, `-webkit-user-
 
 ## SwiperMethods
 
-The `onLoad` and `Overlay` props give access to the swiper control `SwiperMethods` that allows you to programmatically control the swiper.
+The `onLoad` and `Overlay` props give access to the `SwiperMethods` that allows you to programmatically control the swiper.
 
 ```
 interface SwiperMethods {
@@ -45,13 +45,17 @@ interface SwiperMethods {
 
 An `Overlay` component can be defined that covers the full swiper container above the slides. Common use cases involve adding controls and gradient fade effects. The component must return an element (not `null`).
 
-The component will remove pointer events (i.e. `pointer-events: none`) in order to allow clicking through to the slide components. Therefore, if you want to add control elements (left, right, selected dot, etc.) make sure to set `pointer-events: auto` on each element. You can also apply add the control class name to accomplish this - `className="canari-swipe__control"`.
+The component will remove pointer events (i.e. `pointer-events: none`) in order to allow clicking through to the slide components. Therefore, if you want to add action elements (left, right, selected dot, or other buttons) set the className of the action to the provided `actionClass` (which sets the pointer-event of the element).
 
 The props given to the component are:
 
 ```
 interface SwiperOverlayProps {
+	/** class name for actions to enable clicking */
+	actionClass: string
+	/** current index of active slide */
 	currentIndex: number
+	/** methods to control the swiper programmatically */
 	methods: SwiperMethods
 }
 ```

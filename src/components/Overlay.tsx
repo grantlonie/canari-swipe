@@ -9,7 +9,7 @@ interface Props extends SwiperOverlayProps {
 	vertical: boolean
 }
 
-export default function Overlay({ currentIndex, methods, type, vertical }: Props) {
+export default function Overlay({ type, vertical, ...rest }: Props) {
 	switch (type) {
 		case 'none':
 			return null
@@ -29,18 +29,18 @@ export default function Overlay({ currentIndex, methods, type, vertical }: Props
 						}}
 					>
 						<NextIcon
-							className="canari-swipe__control"
+							className={rest.actionClass}
 							style={{ transform: `rotate(${vertical ? -90 : 180}deg)` }}
-							onClick={methods.prev}
+							onClick={rest.methods.prev}
 						/>
 						<Box />
 						<NextIcon
-							className="canari-swipe__control"
+							className={rest.actionClass}
 							style={{ transform: `rotate(${vertical ? 90 : 0}deg)` }}
-							onClick={methods.next}
+							onClick={rest.methods.next}
 						/>
 					</Box>
-					<Dots currentIndex={currentIndex} goTo={methods.goTo} flexDirection={flexDirection} />
+					<Dots {...rest} goTo={rest.methods.goTo} flexDirection={flexDirection} />
 				</Box>
 			)
 		case 'fade':
@@ -71,12 +71,12 @@ const NextIcon = (props: SVGAttributes<SVGElement>) => (
 	</svg>
 )
 
-function Dots({ currentIndex, goTo, flexDirection }) {
+function Dots({ actionClass, currentIndex, goTo, flexDirection }) {
 	return (
 		<Box sx={{ display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'center', flexDirection }}>
 			{new Array(SLIDE_COUNT).fill(null).map((_, i) => (
 				<Box
-					className="canari-swipe__control"
+					className={actionClass}
 					key={i}
 					onClick={() => goTo(i)}
 					style={{ background: currentIndex === i ? 'blue' : 'white' }}

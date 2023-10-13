@@ -9,7 +9,7 @@ import {
 	type MouseEvent,
 	type TouchEvent,
 } from 'react'
-import addStyle from './style'
+import addStyle, { actionClass, containerClass } from './style'
 import { Dimensions, Movement } from './types'
 import {
 	calculateDeceleration,
@@ -82,7 +82,11 @@ export declare interface SwiperProps extends Omit<HTMLProps<HTMLDivElement>, 'on
 export type EasingFunction = 'linear' | 'overshoot' | 'quad' | 'quart'
 
 export declare interface SwiperOverlayProps {
+	/** class name for actions to enable clicking */
+	actionClass: string
+	/** current index of active slide */
 	currentIndex: number
+	/** methods to control the swiper programmatically */
 	methods: SwiperMethods
 }
 
@@ -390,7 +394,7 @@ export default function Swiper(props: SwiperProps): JSX.Element {
 
 	return (
 		<div
-			className={`canari-swipe__container${className ? ' ' + className : ''}`}
+			className={`${containerClass}${className ? ' ' + className : ''}`}
 			ref={containerRef}
 			onClickCapture={e => {
 				captureStop(e)
@@ -432,7 +436,7 @@ export default function Swiper(props: SwiperProps): JSX.Element {
 			style={{ ...style, ...getContainerStyle(container?.thick, vertical) }}
 			{...rest}
 		>
-			{Overlay && <Overlay {...{ currentIndex, methods }} />}
+			{Overlay && <Overlay {...{ currentIndex, methods, actionClass }} />}
 			{children}
 		</div>
 	)

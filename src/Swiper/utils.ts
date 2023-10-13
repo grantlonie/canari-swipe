@@ -1,6 +1,7 @@
 import { CSSProperties } from 'react'
 import { EasingFunction, SwiperProps } from './Swiper'
 import { Dimension, Dimensions, InstanceVariables, Movement, Snap } from './types'
+import { overlayClass, slideClass } from './style'
 
 export const initialInstanceVariables: InstanceVariables = {
 	initialized: false,
@@ -178,18 +179,16 @@ export function makeDimensions(
 }
 
 function addClassToOverlay(element: Element) {
-	const className = 'canari-swipe__overlay'
-	if (element.classList.contains(className)) return
+	if (element.classList.contains(overlayClass)) return
 
-	element.className = `${className}${element.className ? ' ' + element.className : ''}`
+	element.className = `${overlayClass}${element.className ? ' ' + element.className : ''}`
 }
 
 function addClassToSlides(slideElements: Element[]) {
-	const className = 'canari-swipe__slide'
-	if (slideElements[0].classList.contains(className)) return
+	if (slideElements[0].classList.contains(slideClass)) return
 
 	for (let element of slideElements) {
-		element.className = `${element.className ? element.className + ' ' : ''}${className}`
+		element.className = `${element.className ? element.className + ' ' : ''}${slideClass}`
 	}
 }
 
