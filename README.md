@@ -2,7 +2,7 @@
 
 100% React-based library used to swipe pages and other content. Multiple exposed properties for customizing the behavior.
 
-Check out these [examples](https://geedollaholla.github.io/canari-swipe/)!
+Check out these [examples](https://grantlonie.github.io/canari-swipe/)!
 
 ## Installation
 

@@ -48,7 +48,7 @@ export default function App() {
 				</Box>
 			</Box>
 			<Box sx={{ width: '800px', maxWidth: '90%', margin: 'auto' }}>
-				<Text fontSize="xl">Options</Text>
+				<Text component="h2">Options</Text>
 				<Controls value={controlProps} onUpdate={handleUpdate} />
 				<Docs />
 			</Box>

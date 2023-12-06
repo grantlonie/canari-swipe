@@ -1,11 +1,13 @@
+import { jsx } from '@emotion/react'
 import { SxProp, convertSx } from '../../theme'
-import { HTMLProps } from 'react'
+import { ElementType, HTMLProps, createElement } from 'react'
 
 export interface BoxProps extends HTMLProps<HTMLDivElement> {
+	component?: ElementType
 	sx?: SxProp
 }
 
-export default function Box({ sx, ...rest }: BoxProps) {
+export default function Box({ component = 'div', sx, ...rest }: BoxProps) {
 	const css = convertSx(sx)
-	return <div css={css} {...rest} />
+	return jsx(component, { css, ...rest })
 }

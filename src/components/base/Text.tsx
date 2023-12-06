@@ -1,13 +1,16 @@
+import { jsx } from '@emotion/react'
 import { FontSize, SxProp, convertSx } from '../../theme'
-import { HTMLProps } from 'react'
+import { ElementType, HTMLProps } from 'react'
 
 interface Props extends HTMLProps<HTMLParagraphElement> {
+	component?: ElementType
 	sx?: SxProp
 	/** (default md) Font size */
 	fontSize?: keyof typeof FontSize
 }
 
-export default function Text({ fontSize = 'md', sx, ...rest }: Props) {
+export default function Text({ component = 'p', fontSize, sx, ...rest }: Props) {
 	const css = convertSx(sx)
-	return <p css={{ marginBlock: 0, ...css, fontSize: FontSize[fontSize] }} {...rest} />
+	const cssFontSize = component === 'p' || fontSize ? FontSize[fontSize || 'md'] : undefined
+	return jsx(component, { css: { marginBlock: 0, fontSize: cssFontSize, ...css }, ...rest })
 }

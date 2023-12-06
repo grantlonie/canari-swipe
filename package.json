@@ -3,7 +3,7 @@
 	"name": "canari-swipe",
 	"version": "3.3.0",
 	"description": "Swiping library designed for Canari platform",
-	"homepage": "https://github.com/GeeDollaHolla/canari-swipe#readme",
+	"homepage": "https://github.com/grantlonie/canari-swipe#readme",
 	"license": "MIT",
 	"type": "module",
 	"main": "./Swiper.js",
@@ -19,7 +19,7 @@
 	"browserslist": "> 0.5%, last 2 versions, not dead",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/GeeDollaHolla/canari-swipe.git"
+		"url": "git+https://github.com/grantlonie/canari-swipe.git"
 	},
 	"keywords": [
 		"react",
