@@ -1,14 +1,4 @@
-import {
-	Children,
-	useEffect,
-	useLayoutEffect,
-	useMemo,
-	useRef,
-	useState,
-	type HTMLProps,
-	type MouseEvent,
-	type TouchEvent,
-} from 'react'
+import { Children, useEffect, useLayoutEffect, useMemo, useRef, useState, type HTMLProps } from 'react'
 import addStyle, { actionClass, containerClass } from './style'
 import { Dimensions, Movement } from './types'
 import {
@@ -273,14 +263,6 @@ export default function Swiper(props: SwiperProps): JSX.Element {
 		containerRef.current?.removeEventListener('touchmove', handlePreventDefault)
 	}
 
-	function handleTouchDown(e: TouchEvent<HTMLDivElement>) {
-		handleDown(e.targetTouches[0])
-	}
-
-	function handleMouseDown(e: MouseEvent<HTMLDivElement>) {
-		handleDown(e)
-	}
-
 	function handleDown({ pageX, pageY }: { pageX: number; pageY: number }) {
 		clearInterval(v.current.animationInterval)
 		v.current.isTouching = true
@@ -288,14 +270,6 @@ export default function Swiper(props: SwiperProps): JSX.Element {
 		const scrollPosition = vertical ? pageX : pageY
 		const movement: Movement = { pagePosition, scrollPosition, time: getCurrentClock() }
 		v.current.movements = new Array(5).fill(movement)
-	}
-
-	function handleTouchMove(e: TouchEvent<HTMLDivElement>) {
-		handleMove(e.targetTouches[0])
-	}
-
-	function handleMouseMove(e: MouseEvent<HTMLDivElement>) {
-		handleMove(e)
 	}
 
 	function handleMove({ pageX, pageY }: { pageX: number; pageY: number }) {
@@ -401,19 +375,19 @@ export default function Swiper(props: SwiperProps): JSX.Element {
 				onClickCapture?.(e)
 			}}
 			onMouseDown={e => {
-				handleMouseDown(e)
+				handleDown(e)
 				onMouseDown?.(e)
 			}}
 			onTouchStart={e => {
-				handleTouchDown(e)
+				handleDown(e.targetTouches[0])
 				onTouchStart?.(e)
 			}}
 			onMouseMove={e => {
-				handleMouseMove(e)
+				handleMove(e)
 				onMouseMove?.(e)
 			}}
 			onTouchMove={e => {
-				handleTouchMove(e)
+				handleMove(e.targetTouches[0])
 				onTouchMove?.(e)
 			}}
 			onMouseUp={e => {
