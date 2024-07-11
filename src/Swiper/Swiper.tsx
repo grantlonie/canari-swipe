@@ -144,6 +144,7 @@ export default function Swiper(props: SwiperProps): JSX.Element {
 	goToRef.current = goTo
 
 	useLayoutEffect(() => {
+		clearInterval(v.current.animationInterval)
 		addStyle()
 		preventScrolling()
 	}, [])
