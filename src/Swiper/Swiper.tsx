@@ -246,7 +246,7 @@ export default function Swiper(props: SwiperProps): JSX.Element {
 		clearInterval(v.current.animationInterval)
 	}
 
-	function positionFromIndex(dimensions: Dimensions | undefined, index: number) {
+	function positionFromIndex(dimensions: Dimensions | undefined, index = 0) {
 		if (!dimensions?.slides?.length) return 0
 
 		const { overflowDistance } = getTotalSpan(dimensions, center)
