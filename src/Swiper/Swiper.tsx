@@ -247,7 +247,7 @@ export default function Swiper(props: SwiperProps): JSX.Element {
 	}
 
 	function positionFromIndex(dimensions: Dimensions | undefined, index: number) {
-		if (!dimensions) return 0
+		if (!dimensions?.slides?.length) return 0
 
 		const { overflowDistance } = getTotalSpan(dimensions, center)
 		const { slides } = dimensions
