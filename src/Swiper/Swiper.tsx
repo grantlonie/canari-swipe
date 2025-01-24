@@ -246,12 +246,12 @@ export default function Swiper(props: SwiperProps): JSX.Element {
 		clearInterval(v.current.animationInterval)
 	}
 
-	function positionFromIndex(dimensions: Dimensions | undefined, index = 0) {
+	function positionFromIndex(dimensions: Dimensions | undefined, index: number) {
 		if (!dimensions?.slides?.length) return 0
 
 		const { overflowDistance } = getTotalSpan(dimensions, center)
 		const { slides } = dimensions
-		const { startPosition } = slides[index]
+		const { startPosition } = slides[index] ?? {}
 		const desiredPosition = startPosition + (center ? centerCorrection(slides, index) : 0)
 		return isCarousel ? desiredPosition : Math.min(desiredPosition, overflowDistance)
 	}
