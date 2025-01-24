@@ -67,6 +67,7 @@ export function carouselSlides(dimensions: Dimensions | undefined, currentIndex:
 	if (!dimensions) return
 
 	const { slides } = dimensions
+	if (!slides.length) return
 
 	const totalSpan = getEndPosition(slides[slides.length - 1])
 	const firstIndex = getFirstIndex(dimensions, currentIndex, center)
@@ -92,6 +93,8 @@ export function carouselSlides(dimensions: Dimensions | undefined, currentIndex:
 /** get first slide index based on how much overhang should be on each side of container span */
 function getFirstIndex({ container, slides }: Dimensions, currentIndex: number, center: boolean) {
 	const count = slides.length
+	if (!count) return 0
+
 	const lastSlide = slides[count - 1]
 	const overhangDistance = (getEndPosition(lastSlide) - container.span) / 2
 
@@ -227,10 +230,12 @@ export const isPastHalfway = (distance: number, span: number) => (distance + spa
 /** based on current position and desiredDistance (positive or negative), determine the next slide and final slide */
 export function snapDistance(
 	position: number,
-	slides: Dimension[],
+	slides: Dimension[] | undefined,
 	desiredDistance: number,
 	center: boolean
 ): { next: Snap; prev: Snap; total?: Snap } {
+	if (!slides?.length) return { next: { distance: 0, index: 0 }, prev: { distance: 0, index: 0 } }
+
 	const currentIndex = indexFromPosition(position, slides, center)
 	const { startPosition, span } = slides[currentIndex]
 	const direction = Math.sign(desiredDistance) || 1
@@ -278,6 +283,8 @@ function gapFromSlides(slides: Dimension[]) {
 
 /** for center alignment, create position correction */
 export function centerCorrection(slides: Dimension[], index: number) {
+	if (!slides.length) return 0
+
 	const firstSpan = slides[0].span
 	const currentSpan = slides[index].span
 	return (currentSpan - firstSpan) / 2
@@ -289,7 +296,7 @@ export function getContainerStyle(containerThickness = 0, vertical = false): CSS
 }
 
 export function getTotalSpan(dimensions: Dimensions | undefined, center: boolean) {
-	if (!dimensions) return { totalSpan: 0, overflowDistance: 0 }
+	if (!dimensions?.slides?.length) return { totalSpan: 0, overflowDistance: 0 }
 
 	const { container, slides } = dimensions
 	const lastSlide = slides[slides.length - 1]
