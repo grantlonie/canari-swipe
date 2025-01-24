@@ -1,7 +1,7 @@
 import { CSSProperties } from 'react'
+import { overlayClass, slideClass } from './style'
 import { EasingFunction, SwiperProps } from './Swiper'
 import { Dimension, Dimensions, InstanceVariables, Movement, Snap } from './types'
-import { overlayClass, slideClass } from './style'
 
 export const initialInstanceVariables: InstanceVariables = {
 	initialized: false,
@@ -156,7 +156,7 @@ export function makeDimensions(
 	let slideElements = Array.from(children ?? []) as HTMLElement[]
 	if (hasOverlay) {
 		const overlayElement = slideElements.shift()
-		if (overlayElement) addClassToOverlay(overlayElement)
+		addClassToOverlay(overlayElement)
 	}
 	const fixedSlideSpan = fit ? (containerSpan - gap * (fit - 1)) / fit : undefined
 
@@ -178,14 +178,15 @@ export function makeDimensions(
 	return { container, slides }
 }
 
-function addClassToOverlay(element: Element) {
-	if (element.classList.contains(overlayClass)) return
+function addClassToOverlay(element?: Element) {
+	if (!element || element.classList.contains(overlayClass)) return
 
 	element.className = `${overlayClass}${element.className ? ' ' + element.className : ''}`
 }
 
 function addClassToSlides(slideElements: Element[]) {
-	if (slideElements[0].classList.contains(slideClass)) return
+	const firstSlide = slideElements[0]
+	if (!firstSlide || firstSlide.classList.contains(slideClass)) return
 
 	for (let element of slideElements) {
 		element.className = `${element.className ? element.className + ' ' : ''}${slideClass}`
