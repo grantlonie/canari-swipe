@@ -1,7 +1,7 @@
 {
 	"author": "Grant Lonie",
 	"name": "canari-swipe",
-	"version": "3.3.8",
+	"version": "3.4.0",
 	"description": "Lightweight React swipe and carousel component with touch/mouse, fit-N slides, elastic/carousel ends, and programmatic goTo/next/prev — no heavy dependencies",
 	"homepage": "https://github.com/grantlonie/canari-swipe#readme",
 	"license": "MIT",
