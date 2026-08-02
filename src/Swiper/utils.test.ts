@@ -1,12 +1,17 @@
 import { Dimension, Dimensions } from './types'
 import {
+	calculateDeceleration,
 	carousel,
 	carouselSlides,
+	easyDoesIt,
 	getDelta,
 	getEndPosition,
+	howFar,
+	howLong,
 	indexFromPosition,
 	isPastHalfway,
 	snapDistance,
+	velocityFromMovements,
 } from './utils'
 
 test('carousel', () => {
@@ -15,6 +20,10 @@ test('carousel', () => {
 	expect(carousel(4.9, 5)).toBeCloseTo(4.9)
 	expect(carousel(5, 5)).toEqual(0)
 	expect(carousel(7, 5)).toEqual(2)
+	expect(carousel(3, 0)).toEqual(0)
+	expect(carousel(3, -5)).toEqual(0)
+	expect(carousel(NaN, 5)).toEqual(0)
+	expect(carousel(3, NaN)).toEqual(0)
 })
 
 test('isPastHalfway', () => {
@@ -22,6 +31,80 @@ test('isPastHalfway', () => {
 	expect(isPastHalfway(5, 10)).toEqual(false)
 	expect(isPastHalfway(5.1, 10)).toEqual(true)
 	expect(isPastHalfway(9.9, 10)).toEqual(true)
+})
+
+describe('velocityFromMovements', () => {
+	test('returns finite velocity for normal movements', () => {
+		const velocity = velocityFromMovements([
+			{ pagePosition: 100, scrollPosition: 0, time: 0 },
+			{ pagePosition: 50, scrollPosition: 0, time: 100 },
+		])
+		expect(velocity).toEqual(500)
+		expect(Number.isFinite(velocity)).toBe(true)
+	})
+
+	test('returns 0 for identical timestamps', () => {
+		expect(
+			velocityFromMovements([
+				{ pagePosition: 100, scrollPosition: 0, time: 50 },
+				{ pagePosition: 40, scrollPosition: 0, time: 50 },
+			])
+		).toEqual(0)
+	})
+
+	test('returns 0 for zero position delta', () => {
+		expect(
+			velocityFromMovements([
+				{ pagePosition: 100, scrollPosition: 0, time: 0 },
+				{ pagePosition: 100, scrollPosition: 0, time: 100 },
+			])
+		).toEqual(0)
+	})
+
+	test('returns 0 for empty or incomplete movements', () => {
+		expect(velocityFromMovements([])).toEqual(0)
+	})
+})
+
+describe('howFar / howLong / calculateDeceleration', () => {
+	test('normal values stay finite', () => {
+		expect(howFar(500, 1000)).toEqual(125)
+		expect(howLong(500, 1000)).toEqual(500)
+		expect(calculateDeceleration(500, 125)).toEqual(1000)
+	})
+
+	test('poison inputs return 0', () => {
+		expect(howFar(NaN, 1000)).toEqual(0)
+		expect(howFar(Infinity, 1000)).toEqual(0)
+		expect(howFar(500, 0)).toEqual(0)
+		expect(howFar(500, NaN)).toEqual(0)
+
+		expect(howLong(NaN, 1000)).toEqual(0)
+		expect(howLong(Infinity, 1000)).toEqual(0)
+		expect(howLong(500, 0)).toEqual(0)
+		expect(howLong(500, NaN)).toEqual(0)
+
+		expect(calculateDeceleration(NaN, 100)).toEqual(0)
+		expect(calculateDeceleration(500, 0)).toEqual(0)
+		expect(calculateDeceleration(Infinity, 100)).toEqual(0)
+	})
+
+	test('howLong output is safe for clock comparisons', () => {
+		const duration = howLong(NaN, NaN)
+		expect(0 >= duration).toBe(true)
+	})
+})
+
+describe('easyDoesIt', () => {
+	test.each(['linear', 'quad', 'quart', 'overshoot'] as const)('%s returns a finite progress', easing => {
+		const value = easyDoesIt(0.5, easing)
+		expect(Number.isFinite(value)).toBe(true)
+	})
+
+	test('unknown easing falls back to quart', () => {
+		const value = easyDoesIt(0.5, 'nope' as any)
+		expect(value).toEqual(easyDoesIt(0.5, 'quart'))
+	})
 })
 
 describe('indexFromPosition', () => {
@@ -92,6 +175,14 @@ describe('carouselSlides', () => {
 		expect(carouselSlides(dimensions, 2, true)).toEqual(flipper([0, 0, 0, 0, 0]))
 		expect(carouselSlides(dimensions, 3, true)).toEqual(flipper([1, 1, 0, 0, 0]))
 		expect(carouselSlides(dimensions, 4, true)).toEqual(flipper([1, 1, 1, 0, 0]))
+	})
+
+	test('zero-span slides terminate', () => {
+		const zeroDimensions: Dimensions = {
+			container: { span: 10, thick: 0 },
+			slides: makeSlides([0, 0, 0]),
+		}
+		expect(carouselSlides(zeroDimensions, 0, false)).toBeDefined()
 	})
 })
 
@@ -190,6 +281,13 @@ describe('snapDistance', () => {
 		const prev = { distance: -3, index: 0 }
 		const total = { distance: 9.5, index: 3 }
 		expect(snapDistance(4, slidesWithGap, 10, true)).toEqual({ next, prev, total })
+	})
+
+	test('zero-span slides terminate', () => {
+		const zeroSlides = makeSlides([0, 0, 0])
+		const result = snapDistance(0, zeroSlides, 100, false)
+		expect(Number.isFinite(result.next.distance)).toBe(true)
+		expect(Number.isFinite(result.prev.distance)).toBe(true)
 	})
 })
 

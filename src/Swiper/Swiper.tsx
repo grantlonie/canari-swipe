@@ -26,13 +26,13 @@ import {
 	howFar,
 	howLong,
 	indexFromPosition,
-	initialInstanceVariables,
 	isEqual,
 	makeDimensions,
 	makeSlideStyle,
 	snapDistance,
 	startedSwiping,
 	velocityFromMovements,
+	createInstanceVariables,
 } from './utils'
 
 /** how fast swiper updates after letting go */
@@ -132,7 +132,8 @@ export default function Swiper(props: SwiperProps): ReactElement {
 	} = props
 
 	const containerRef = useRef<HTMLDivElement>(null)
-	const v = useRef(initialInstanceVariables)
+	const v = useRef(createInstanceVariables())
+	const skipGoToEffect = useRef(false)
 
 	const [position, setPosition] = useState(0)
 	const [goTo, setGoTo] = useState(goToParent)
@@ -156,6 +157,10 @@ export default function Swiper(props: SwiperProps): ReactElement {
 		clearInterval(v.current.animationInterval)
 		addStyle()
 		preventScrolling()
+		return () => {
+			clearInterval(v.current.animationInterval)
+			allowScrolling()
+		}
 	}, [])
 
 	useLayoutEffect(() => {
@@ -177,6 +182,10 @@ export default function Swiper(props: SwiperProps): ReactElement {
 
 	useEffect(() => {
 		if (!v.current.initialized) return
+		if (skipGoToEffect.current) {
+			skipGoToEffect.current = false
+			return
+		}
 		goToSlide(goTo)
 	}, [goTo])
 
@@ -233,27 +242,43 @@ export default function Swiper(props: SwiperProps): ReactElement {
 	}
 
 	function finishSwiping(distance: number, duration: number, desiredIndex?: number) {
+		clearInterval(v.current.animationInterval)
+
+		if (!Number.isFinite(duration) || duration <= 0 || !Number.isFinite(distance)) {
+			return stopSwiping(desiredIndex)
+		}
+
 		const startClock = getCurrentClock()
+		const startPosition = position
 		v.current.animationInterval = setInterval(() => {
 			const clock = getCurrentClock() - startClock
 			if (clock >= duration) return stopSwiping(desiredIndex)
 
 			const easing = desiredIndex == null ? 'quart' : easingFunction
-			let newPosition = position + distance * easyDoesIt(clock / duration, easing)
+			let newPosition = startPosition + distance * easyDoesIt(clock / duration, easing)
 			if (isCarousel) newPosition = carousel(newPosition, totalSpan)
+			if (!Number.isFinite(newPosition)) return stopSwiping(desiredIndex)
 
 			setPosition(newPosition)
 		}, SWIPE_UPDATE_TIME)
 	}
 
 	function stopSwiping(desiredIndex?: number) {
+		clearInterval(v.current.animationInterval)
+
 		if (desiredIndex != null) {
-			setPosition(positionFromIndex(dimensions, desiredIndex))
-			setGoTo(desiredIndex)
+			const nextPosition = positionFromIndex(dimensions, desiredIndex)
+			setPosition(Number.isFinite(nextPosition) ? nextPosition : 0)
+			// Only skip the goTo effect when setGoTo will actually change state.
+			// If the index is unchanged, React won't re-run the effect and a stuck
+			// skip flag would swallow the next user-driven goTo (e.g. first dot click).
+			if (goToRef.current !== desiredIndex) {
+				skipGoToEffect.current = true
+				setGoTo(desiredIndex)
+			}
 		}
 
 		onSwipeEnd?.(desiredIndex ?? currentIndex)
-		clearInterval(v.current.animationInterval)
 	}
 
 	function positionFromIndex(dimensions: Dimensions | undefined, index: number) {
@@ -275,8 +300,12 @@ export default function Swiper(props: SwiperProps): ReactElement {
 	}
 
 	function handleDown({ pageX, pageY }: { pageX: number; pageY: number }) {
+		if (disabled) return
+
 		clearInterval(v.current.animationInterval)
 		v.current.isTouching = true
+		v.current.isSwiping = false
+		v.current.suppressClick = false
 		const pagePosition = vertical ? pageY : pageX
 		const scrollPosition = vertical ? pageX : pageY
 		const movement: Movement = { pagePosition, scrollPosition, time: getCurrentClock() }
@@ -297,6 +326,7 @@ export default function Swiper(props: SwiperProps): ReactElement {
 			const startScrolling = startedSwiping(scrollPosition, startScrollPosition, scale)
 			if (startSwiping) {
 				v.current.isSwiping = true
+				v.current.suppressClick = true
 				onSwipeStart?.()
 			} else {
 				if (startScrolling) {
@@ -315,6 +345,7 @@ export default function Swiper(props: SwiperProps): ReactElement {
 		let newPosition = position + swipeMovement
 		if (endMode === 'carousel') newPosition = carousel(newPosition, totalSpan)
 		else if (endMode === 'rigid') newPosition = clamp(newPosition, overflowDistance, gap)
+		if (!Number.isFinite(newPosition)) return
 		setPosition(newPosition)
 
 		v.current.movements.shift()
@@ -325,7 +356,10 @@ export default function Swiper(props: SwiperProps): ReactElement {
 	function handleUp() {
 		v.current.isTouching = false
 		preventScrolling()
-		if (!v.current.isSwiping) return
+		if (disabled || !v.current.isSwiping) {
+			v.current.isSwiping = false
+			return
+		}
 
 		const deceleration = getDeceleration(braking)
 		let velocity = velocityFromMovements(v.current.movements)
@@ -336,8 +370,10 @@ export default function Swiper(props: SwiperProps): ReactElement {
 			const distanceToStart = gap - position
 			const distanceToEnd = overflowDistance - position
 			if (distanceToStart > 0) {
+				v.current.isSwiping = false
 				return finishSwiping(distanceToStart, SNAP_BACK_TIME, 0)
 			} else if (distanceToEnd < 0) {
+				v.current.isSwiping = false
 				return finishSwiping(distanceToEnd, SNAP_BACK_TIME, slideCount - 1)
 			} else {
 				const clampedDistance = clamp(desiredDistance, distanceToEnd, distanceToStart)
@@ -366,15 +402,18 @@ export default function Swiper(props: SwiperProps): ReactElement {
 			}
 		}
 
+		v.current.isSwiping = false
 		const updatedDeceleration = calculateDeceleration(velocity, desiredDistance)
 		const duration = howLong(velocity, updatedDeceleration)
 		finishSwiping(desiredDistance, duration, desiredIndex)
 	}
 
-	/** Prevent clicking on slides when swiping */
-	function captureStop(e) {
-		if (v.current.isSwiping) e.stopPropagation()
+	/** Clear swipe flag after a gesture; optionally suppress the following click */
+	function endGesture(options?: { event?: { stopPropagation?: () => void }; clearClickSuppress?: boolean }) {
+		const { event, clearClickSuppress = true } = options ?? {}
+		if (v.current.suppressClick && clearClickSuppress) event?.stopPropagation?.()
 		v.current.isSwiping = false
+		if (clearClickSuppress) v.current.suppressClick = false
 	}
 
 	return (
@@ -382,7 +421,7 @@ export default function Swiper(props: SwiperProps): ReactElement {
 			className={`${containerClass}${className ? ' ' + className : ''}`}
 			ref={containerRef}
 			onClickCapture={e => {
-				captureStop(e)
+				endGesture({ event: e })
 				onClickCapture?.(e)
 			}}
 			onMouseDown={e => {
@@ -403,19 +442,22 @@ export default function Swiper(props: SwiperProps): ReactElement {
 			}}
 			onMouseUp={e => {
 				handleUp()
+				endGesture({ clearClickSuppress: false })
 				onMouseUp?.(e)
 			}}
 			onTouchEndCapture={e => {
 				handleUp()
-				captureStop(e)
+				endGesture({ event: e })
 				onTouchEndCapture?.(e)
 			}}
 			onMouseLeave={e => {
 				handleUp()
+				endGesture({ clearClickSuppress: false })
 				onMouseLeave?.(e)
 			}}
 			onTouchCancel={e => {
 				handleUp()
+				endGesture()
 				onTouchCancel?.(e)
 			}}
 			style={{ ...style, ...getContainerStyle(container?.thick, vertical) }}

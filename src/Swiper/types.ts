@@ -9,6 +9,8 @@ export interface InstanceVariables {
 	isTouching: boolean
 	/** stack of final user touch movements to calculate velocity after letting go */
 	movements: Movement[]
+	/** suppress the click that follows a swipe gesture */
+	suppressClick: boolean
 }
 
 export interface Movement {

@@ -7,7 +7,18 @@ export const initialInstanceVariables: InstanceVariables = {
 	initialized: false,
 	isTouching: false,
 	isSwiping: false,
+	suppressClick: false,
 	movements: [{ pagePosition: 0, scrollPosition: 0, time: 0 }],
+}
+
+export function createInstanceVariables(): InstanceVariables {
+	return {
+		initialized: false,
+		isTouching: false,
+		isSwiping: false,
+		suppressClick: false,
+		movements: [{ pagePosition: 0, scrollPosition: 0, time: 0 }],
+	}
 }
 
 /** return px/sec^2 deceleration */
@@ -41,25 +52,35 @@ export const getCurrentClock = () => new Date().getTime()
 export function velocityFromMovements(movements: Movement[]) {
 	const start = movements[0]
 	const end = movements[movements.length - 1]
-	const velocity = (end.pagePosition - start.pagePosition) / (end.time - start.time)
-	return velocity * 1000 * -1
+	if (!start || !end) return 0
+
+	const dt = end.time - start.time
+	const dp = end.pagePosition - start.pagePosition
+	if (!(dt > 0) || !Number.isFinite(dt) || !Number.isFinite(dp) || dp === 0) return 0
+
+	const velocity = (dp / dt) * 1000 * -1
+	return Number.isFinite(velocity) ? velocity : 0
 }
 
 /** determine how many pixels can be covered before coming to rest */
 export function howFar(velocity: number, deceleration: number) {
-	return Math.round(Math.pow(velocity, 2) / (2 * deceleration)) * Math.sign(velocity)
+	if (!Number.isFinite(velocity) || !Number.isFinite(deceleration) || !deceleration) return 0
+	const distance = Math.round(Math.pow(velocity, 2) / (2 * deceleration)) * Math.sign(velocity)
+	return Number.isFinite(distance) ? distance : 0
 }
 
 /** determine how long is should take to come to rest in ms */
 export function howLong(velocity: number, deceleration: number) {
-	if (!deceleration) return 0
-	return Math.round((Math.abs(velocity) / deceleration) * 1000)
+	if (!Number.isFinite(velocity) || !Number.isFinite(deceleration) || !deceleration) return 0
+	const duration = Math.round((Math.abs(velocity) / deceleration) * 1000)
+	return Number.isFinite(duration) ? duration : 0
 }
 
 /** get updated deceleration */
 export function calculateDeceleration(velocity: number, distance: number) {
-	if (!Math.abs(distance)) return 0
-	return Math.round(Math.abs(Math.pow(velocity, 2) / (2 * distance)))
+	if (!Number.isFinite(velocity) || !Number.isFinite(distance) || !Math.abs(distance)) return 0
+	const deceleration = Math.round(Math.abs(Math.pow(velocity, 2) / (2 * distance)))
+	return Number.isFinite(deceleration) ? deceleration : 0
 }
 
 /** update startPosition of each slide based to carousel around current slide */
@@ -100,9 +121,11 @@ function getFirstIndex({ container, slides }: Dimensions, currentIndex: number, 
 
 	let index = currentIndex
 	let distance = center ? slides[currentIndex].span / 2 : 0
-	while (true) {
-		let nextIndex = carousel(index - 1, count)
-		distance += slides[nextIndex].span
+	for (let i = 0; i < count; i++) {
+		const nextIndex = carousel(index - 1, count)
+		const nextSpan = slides[nextIndex].span
+		if (!(nextSpan > 0)) break
+		distance += nextSpan
 		if (distance > overhangDistance + (center ? container.span / 2 : 0)) break
 		index = nextIndex
 	}
@@ -117,16 +140,21 @@ export function easyDoesIt(ratio: number, easingFunction: EasingFunction) {
 			return ratio
 		case 'quad':
 			return 1 - Math.pow(1 - ratio, 2)
-		case 'quart':
-			return 1 - Math.pow(1 - ratio, 4)
-		case 'overshoot':
+		case 'overshoot': {
 			const c1 = 1
 			const c3 = c1 + 1
 			return 1 + c3 * Math.pow(ratio - 1, 3) + c1 * Math.pow(ratio - 1, 2)
+		}
+		case 'quart':
+		default:
+			return 1 - Math.pow(1 - ratio, 4)
 	}
 }
 
-export const carousel = (value: number, maxValue: number) => (value + maxValue * 100) % maxValue
+export const carousel = (value: number, maxValue: number) => {
+	if (!(maxValue > 0) || !Number.isFinite(maxValue) || !Number.isFinite(value)) return 0
+	return ((value % maxValue) + maxValue) % maxValue
+}
 
 export const clamp = (num: number, max: number, min = 0) => Math.min(Math.max(num, min), max)
 
@@ -202,7 +230,9 @@ function getDimensionsWithMargins(element: HTMLElement): [number, number] {
 	const style = window.getComputedStyle(element)
 
 	function getDimension(baseDimension: number, sides: [string, string]) {
-		return sides.map(side => parseInt(style[`margin-${side}`])).reduce((total, side) => total + side, baseDimension)
+		return sides
+			.map(side => parseInt(style[`margin-${side}` as any], 10) || 0)
+			.reduce((total, side) => total + side, baseDimension)
 	}
 
 	const width = getDimension(element.offsetWidth, ['left', 'right'])
@@ -264,11 +294,12 @@ export function snapDistance(
 
 	let snapped = { next, prev, total: { ...next } }
 
-	while (true) {
+	for (let step = 0; step < slides.length * 2; step++) {
 		const nextIndex = carousel(i + (forward ? 1 : -1), slides.length)
 		const previousSpan = slides[i].span
 		if (!forward) i = nextIndex
 		let span = slides[i].span
+		if (!(span > 0) && !(previousSpan > 0)) return snapped
 		if (center) span = (span + (forward ? slides[nextIndex].span : previousSpan)) / 2
 		distance += (span + gap) * direction
 		if (Math.abs(distance) > Math.abs(desiredDistance)) return snapped
@@ -277,6 +308,8 @@ export function snapDistance(
 		snapped.total.distance = distance
 		snapped.total.index = i
 	}
+
+	return snapped
 }
 
 function gapFromSlides(slides: Dimension[]) {
