@@ -1,4 +1,4 @@
-name: Node.js CI
+name: Bun CI
 
 on:
     push:
@@ -9,16 +9,15 @@ jobs:
         runs-on: ubuntu-latest
 
         steps:
-            - uses: actions/checkout@v3
-            - name: Use Node 18
-              uses: actions/setup-node@v3
+            - uses: actions/checkout@v4
+            - name: Setup Bun
+              uses: oven-sh/setup-bun@v2
               with:
-                  node-version: 18.x
-                  cache: 'npm'
-            - run: npm ci
-            - run: npm run build
+                  bun-version: latest
+            - run: bun install --frozen-lockfile
+            - run: bun run build
             - name: Upload artifact
-              uses: actions/upload-pages-artifact@v1
+              uses: actions/upload-pages-artifact@v3
               with:
                   path: 'build'
 
@@ -39,4 +38,4 @@ jobs:
         steps:
             - name: Deploy to GitHub Pages
               id: deployment
-              uses: actions/deploy-pages@v2 # or the latest "vX.X.X" version tag for this action
+              uses: actions/deploy-pages@v4

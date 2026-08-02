@@ -8,6 +8,10 @@ export default {
 		{ file: 'dist/Swiper.js', format: 'cjs' },
 		{ file: 'dist/Swiper.es.js', format: 'esm' },
 	],
-	plugins: [resolve(), typescript({ tsconfig: './build-config/tsconfig.swiper.json' }), terser()],
+	plugins: [
+		resolve(),
+		typescript({ tsconfig: './build-config/tsconfig.swiper.json' }),
+		terser({ maxWorkers: 1 }),
+	],
 	external: ['react', 'react/jsx-runtime'],
 }

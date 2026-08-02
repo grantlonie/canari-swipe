@@ -1,6 +1,6 @@
 export interface InstanceVariables {
 	/** timer used during animation */
-	animationInterval?: NodeJS.Timer
+	animationInterval?: ReturnType<typeof setInterval>
 	/** true after swiper has been initialized */
 	initialized: boolean
 	/** user is swiping - moving while touching */

@@ -1,7 +1,7 @@
 {
 	"compilerOptions": {
 		"types": ["node", "@emotion/react/types/css-prop", "jest", "mdx"],
-		"target": "es5",
+		"target": "ES2015",
 		"lib": ["dom", "dom.iterable", "esnext"],
 		"allowJs": true,
 		"skipLibCheck": true,
@@ -10,7 +10,7 @@
 		"strict": true,
 		"forceConsistentCasingInFileNames": true,
 		"module": "esnext",
-		"moduleResolution": "node",
+		"moduleResolution": "bundler",
 		"isolatedModules": true,
 		"resolveJsonModule": true,
 		"noEmit": true,
@@ -21,6 +21,7 @@
 		"noUnusedLocals": false,
 		"incremental": true,
 		"noFallthroughCasesInSwitch": true,
-		"noImplicitAny": false
+		"noImplicitAny": false,
+		"rootDir": "."
 	}
 }

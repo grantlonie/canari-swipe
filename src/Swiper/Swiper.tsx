@@ -1,4 +1,13 @@
-import { Children, useEffect, useLayoutEffect, useMemo, useRef, useState, type HTMLProps } from 'react'
+import {
+	Children,
+	useEffect,
+	useLayoutEffect,
+	useMemo,
+	useRef,
+	useState,
+	type HTMLProps,
+	type ReactElement,
+} from 'react'
 import addStyle, { actionClass, containerClass } from './style'
 import { Dimensions, Movement } from './types'
 import {
@@ -38,7 +47,7 @@ export declare interface SwiperProps extends Omit<HTMLProps<HTMLDivElement>, 'on
 	align?: 'center' | 'start'
 	/** (default 50) 1 - 100. How hard to brake swiping animation after letting go */
 	braking?: number
-	children: JSX.Element[] | JSX.Element
+	children: ReactElement[] | ReactElement
 	/** prevent dragging slides */
 	disabled?: boolean
 	/** (default quart) set the ease stop animation for when stopMode != 'free' */
@@ -60,7 +69,7 @@ export declare interface SwiperProps extends Omit<HTMLProps<HTMLDivElement>, 'on
 	/** return callable methods */
 	onLoad?: (methods: SwiperMethods) => void
 	/** render component over swiper (used for controls, fade effect, etc.) */
-	Overlay?: (props: SwiperOverlayProps) => JSX.Element
+	Overlay?: (props: SwiperOverlayProps) => ReactElement
 	/** (default 1) helpful when applying transform scale to swiper to match swipe movements */
 	scale?: number
 	/** (default single) stop after a single slide, animate slides per braking stopping on whole slide (multiple) or wherever it lies (free)  */
@@ -89,7 +98,7 @@ export declare interface SwiperMethods {
 	prev: () => void
 }
 
-export default function Swiper(props: SwiperProps): JSX.Element {
+export default function Swiper(props: SwiperProps): ReactElement {
 	const {
 		align = 'start',
 		braking,
@@ -129,7 +138,7 @@ export default function Swiper(props: SwiperProps): JSX.Element {
 	const [goTo, setGoTo] = useState(goToParent)
 	const [dimensions, setDimensions] = useState<Dimensions | undefined>()
 
-	const childrenArray = Children.toArray(children) as JSX.Element[]
+	const childrenArray = Children.toArray(children) as ReactElement[]
 	const slideCount = childrenArray.length
 	const isCarousel = endMode === 'carousel'
 	const center = align === 'center'

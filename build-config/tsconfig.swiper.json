@@ -3,8 +3,16 @@
 		"declaration": true,
 		"emitDeclarationOnly": true,
 		"jsx": "react-jsx",
-		"target": "ES6",
-		"declarationDir": "../"
+		"target": "ES2015",
+		"module": "ESNext",
+		"moduleResolution": "bundler",
+		"rootDir": "../src/Swiper",
+		"declarationDir": "../dist",
+		"skipLibCheck": true,
+		"esModuleInterop": true,
+		"strict": true,
+		"noImplicitAny": false,
+		"types": ["react"]
 	},
 	"files": ["../src/Swiper/Swiper.tsx"]
 }

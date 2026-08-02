@@ -6,7 +6,10 @@ Check out these [examples](https://grantlonie.github.io/canari-swipe/)!
 
 ## Installation
 
-`$ npm install --save canari-swipe`
+```sh
+bun add canari-swipe
+# or: npm install canari-swipe
+```
 
 ## Basic Usage
 

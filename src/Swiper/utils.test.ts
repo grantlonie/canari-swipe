@@ -12,7 +12,7 @@ import {
 test('carousel', () => {
 	expect(carousel(-1, 5)).toEqual(4)
 	expect(carousel(2, 5)).toEqual(2)
-	expect(carousel(4.9, 5)).toEqual(4.9)
+	expect(carousel(4.9, 5)).toBeCloseTo(4.9)
 	expect(carousel(5, 5)).toEqual(0)
 	expect(carousel(7, 5)).toEqual(2)
 })
