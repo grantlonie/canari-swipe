@@ -243,7 +243,7 @@ export default function Swiper(props: SwiperProps): JSX.Element {
 			setGoTo(desiredIndex)
 		}
 
-		onSwipeEnd?.(desiredIndex || currentIndex)
+		onSwipeEnd?.(desiredIndex ?? currentIndex)
 		clearInterval(v.current.animationInterval)
 	}
 

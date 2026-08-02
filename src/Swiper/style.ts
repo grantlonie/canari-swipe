@@ -38,6 +38,8 @@ const styleText = `
 	pointer-events: auto;
 }
 .${slideClass} {
+	left: 0;
 	position: absolute !important;
+	top: 0;
 }
 `

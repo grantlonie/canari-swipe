@@ -141,6 +141,8 @@ export function makeSlideStyle(offset: number, span: number, vertical: boolean, 
 	const dimensionKey = vertical ? 'Height' : 'Width'
 
 	return {
+		left: 0,
+		top: 0,
 		transform: `translate3d(${xOffset}px, ${yOffset}px, 0)`,
 		...(size && { [`max${dimensionKey}`]: `${span}px`, [`min${dimensionKey}`]: `${span}px` }),
 	}
